@@ -1,5 +1,5 @@
 import os
-import src.data.conect2db as c2db
+import src.data_processing.conect2db as c2db
 import nltk
 from nltk.parse.stanford import StanfordDependencyParser
 

@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/data/conect2db.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/cnn/convolution_net.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/cnn/joint_model.py" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/inference/main.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/bi_rnn.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/demo.py" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/data/conect2db.py" afterPath="$PROJECT_DIR$/src/data_processing/conect2db.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/data/data_processing.py" afterPath="$PROJECT_DIR$/src/data_processing/data_processing.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/data/data_processing.py" afterPath="$PROJECT_DIR$/src/data/data_processing.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,28 +22,38 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="data_processing.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+      <file leaf-file-name="data_processing.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="414">
-              <caret line="23" column="51" lean-forward="true" selection-start-line="23" selection-start-column="51" selection-end-line="23" selection-end-column="51" />
+            <state relative-caret-position="612">
+              <caret line="34" column="0" lean-forward="true" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
-                <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-                <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-                <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-                <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-                <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+                <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+                <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+                <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+                <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+                <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="stanford.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/anaconda/lib/python3.6/site-packages/nltk/parse/stanford.py">
+      <file leaf-file-name="bi_rnn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/models/bi_rnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="249">
-              <caret line="292" column="29" lean-forward="false" selection-start-line="292" selection-start-column="29" selection-end-line="292" selection-end-column="29" />
+            <state relative-caret-position="36">
+              <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/inference/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="23" lean-forward="false" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -59,6 +70,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="PUSH_TAGS">
+      <GitPushTagMode />
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -68,6 +82,8 @@
         <option value="$PROJECT_DIR$/src/cnn/joint_model.py" />
         <option value="$PROJECT_DIR$/src/data/conect2db.py" />
         <option value="$PROJECT_DIR$/src/data/data_processing.py" />
+        <option value="$PROJECT_DIR$/src/models/bi_rnn.py" />
+        <option value="$PROJECT_DIR$/src/inference/main.py" />
       </list>
     </option>
   </component>
@@ -219,7 +235,14 @@
       <option name="project" value="LOCAL" />
       <updated>1506585198153</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="f@cking">
+      <created>1507776955828</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1507776955828</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -255,7 +278,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add some simple framework files" />
     <MESSAGE value="mysql connect successfully" />
-    <option name="LAST_COMMIT_MESSAGE" value="mysql connect successfully" />
+    <MESSAGE value="f@cking" />
+    <option name="LAST_COMMIT_MESSAGE" value="f@cking" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -264,62 +288,62 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
           </folding>
         </state>
       </provider>
@@ -338,17 +362,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
           </folding>
         </state>
       </provider>
@@ -381,14 +405,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/demo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/conect2db.py">
+    <entry file="file://$PROJECT_DIR$/src/data_processing/conect2db.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="10" column="19" lean-forward="true" selection-start-line="10" selection-start-column="19" selection-end-line="10" selection-end-column="19" />
@@ -412,26 +429,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="34" column="0" lean-forward="true" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+            <marker date="1507777192000" expanded="true" signature="553:567" ph="SELECT * FRO... ANN" />
+            <marker date="1507777192000" expanded="true" signature="553:577" ph="SELECT * FRO... annotation" />
+            <marker date="1507777192000" expanded="true" signature="678:699" ph="SELECT * FRO... se" />
+            <marker date="1507777192000" expanded="true" signature="678:707" ph="SELECT * FRO... sentence" />
+            <marker date="1507777192000" expanded="true" signature="678:709" ph="SELECT * FRO... sentence" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$USER_HOME$/anaconda/lib/python3.6/site-packages/nltk/parse/stanford.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="249">
+        <state relative-caret-position="5004">
           <caret line="292" column="29" lean-forward="false" selection-start-line="292" selection-start-column="29" selection-end-line="292" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/data/data_processing.py">
+    <entry file="file://$PROJECT_DIR$/src/demo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="23" column="51" lean-forward="true" selection-start-line="23" selection-start-column="51" selection-end-line="23" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <marker date="1507776768000" expanded="true" signature="542:556" ph="SELECT * FRO... ANN" />
-            <marker date="1507776768000" expanded="true" signature="542:566" ph="SELECT * FRO... annotation" />
-            <marker date="1507776768000" expanded="true" signature="667:688" ph="SELECT * FRO... se" />
-            <marker date="1507776768000" expanded="true" signature="667:696" ph="SELECT * FRO... sentence" />
-            <marker date="1507776768000" expanded="true" signature="667:698" ph="SELECT * FRO... sentence" />
-          </folding>
+        <state relative-caret-position="72">
+          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/bi_rnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="36">
+          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/inference/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="23" lean-forward="false" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>
