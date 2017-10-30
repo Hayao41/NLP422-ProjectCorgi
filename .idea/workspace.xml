@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/DT_RNN.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/models/bi_rnn.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/inference/main.py" afterPath="$PROJECT_DIR$/src/inference/main.py" />
     </list>
@@ -33,11 +32,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EasyFirstLSTM.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/inference/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="18">
+              <caret line="1" column="18" lean-forward="true" selection-start-line="1" selection-start-column="18" selection-end-line="1" selection-end-column="18" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EasyFirstLSTM.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/models/EasyFirstLSTM.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+            <state relative-caret-position="216">
+              <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -69,11 +80,11 @@
         <option value="$PROJECT_DIR$/src/data/conect2db.py" />
         <option value="$PROJECT_DIR$/src/data/data_processing.py" />
         <option value="$PROJECT_DIR$/src/models/bi_rnn.py" />
-        <option value="$PROJECT_DIR$/src/inference/main.py" />
         <option value="$PROJECT_DIR$/src/models/NeuralModel.py" />
         <option value="$PROJECT_DIR$/src/models/DT-RNN.py" />
         <option value="$PROJECT_DIR$/src/models/DT_RNN.py" />
         <option value="$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
+        <option value="$PROJECT_DIR$/src/inference/main.py" />
       </list>
     </option>
   </component>
@@ -277,7 +288,14 @@
       <option name="project" value="LOCAL" />
       <updated>1507777278183</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="add some classes implementing paper works of Socher and Yoav's">
+      <created>1509350290434</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1509350290434</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -315,7 +333,8 @@
     <MESSAGE value="mysql connect successfully" />
     <MESSAGE value="f@cking" />
     <MESSAGE value="waiting for building the frameworks" />
-    <option name="LAST_COMMIT_MESSAGE" value="waiting for building the frameworks" />
+    <MESSAGE value="add some classes implementing paper works of Socher and Yoav's" />
+    <option name="LAST_COMMIT_MESSAGE" value="add some classes implementing paper works of Socher and Yoav's" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -363,6 +382,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
           <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -370,6 +390,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
           <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -482,20 +505,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/demo.py" />
-    <entry file="file://$PROJECT_DIR$/src/inference/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="23" lean-forward="true" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/bi_rnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/data_processing/conect2db.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
@@ -531,8 +540,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/models/EasyFirstLSTM.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+        <state relative-caret-position="216">
+          <caret line="12" column="0" lean-forward="true" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/bi_rnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/inference/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="1" column="18" lean-forward="true" selection-start-line="1" selection-start-column="18" selection-end-line="1" selection-end-column="18" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
