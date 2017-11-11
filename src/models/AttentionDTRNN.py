@@ -4,16 +4,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-class DT_RNN(nn.Module):
+
+class AttentionDTRNN(nn.Module):
 
     def __init__(self):
-        super(DT_RNN, self).__init__()
+        super(AttentionDTRNN, self).__init__()
 
     def forward(self):
         print("forward pass")
 
 
-a = DT_RNN()
+a = AttentionDTRNN()
 a.forward()
 
 

@@ -57,6 +57,7 @@ import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from matplotlib import pyplot as plt
 
 torch.manual_seed(1)
 
@@ -147,6 +148,8 @@ tag_to_ix = {"DET": 0, "NN": 1, "V": 2}
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
+bi_flag = True
+
 ######################################################################
 # Create the model:
 
@@ -161,7 +164,11 @@ class LSTMTagger(nn.Module):
 
         # The LSTM takes word embeddings as inputs, and outputs hidden states
         # with dimensionality hidden_dim.
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim)
+
+        if bi_flag:
+            self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2, num_layers=1, bidirectional=True)
+        else:
+            self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layers=1)
 
         # The linear layer that maps from hidden state space to tag space
         self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
@@ -172,8 +179,12 @@ class LSTMTagger(nn.Module):
         # Refer to the Pytorch documentation to see exactly
         # why they have this dimensionality.
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
-                autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
+        if bi_flag:
+            return (autograd.Variable(torch.zeros(2, 1, self.hidden_dim // 2)),
+                    autograd.Variable(torch.zeros(2, 1, self.hidden_dim // 2)))
+        else:
+            return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
+                    autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
 
     def forward(self, sentence):
         embeds = self.word_embeddings(sentence)
@@ -187,9 +198,12 @@ class LSTMTagger(nn.Module):
 # Train the model:
 
 
+e_list = []
+l_list = []
+
 model = LSTMTagger(EMBEDDING_DIM, HIDDEN_DIM, len(word_to_ix), len(tag_to_ix))
 loss_function = nn.NLLLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.1)
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
 # See what the scores are before training
 # Note that element i,j of the output is the score for tag j for word i.
@@ -197,7 +211,8 @@ inputs = prepare_sequence(training_data[0][0], word_to_ix)
 tag_scores = model(inputs)
 print(tag_scores)
 
-for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
+for epoch in range(500):  # again, normally you would NOT do 300 epochs, it is toy data
+    l_sum = 0
     for sentence, tags in training_data:
         # Step 1. Remember that Pytorch accumulates gradients.
         # We need to clear them out before each instance
@@ -219,7 +234,10 @@ for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is t
         #  calling optimizer.step()
         loss = loss_function(tag_scores, targets)
         loss.backward()
+        l_sum = l_sum + loss.data[0]
         optimizer.step()
+    e_list.append(epoch)
+    l_list.append(l_sum)
 
 # See what the scores are after training
 inputs = prepare_sequence(training_data[0][0], word_to_ix)
@@ -231,6 +249,11 @@ tag_scores = model(inputs)
 # 1 is the index of maximum value of row 2, etc.
 # Which is DET NOUN VERB DET NOUN, the correct sequence!
 print(tag_scores)
+
+plt.plot(e_list, l_list)
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.show()
 
 
 ######################################################################
