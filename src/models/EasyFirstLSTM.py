@@ -5,15 +5,18 @@ import torch.nn.functional as F
 import numpy as np
 
 
-#
-# Model implements EasyFirstLSTM(Yoav et al. 2016)
-# @Author JoelChen
-# @Time   2017/10/31
-#
-class EasyFirstLSTM(nn.Module):
+class HierarchicalTreeLSTMs(nn.Module):
+
+    ''' 
+    Model implements HierarchicalTreeLSTMs(Yoav et al., 2016, https://arxiv.org/abs/1603.00375)\n
+    This class contains three lstm unit for supporting hierarchical lstms for 
+    encoding dependency parse tree.\n
+    @Author JoelChen\n
+    @Time   2017/10/31\n
+     '''
 
     def __init__(self, options=None):
-        super(EasyFirstLSTM, self).__init__()
+        super(HierarchicalTreeLSTMs, self).__init__()
 
         if options is not None:
 
@@ -110,23 +113,20 @@ class EasyFirstLSTM(nn.Module):
             self.r_lstm = nn.LSTM(self.bi_hid_dims,
                                   self.r_hid_dims)
 
-    #
-    # initialize lstm's hidden state and memory cell state
-    #
+    
     def init_bi_hidden(self):
-
-        #
-        # @parameter
-        # 1. num_layers * num_direction(for bi-directional lstm so that here is 2 with 2-directional 1-layer lstm)
-        # 2. num_batch
-        # 3. state dimension
-        #
+        ''' 
+        initialize bi-lstm's hidden state and memory cell state\n
+         '''
         return (
             Variable(torch.zeros(2, 1, self.bi_hid_dims // 2)),
             Variable(torch.zeros(2, 1, self.bi_hid_dims // 2))
         )
 
     def init_left_hidden(self):
+        ''' 
+        initialize left-chain-lstm's hidden state and memory cell state\n
+         '''
 
         return (
             Variable(torch.zeros(1, 1, self.l_hid_dims)),
@@ -134,7 +134,9 @@ class EasyFirstLSTM(nn.Module):
         )
 
     def init_right_hidden(self):
-
+        ''' 
+        initialize right-chain-lstm's hidden state and memory cell state\n
+         '''
         return (
             Variable(torch.zeros(1, 1, self.r_hid_dims)),
             Variable(torch.zeros(1, 1, self.r_hid_dims))

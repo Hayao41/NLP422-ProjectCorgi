@@ -1,11 +1,11 @@
 
 
-#
-# Semantic graph stores the dependency tree structure
-# @Attribute :
-#   root : the root node of tree structure semantic graph
-#   outgoing_edges : outgoing edge map table
 class SemanticGraph(object):
+    ''' 
+    Semantic graph stores the dependency tree structure\n
+    @Attribute :\n
+    root : the root node of tree structure semantic graph
+    outgoing_edges : outgoing edge map table '''
     def __init__(self, root=None):
         super(SemanticGraph, self).__init__()
         self.outgoing_edges = {}
@@ -13,6 +13,7 @@ class SemanticGraph(object):
 
 
 class SemanticGraphNode(object):
+    
     def __init__(self,
                  text="",
                  pos="",
@@ -46,32 +47,27 @@ class SemanticGraphEdge(object):
         self.rel_vec = rel_vec
 
 
-word = "I like this dog".split()
-root = SemanticGraphNode(word[1], "VV", 2)
-node1 = SemanticGraphNode(word[0], "NN", 1, isLeaf=True)
-node2 = SemanticGraphNode(word[2], "NN", 3)
-node3 = SemanticGraphNode(word[3], "CON", 4, isLeaf=True)
+class SemanticGraphIterator(object):
 
-edge1 = SemanticGraphEdge(root, node1, "dsubj")
-edge2 = SemanticGraphEdge(root, node2, "dobj")
-edge3 = SemanticGraphEdge(node2, node3, "conj")
+    def __init__(self, node, graph):
+        super(SemanticGraphIterator, self).__init__()
+        self.node = node
+        self.graph = graph
+        self.c_lsit = self.loadChildren()
 
-edge_list1 = [edge1, edge2]
-edge_list2 = [edge3]
+    def loadChildren(self):
+        children_list = []
+        if self.node in self.graph.outgoing_edges:
+            edge_list=self.graph.outgoing_edges[self.node]
+            for edge in edge_list:
+                children_list.append(edge.target)
+        return children_list
 
-graph = SemanticGraph(root)
-graph.outgoing_edges[root] = edge_list1
-graph.outgoing_edges[node2] = edge_list2
-
-print(graph.outgoing_edges)
-
-stack = []
-stack.append(root)
-stack.pop()
-
-
-
-
-
-
+    def next(self):
+        if len(self.c_lsit) is not 0:
+            next = self.c_lsit[0]
+            self.c_lsit.remove(self.c_lsit[0])
+            return next
+        else:
+            return None
 
