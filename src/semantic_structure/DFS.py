@@ -16,12 +16,20 @@ edge1 = sStructure.SemanticGraphEdge(root, node1, "dsubj")
 edge2 = sStructure.SemanticGraphEdge(root, node3, "dobj")
 edge3 = sStructure.SemanticGraphEdge(node3, node2, "conj")
 
-edge_list1 = [edge1, edge2]
-edge_list2 = [edge3]
+outedge_list1 = [edge1, edge2]
+outedge_list2 = [edge3]
+
+inedge_list1 = [edge1]
+inedge_list2 = [edge2]
+inedge_list3 = [edge3]
 
 graph = sStructure.SemanticGraph(root)
-graph.outgoing_edges[root] = edge_list1
-graph.outgoing_edges[node3] = edge_list2
+graph.outgoing_edges[root] = outedge_list1
+graph.outgoing_edges[node3] = outedge_list2
+
+graph.incoming_edges[node1] = inedge_list1
+graph.incoming_edges[node3] = inedge_list2
+graph.incoming_edges[node2] = inedge_list3
 
 model = htlstm.HierarchicalTreeLSTMs()
 a = model(graph)

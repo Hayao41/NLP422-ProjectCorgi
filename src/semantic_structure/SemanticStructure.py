@@ -15,6 +15,7 @@ class SemanticGraph(object):
     def __init__(self, root=None):
         super(SemanticGraph, self).__init__()
         self.outgoing_edges = {}
+        self.incoming_edges = {}
         self.root = root
 
 
@@ -71,14 +72,34 @@ class SemanticGraphIterator(object):
 
     def getChildren(self):
         children_list = []
-        if self.node in self.graph.outgoing_edges:
-            edge_list=self.graph.outgoing_edges[self.node]
-            for edge in edge_list:
-                children_list.append(edge.target)
+        outgoingedge_list = self.getOutgoingEdges()
+        for edge in outgoingedge_list:
+            children_list.append(edge.target)
         return children_list
 
+    def getParent(self):
+        parent_list = []
+        incomingedge_list = self.getIncomingEdges()
+        for edge in incomingedge_list:
+            parent_list.append(edge.source)
+        return parent_list
+
+
+    def getOutgoingEdges(self):
+        if self.node in self.graph.outgoing_edges:
+            return self.graph.outgoing_edges[self.node]
+        else:
+            temp = []
+            return temp
+
+    def getIncomingEdges(self):
+        if self.node in self.graph.incoming_edges:
+            return self.graph.incoming_edges[self.node]
+        else:
+            temp = []
+            return temp
+
     def next(self):
-        
         next_node = self.c_list[0]
         self.c_list.remove(next_node)
         return next_node
@@ -88,4 +109,6 @@ class SemanticGraphIterator(object):
 
     def allChildrenChecked(self):
         return len(self.c_list) == 0
+
+
 

@@ -168,16 +168,24 @@ class HierarchicalTreeLSTMs(nn.Module):
             if ite.isLeaf():
                 # leaf node with specific transformation
                 # do something
+                o_list = ite.getOutgoingEdges()
+                p_list = ite.getIncomingEdges()
+                p = ite.getParent()
+                c = ite.getChildren()
                 print(ite.node.text)
                 stack.pop()
-            else:
 
+            else:
                 if ite.allChildrenChecked():
                     # if all children are computed then transform parent node with children
-                    children = ite.getChildren()
+                    o_list = ite.getOutgoingEdges()
+                    p_list = ite.getIncomingEdges()
+                    p = ite.getParent()
+                    c = ite.getChildren()
                     # so something
                     print(ite.node.text)
                     stack.pop()
+
                 else:
                     # else iterate parent node's next child node
                     next_ite = sstrut.SemanticGraphIterator(ite.next(), graph)
