@@ -187,7 +187,7 @@ class HierarchicalTreeLSTMs(nn.Module):
 
         '''
         override nn.Module's forward method to implement bottom up direction
-        hierarchical imformation propagation
+        hierarchical information propagation
         '''
 
         if graph is None:
