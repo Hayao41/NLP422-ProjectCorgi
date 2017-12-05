@@ -166,14 +166,14 @@ class HierarchicalTreeLSTMs(nn.Module):
             ite = stack[len(stack) - 1]
 
             if ite.isLeaf():
-                # leaf node with specific tranformation
+                # leaf node with specific transformation
                 # do something
                 print(ite.node.text)
                 stack.pop()
             else:
 
                 if ite.allChildrenChecked():
-                    # if all children are computed then tranform parent node with children
+                    # if all children are computed then transform parent node with children
                     children = ite.getChildren()
                     # so something
                     print(ite.node.text)
