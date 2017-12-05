@@ -9,8 +9,8 @@ class HierarchicalTreeLSTMs(nn.Module):
 
     ''' 
     Model implements HierarchicalTreeLSTMs(Yoav et al., 2016, https://arxiv.org/abs/1603.00375)\n
-    This class contains three lstm unit for supporting hierarchical lstms for 
-    encoding dependency parse tree.\n
+    This class contains three lstm unit for supporting hierarchical lstms for encoding a given 
+    dependency parse tree.\n
     @Author JoelChen\n
     @Time   2017/10/31\n
      '''

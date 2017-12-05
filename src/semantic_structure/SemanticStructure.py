@@ -15,14 +15,15 @@ class SemanticGraph(object):
 class SemanticGraphNode(object):
     
     def __init__(self,
-                 text="",
-                 pos="",
-                 sentence_index=-1,
-                 parent_index=-1,
+                 text=None,
+                 pos=None,
+                 sentence_index=None,
+                 parent_index=None,
                  word_vec=None,
                  pos_vec=None,
                  isLeaf=False,
-                 isChecked=False):
+                 isChecked=False
+                 ):
         super(SemanticGraphNode, self)
         self.text = text
         self.pos = pos
@@ -38,7 +39,7 @@ class SemanticGraphEdge(object):
     def __init__(self,
                  source=None,
                  target=None,
-                 relation="unknown",
+                 relation=None,
                  rel_vec=None):
         super(SemanticGraphEdge, self)
         self.source = source
@@ -53,9 +54,9 @@ class SemanticGraphIterator(object):
         super(SemanticGraphIterator, self).__init__()
         self.node = node
         self.graph = graph
-        self.c_lsit = self.loadChildren()
+        self.c_lsit = self.getChildren()
 
-    def loadChildren(self):
+    def getChildren(self):
         children_list = []
         if self.node in self.graph.outgoing_edges:
             edge_list=self.graph.outgoing_edges[self.node]
