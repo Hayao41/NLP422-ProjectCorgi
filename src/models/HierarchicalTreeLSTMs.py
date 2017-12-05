@@ -3,7 +3,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-
+import SemanticStructure as sStr
 
 class HierarchicalTreeLSTMs(nn.Module):
 
@@ -113,7 +113,6 @@ class HierarchicalTreeLSTMs(nn.Module):
             self.r_lstm = nn.LSTM(self.bi_hid_dims,
                                   self.r_hid_dims)
 
-    
     def init_bi_hidden(self):
         ''' 
         initialize bi-lstm's hidden state and memory cell state\n
@@ -153,6 +152,6 @@ class HierarchicalTreeLSTMs(nn.Module):
             print("forward pass")
             
 
-model = EasyFirstLSTM()
+model = HierarchicalTreeLSTMs()
 model.forward()
 
