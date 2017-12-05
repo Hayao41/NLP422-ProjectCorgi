@@ -182,7 +182,6 @@ class HierarchicalTreeLSTMs(nn.Module):
                     # else iterate parent node's next child node
                     next_ite = sstrut.SemanticGraphIterator(ite.next(), graph)
                     stack.append(next_ite)
-        return
 
     def forward(self, graph=None):
 
