@@ -1,11 +1,15 @@
-
+''' 
+This file is semantic structure definition
+ '''
 
 class SemanticGraph(object):
+
     ''' 
     Semantic graph stores the dependency tree structure\n
     @Attribute :\n
-    root : the root node of tree structure semantic graph
+    root : the root node of tree structure semantic graph\n
     outgoing_edges : outgoing edge map table '''
+
     def __init__(self, root=None):
         super(SemanticGraph, self).__init__()
         self.outgoing_edges = {}
@@ -21,6 +25,7 @@ class SemanticGraphNode(object):
                  parent_index=None,
                  word_vec=None,
                  pos_vec=None,
+                 hidden_vec=None,
                  isLeaf=False,
                  isChecked=False
                  ):
@@ -31,11 +36,13 @@ class SemanticGraphNode(object):
         self.parent_index = parent_index
         self.word_vec = word_vec
         self.pos_vec = pos_vec
+        self.hidden_vec = hidden_vec
         self.isLeaf = isLeaf
         self.isChecked = isChecked
 
 
 class SemanticGraphEdge(object):
+    
     def __init__(self,
                  source=None,
                  target=None,
@@ -50,11 +57,15 @@ class SemanticGraphEdge(object):
 
 class SemanticGraphIterator(object):
 
+    ''' 
+    iterator for traversing semantic graph structue
+    '''
+
     def __init__(self, node, graph):
         super(SemanticGraphIterator, self).__init__()
         self.node = node
         self.graph = graph
-        self.c_lsit = self.getChildren()
+        self.c_list = self.getChildren()
 
     def getChildren(self):
         children_list = []
@@ -65,10 +76,14 @@ class SemanticGraphIterator(object):
         return children_list
 
     def next(self):
-        if len(self.c_lsit) is not 0:
-            next = self.c_lsit[0]
-            self.c_lsit.remove(self.c_lsit[0])
-            return next
-        else:
-            return None
+        
+        next_node = self.c_list[0]
+        self.c_list.remove(next_node)
+        return next_node
+
+    def isLeaf(self):
+        return self.node.isLeaf
+
+    def allChildrenChecked(self):
+        return len(self.c_list) == 0
 

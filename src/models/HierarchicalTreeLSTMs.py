@@ -1,8 +1,12 @@
+''' 
+This file define HierarchicalTreeLSTMs model
+ '''
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import SemanticStructure as sstrut
 
 
 class HierarchicalTreeLSTMs(nn.Module):
@@ -145,14 +149,51 @@ class HierarchicalTreeLSTMs(nn.Module):
     def getEmbeddings(self, tree):
         pass
 
+    def bottom_up(self, graph=None):
+
+        '''         
+        bottom up direction transform computation
+        @Parameter \n 
+        graph : SemanticGraph class object\n
+        '''
+        # iterator stack for DFS 
+        stack = []
+
+        # push root node iterator into stack
+        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        stack.append(root_ite)
+
+        # DFS on the parse tree
+        while len(stack) is not 0:
+            ite = stack[len(stack) - 1]
+
+            if ite.isLeaf():
+                # leaf node with specific tranformation
+                # do something
+                print(ite.node.text)
+                stack.pop()
+            else:
+                
+                if ite.allChildrenChecked():
+                    # if all children are computed then tranform parent node with children
+                    children = ite.getChildren()
+                     # so something
+                    print(ite.node.text)
+                    stack.pop()
+                else:
+                    # else iterate parent node's next child node
+                    next_ite = sstrut.SemanticGraphIterator(ite.next(), graph)
+                    stack.append(next_ite)
+        return
+
     def forward(self, graph=None):
         
-        if graph is not None:
-            pass
-        else:
+        '''
+        override nn.Module's forward method to implement bottom up direction 
+        hierarchical imformation propagation
+        '''
+
+        if graph is None:
             print("forward pass")
-            
-
-model = EasyFirstLSTM()
-model.forward()
-
+        else:
+            self.bottom_up(graph)
