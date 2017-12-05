@@ -2,13 +2,15 @@
 This file is semantic structure definition
  '''
 
+
 class SemanticGraph(object):
 
     ''' 
     Semantic graph stores the dependency tree structure\n
     @Attribute :\n
     root : the root node of tree structure semantic graph\n
-    outgoing_edges : outgoing edge map table '''
+    outgoing_edges : outgoing edge map table
+    '''
 
     def __init__(self, root=None):
         super(SemanticGraph, self).__init__()

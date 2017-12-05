@@ -1,15 +1,18 @@
+'''
+This file define HierarchicalTreeLSTMs model
+ '''
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import SemanticStructure as sstrut
 
 
 class HierarchicalTreeLSTMs(nn.Module):
-
-    ''' 
+    '''
     Model implements HierarchicalTreeLSTMs(Yoav et al., 2016, https://arxiv.org/abs/1603.00375)\n
-    This class contains three lstm unit for supporting hierarchical lstms for encoding a given 
+    This class contains three lstm unit for supporting hierarchical lstms for encoding a given
     dependency parse tree.\n
     @Author JoelChen\n
     @Time   2017/10/31\n
@@ -113,9 +116,8 @@ class HierarchicalTreeLSTMs(nn.Module):
             self.r_lstm = nn.LSTM(self.bi_hid_dims,
                                   self.r_hid_dims)
 
-    
     def init_bi_hidden(self):
-        ''' 
+        '''
         initialize bi-lstm's hidden state and memory cell state\n
          '''
         return (
@@ -124,7 +126,7 @@ class HierarchicalTreeLSTMs(nn.Module):
         )
 
     def init_left_hidden(self):
-        ''' 
+        '''
         initialize left-chain-lstm's hidden state and memory cell state\n
          '''
 
@@ -134,7 +136,7 @@ class HierarchicalTreeLSTMs(nn.Module):
         )
 
     def init_right_hidden(self):
-        ''' 
+        '''
         initialize right-chain-lstm's hidden state and memory cell state\n
          '''
         return (
@@ -145,14 +147,51 @@ class HierarchicalTreeLSTMs(nn.Module):
     def getEmbeddings(self, tree):
         pass
 
+    def bottom_up(self, graph=None):
+
+        '''
+        bottom up direction transform computation
+        @Parameter \n
+        graph : SemanticGraph class object\n
+        '''
+        # iterator stack for DFS
+        stack = []
+
+        # push root node iterator into stack
+        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        stack.append(root_ite)
+
+        # DFS on the parse tree
+        while len(stack) is not 0:
+            ite = stack[len(stack) - 1]
+
+            if ite.isLeaf():
+                # leaf node with specific tranformation
+                # do something
+                print(ite.node.text)
+                stack.pop()
+            else:
+
+                if ite.allChildrenChecked():
+                    # if all children are computed then tranform parent node with children
+                    children = ite.getChildren()
+                    # so something
+                    print(ite.node.text)
+                    stack.pop()
+                else:
+                    # else iterate parent node's next child node
+                    next_ite = sstrut.SemanticGraphIterator(ite.next(), graph)
+                    stack.append(next_ite)
+        return
+
     def forward(self, graph=None):
-        
-        if graph is not None:
-            pass
-        else:
+
+        '''
+        override nn.Module's forward method to implement bottom up direction
+        hierarchical imformation propagation
+        '''
+
+        if graph is None:
             print("forward pass")
-            
-
-model = EasyFirstLSTM()
-model.forward()
-
+        else:
+            self.bottom_up(graph)
