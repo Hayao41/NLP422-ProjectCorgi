@@ -178,11 +178,11 @@ class HierarchicalTreeLSTMs(nn.Module):
             else:
                 if ite.allChildrenChecked():
                     # if all children are computed then transform parent node with children
+                    # so something
                     o_list = ite.getOutgoingEdges()
                     p_list = ite.getIncomingEdges()
                     p = ite.getParent()
                     c = ite.getChildren()
-                    # so something
                     print(ite.node.text)
                     stack.pop()
 
