@@ -24,4 +24,4 @@ graph.outgoing_edges[root] = edge_list1
 graph.outgoing_edges[node3] = edge_list2
 
 model = htlstm.HierarchicalTreeLSTMs()
-model(graph)
+a = model(graph)
