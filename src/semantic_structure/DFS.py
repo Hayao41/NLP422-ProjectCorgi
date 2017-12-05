@@ -23,20 +23,5 @@ graph = sStructure.SemanticGraph(root)
 graph.outgoing_edges[root] = edge_list1
 graph.outgoing_edges[node3] = edge_list2
 
-# stack = []
-# root_ite = sStructure.SemanticGraphIterator(root, graph)
-# stack.append(root_ite)
-#
-# while len(stack) is not 0:
-#     ite = stack[len(stack)-1]
-#     next = ite.next()
-#     if next is not None:
-#         next_ite = sStructure.SemanticGraphIterator(next, graph)
-#         stack.append(next_ite)
-#     else:
-#         print(ite.node.text)
-#         test = ite.getChildren()
-#         stack.pop()
-
 model = htlstm.HierarchicalTreeLSTMs()
 model(graph)
