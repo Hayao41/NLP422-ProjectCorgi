@@ -101,8 +101,9 @@ class SemanticGraphIterator(object):
 
     def next(self):
         next_node = self.c_list[0]
+        next_ite = SemanticGraphIterator(next_node, self.graph)
         self.c_list.remove(next_node)
-        return next_node
+        return next_ite
 
     def isLeaf(self):
         return self.node.isLeaf
