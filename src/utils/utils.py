@@ -12,7 +12,8 @@ class options(object):
                 bi_hid_dims=None,
                 l_hid_dims=None,
                 r_hid_dims=None,
-                rel_labeled_tag=None
+                rel_labeled_tag=None,
+                xavier=False
                 ):
         super(options, self).__init__()
         self.pos_vocab_size = pos_vocab_size
@@ -26,3 +27,4 @@ class options(object):
         self.l_hid_dims = l_hid_dims
         self.r_hid_dims = r_hid_dims
         self.rel_labeled_tag = rel_labeled_tag
+        self.xavier = xavier

@@ -31,16 +31,20 @@ inedge_list2 = [edge2]
 inedge_list3 = [edge3]
 
 graph = sStructure.SemanticGraph(root)
-graph.outgoing_edges[root] = outedge_list1
-graph.outgoing_edges[node3] = outedge_list2
+outgoing_edges = {}
+outgoing_edges[root] = outedge_list1
+outgoing_edges[node3] = outedge_list2
+graph.outgoing_edges = outgoing_edges
 
-graph.incoming_edges[node1] = inedge_list1
-graph.incoming_edges[node3] = inedge_list2
-graph.incoming_edges[node2] = inedge_list3
+incoming_edges = {}
+incoming_edges[node1] = inedge_list1
+incoming_edges[node3] = inedge_list2
+incoming_edges[node2] = inedge_list3
+graph.incoming_edges = incoming_edges
 
 graph.indexedWords = sentence
 
-option = options(
+options = options(
     pos_vocab_size = 4,
     pos_emb_dims = 1,
     rel_vocab_size = 10,
@@ -51,11 +55,12 @@ option = options(
     bi_hid_dims = 10,
     l_hid_dims = 10,
     r_hid_dims = 10,
-    rel_labeled_tag = 10
+    rel_labeled_tag = 10,
+    xavier = True
 )
 
-print(option.pos_vocab_size)
+print(options.pos_vocab_size)
 
 graph.indexedWords[0] = "do some changes"
-model = htlstm.HierarchicalTreeLSTMs()
+model = htlstm.HierarchicalTreeLSTMs(options=options)
 a = model(graph)

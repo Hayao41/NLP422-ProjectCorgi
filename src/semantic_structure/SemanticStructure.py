@@ -14,6 +14,8 @@ class SemanticGraph(object):
 
     def __init__(self, 
                 root=None,
+                outgoing_edges=None,
+                incoming_edges=None,
                 indexedWords=None
                 ):
         super(SemanticGraph, self).__init__()
