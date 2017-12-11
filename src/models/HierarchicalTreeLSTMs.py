@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 This file define HierarchicalTreeLSTMs model
  '''
@@ -35,6 +36,11 @@ class HierarchicalTreeLSTMs(nn.Module):
             self.l_hid_dims = options.l_hid_dims
             self.r_hid_dims = options.r_hid_dims
             self.rel_labeled_tag = options.rel_labeled_tag
+
+            # hidden states of lstms
+            self.bi_hidden = self.init_bi_hidden()
+            self.left_hidden = self.init_left_hidden()
+            self.right_hidden = self.init_right_hidden()
 
             # POS embedding layer
             #
@@ -144,9 +150,6 @@ class HierarchicalTreeLSTMs(nn.Module):
             Variable(torch.zeros(1, 1, self.r_hid_dims))
         )
 
-    def getEmbeddings(self, tree):
-        pass
-
     def bottom_up(self, graph=None):
 
         '''
@@ -178,7 +181,7 @@ class HierarchicalTreeLSTMs(nn.Module):
             else:
                 if ite.allChildrenChecked():
                     # if all children are computed then transform parent node with children
-                    # so something
+                    # do something
                     o_list = ite.getOutgoingEdges()
                     p_list = ite.getIncomingEdges()
                     p = ite.getParent()
@@ -187,8 +190,17 @@ class HierarchicalTreeLSTMs(nn.Module):
                     stack.pop()
 
                 else:
-                    # else iterate parent node's next child node
+                    # else traverse parent node's next child node
                     stack.append(ite.next())
+
+    def getEmbeddings(self, graph):
+        pass
+
+    def represent(self):
+        pass
+
+    def bi_lstm_computing(self):
+        pass
 
     def forward(self, graph=None):
 
@@ -200,4 +212,6 @@ class HierarchicalTreeLSTMs(nn.Module):
         if graph is None:
             print("forward pass")
         else:
+            # self.getEmbeddings(graph)
+            # self.bi_lstm_computing(graph)
             self.bottom_up(graph)

@@ -12,26 +12,31 @@ class SemanticGraph(object):
     outgoing_edges : outgoing edge map table
     '''
 
-    def __init__(self, root=None):
+    def __init__(self, 
+                root=None,
+                indexedWords=None
+                ):
         super(SemanticGraph, self).__init__()
+        self.root = root
         self.outgoing_edges = {}
         self.incoming_edges = {}
-        self.root = root
+        self.indexedWords = indexedWords
+        
 
 
 class SemanticGraphNode(object):
     
     def __init__(self,
-                 text=None,
-                 pos=None,
-                 sentence_index=None,
-                 parent_index=None,
-                 word_vec=None,
-                 pos_vec=None,
-                 hidden_vec=None,
-                 isLeaf=False,
-                 isChecked=False
-                 ):
+                text=None,
+                pos=None,
+                sentence_index=None,
+                parent_index=None,
+                word_vec=None,
+                pos_vec=None,
+                hidden_vec=None,
+                isLeaf=False,
+                isChecked=False
+                ):
         super(SemanticGraphNode, self)
         self.text = text
         self.pos = pos
@@ -47,10 +52,11 @@ class SemanticGraphNode(object):
 class SemanticGraphEdge(object):
     
     def __init__(self,
-                 source=None,
-                 target=None,
-                 relation=None,
-                 rel_vec=None):
+                source=None,
+                target=None,
+                relation=None,
+                rel_vec=None
+                ):
         super(SemanticGraphEdge, self)
         self.source = source
         self.target = target
@@ -60,9 +66,7 @@ class SemanticGraphEdge(object):
 
 class SemanticGraphIterator(object):
 
-    ''' 
-    iterator for traversing semantic graph structue
-    '''
+    ''' iterator for traversing semantic graph structue '''
 
     def __init__(self, node, graph):
         super(SemanticGraphIterator, self).__init__()
@@ -89,6 +93,7 @@ class SemanticGraphIterator(object):
         if self.node in self.graph.outgoing_edges:
             return self.graph.outgoing_edges[self.node]
         else:
+            # if there are no outgoing edges start with node return a empty list
             temp = []
             return temp
 
@@ -106,10 +111,14 @@ class SemanticGraphIterator(object):
         return next_ite
 
     def isLeaf(self):
-        return self.node.isLeaf
+        if self.node.isLeaf is not None:
+            return self.node.isLeaf
+        else:
+            return len(self.getChildren()) == 0
 
     def allChildrenChecked(self):
+        # if children record list is empty, current node's children all have checked
         return len(self.c_list) == 0
-
+        
 
 

@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/semantic_structure" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/models" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/utils" isTestSource="false" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.6.0 (~/anaconda/bin/python3.6)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
