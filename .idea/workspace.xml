@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/ContextEncoder.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/EmbeddingLayer.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/models/TreeModel.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/models/AttentionDTRNN.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" afterPath="$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py" afterPath="$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/semantic_structure/DFS.py" afterPath="$PROJECT_DIR$/src/semantic_structure/DFS.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py" afterPath="$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/utils.py" afterPath="$PROJECT_DIR$/src/utils/utils.py" />
@@ -20,20 +25,47 @@
     <SUITE FILE_PATH="coverage/PeojectCorgi$demo.coverage" NAME="demo Coverage Results" MODIFIED="1506580440977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/PeojectCorgi$SemanticStructure.coverage" NAME="SemanticStructure Coverage Results" MODIFIED="1509694930244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/semantic_structure" />
     <SUITE FILE_PATH="coverage/PeojectCorgi$DT_RNN.coverage" NAME="DT-RNN Coverage Results" MODIFIED="1509349101589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/models" />
+    <SUITE FILE_PATH="coverage/NLP422_ProjectCorgi$tutorial.coverage" NAME="tutorial Coverage Results" MODIFIED="1514879728869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/models/torch_tutorial" />
     <SUITE FILE_PATH="coverage/PeojectCorgi$tutorial.coverage" NAME="tutorial Coverage Results" MODIFIED="1509591597134" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/models/torch_tutorial" />
-    <SUITE FILE_PATH="coverage/NLP422_ProjectCorgi$DFS.coverage" NAME="DFS Coverage Results" MODIFIED="1513005482345" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/semantic_structure" />
+    <SUITE FILE_PATH="coverage/NLP422_ProjectCorgi$DFS.coverage" NAME="DFS Coverage Results" MODIFIED="1514882519588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/semantic_structure" />
     <SUITE FILE_PATH="coverage/PeojectCorgi$data_processing.coverage" NAME="data_processing Coverage Results" MODIFIED="1507776771541" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/data" />
     <SUITE FILE_PATH="coverage/PeojectCorgi$SemanticGraphEdge.coverage" NAME="SemanticGraphEdge Coverage Results" MODIFIED="1509691422081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/semantic_structure" />
+    <SUITE FILE_PATH="coverage/NLP422_ProjectCorgi$HTLSTMs.coverage" NAME="HTLSTMs Coverage Results" MODIFIED="1514188429528" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/models" />
+    <SUITE FILE_PATH="coverage/NLP422_ProjectCorgi$TreeModel.coverage" NAME="TreeModel Coverage Results" MODIFIED="1514278393648" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/models" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="HierarchicalTreeLSTMs.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py">
+      <file leaf-file-name="EmbeddingLayer.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/models/EmbeddingLayer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="131" column="0" lean-forward="false" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+            <state relative-caret-position="810">
+              <caret line="47" column="18" lean-forward="false" selection-start-line="47" selection-start-column="18" selection-end-line="47" selection-end-column="18" />
               <folding>
-                <element signature="e#78#90#0" expanded="true" />
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ContextEncoder.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/models/ContextEncoder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1602">
+              <caret line="92" column="43" lean-forward="false" selection-start-line="92" selection-start-column="43" selection-end-line="92" selection-end-column="43" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TreeModel.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/models/TreeModel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1987">
+              <caret line="161" column="29" lean-forward="true" selection-start-line="161" selection-start-column="29" selection-end-line="161" selection-end-column="29" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -42,21 +74,31 @@
       <file leaf-file-name="SemanticStructure.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="18">
-              <caret line="23" column="32" lean-forward="false" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
+            <state relative-caret-position="684">
+              <caret line="38" column="41" lean-forward="false" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="41" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DFS.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="DFS.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/semantic_structure/DFS.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="281">
-              <caret line="33" column="19" lean-forward="true" selection-start-line="33" selection-start-column="19" selection-end-line="33" selection-end-column="19" />
+            <state relative-caret-position="3186">
+              <caret line="177" column="18" lean-forward="false" selection-start-line="177" selection-start-column="18" selection-end-line="177" selection-end-column="18" />
               <folding>
                 <element signature="e#0#38#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="tutorial.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3258">
+              <caret line="186" column="74" lean-forward="false" selection-start-line="186" selection-start-column="74" selection-end-line="186" selection-end-column="74" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -107,16 +149,22 @@
         <option value="$PROJECT_DIR$/src/models/ATT_DT_RNN.py" />
         <option value="$PROJECT_DIR$/src/models/Attention_DTRNN.py" />
         <option value="$PROJECT_DIR$/src/models/AttentionDTRNN.py" />
-        <option value="$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/SemanticGraph.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/SemanticGraphNode.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/SemanticGraphEdge.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/DependencyTree.py" />
         <option value="$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
         <option value="$PROJECT_DIR$/src/models/torch_tutorial/ex1.py" />
-        <option value="$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py" />
-        <option value="$PROJECT_DIR$/src/semantic_structure/DFS.py" />
         <option value="$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" />
+        <option value="$PROJECT_DIR$/src/models/TreeRecursiveNetwork.py" />
+        <option value="$PROJECT_DIR$/src/models/HTLSTMs.py" />
+        <option value="$PROJECT_DIR$/src/utils/Utils.py" />
+        <option value="$PROJECT_DIR$/src/models/EmbeddingLayer.py" />
+        <option value="$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py" />
+        <option value="$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py" />
+        <option value="$PROJECT_DIR$/src/models/ContextEncoder.py" />
+        <option value="$PROJECT_DIR$/src/semantic_structure/DFS.py" />
+        <option value="$PROJECT_DIR$/src/models/TreeModel.py" />
       </list>
     </option>
   </component>
@@ -134,9 +182,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="x" value="1440" />
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+    <option name="width" value="1440" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -170,6 +217,19 @@
               <item name="NLP422-ProjectCorgi" type="b2602c69:ProjectViewProjectNode" />
               <item name="NLP422-ProjectCorgi" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="NLP422-ProjectCorgi" type="b2602c69:ProjectViewProjectNode" />
+              <item name="NLP422-ProjectCorgi" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+              <item name="torch_tutorial" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="NLP422-ProjectCorgi" type="b2602c69:ProjectViewProjectNode" />
+              <item name="NLP422-ProjectCorgi" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="semantic_structure" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -182,8 +242,8 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -230,20 +290,20 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <configuration name="SemanticGraphEdge" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="HTLSTMs" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/semantic_structure" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="PeojectCorgi" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/semantic_structure/SemanticGraphEdge.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/models/HTLSTMs.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -266,20 +326,20 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="TreeModel" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/inference" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/models" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="PeojectCorgi" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/inference/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/models/TreeModel.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -303,19 +363,19 @@
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.main" />
-      <item index="1" class="java.lang.String" itemvalue="Python.tutorial" />
-      <item index="2" class="java.lang.String" itemvalue="Python.SemanticGraphEdge" />
-      <item index="3" class="java.lang.String" itemvalue="Python.SemanticStructure" />
-      <item index="4" class="java.lang.String" itemvalue="Python.DFS" />
+      <item index="0" class="java.lang.String" itemvalue="Python.tutorial" />
+      <item index="1" class="java.lang.String" itemvalue="Python.SemanticStructure" />
+      <item index="2" class="java.lang.String" itemvalue="Python.DFS" />
+      <item index="3" class="java.lang.String" itemvalue="Python.HTLSTMs" />
+      <item index="4" class="java.lang.String" itemvalue="Python.TreeModel" />
     </list>
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.DFS" />
-        <item index="1" class="java.lang.String" itemvalue="Python.SemanticStructure" />
-        <item index="2" class="java.lang.String" itemvalue="Python.SemanticGraphEdge" />
-        <item index="3" class="java.lang.String" itemvalue="Python.tutorial" />
-        <item index="4" class="java.lang.String" itemvalue="Python.main" />
+        <item index="1" class="java.lang.String" itemvalue="Python.tutorial" />
+        <item index="2" class="java.lang.String" itemvalue="Python.TreeModel" />
+        <item index="3" class="java.lang.String" itemvalue="Python.HTLSTMs" />
+        <item index="4" class="java.lang.String" itemvalue="Python.SemanticStructure" />
       </list>
     </recent_temporary>
   </component>
@@ -421,23 +481,30 @@
       <option name="project" value="LOCAL" />
       <updated>1513000676154</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="add xavier weights initializing block(but i don't know how to initialize lstm's weigts :( )">
+      <created>1513005774791</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1513005774791</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1440" y="0" width="1920" height="1080" extended-state="0" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20763889" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39647058" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41262135" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5058824" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4117647" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.707767" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32941177" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6882353" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -447,6 +514,27 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39647058" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4117647" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5058824" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20763889" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.6882353" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -489,7 +577,8 @@
     <MESSAGE value="complete the layer definition of EasyFirstLSTM, but the parameter of layer maybe wrong, waiting for some discussion" />
     <MESSAGE value="make some changes, remove nltk(f@cking dependency) and should replace with my own Tree data structure" />
     <MESSAGE value="DFS iteration" />
-    <option name="LAST_COMMIT_MESSAGE" value="DFS iteration" />
+    <MESSAGE value="add xavier weights initializing block(but i don't know how to initialize lstm's weigts :( )" />
+    <option name="LAST_COMMIT_MESSAGE" value="add xavier weights initializing block(but i don't know how to initialize lstm's weigts :( )" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -500,13 +589,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/semantic_structure/DFS.py</url>
-          <line>63</line>
-          <option name="timeStamp" value="19" />
+          <line>120</line>
+          <option name="timeStamp" value="73" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py</url>
-          <line>134</line>
-          <option name="timeStamp" value="21" />
+          <url>file://$PROJECT_DIR$/src/models/TreeModel.py</url>
+          <line>305</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/models/TreeModel.py</url>
+          <line>292</line>
+          <option name="timeStamp" value="118" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -516,47 +610,15 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="22" />
+      <option name="time" value="119" />
     </breakpoint-manager>
-    <watches-manager />
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="graph" language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/advanced_tutorial.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="8" column="71" lean-forward="true" selection-start-line="8" selection-start-column="71" selection-end-line="8" selection-end-column="71" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/ex1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="558">
-          <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/AttentionDTRNN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="14" column="0" lean-forward="false" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/inference/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="1" column="18" lean-forward="true" selection-start-line="1" selection-start-column="18" selection-end-line="1" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/data_processing/conect2db.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
@@ -565,13 +627,7 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
-    <entry file="file://$PROJECT_DIR$/src/models/AttentionDTRNN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/AttentionDTRNN.py" />
     <entry file="file://$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
     <entry file="file://$PROJECT_DIR$/src/data_processing/data_processing.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -684,83 +740,98 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/models/EasyFirstLSTM.py" />
     <entry file="file://$USER_HOME$/anaconda3/lib/python3.6/site-packages/torch/nn/modules/module.py" />
-    <entry file="file://$PROJECT_DIR$/src/models/AttentionDTRNN.py">
+    <entry file="file://$PROJECT_DIR$/src/models/AttentionDTRNN.py" />
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda/lib/python3.6/site-packages/torch/nn/modules/module.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="230" column="41" lean-forward="true" selection-start-line="230" selection-start-column="41" selection-end-line="230" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3348">
-          <caret line="191" column="59" lean-forward="true" selection-start-line="191" selection-start-column="59" selection-end-line="191" selection-end-column="59" />
+        <state relative-caret-position="1218">
+          <caret line="1598" column="0" lean-forward="false" selection-start-line="1598" selection-start-column="0" selection-end-line="1598" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/ex1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-115">
-          <caret line="54" column="0" lean-forward="false" selection-start-line="54" selection-start-column="0" selection-end-line="54" selection-end-column="0" />
+        <state relative-caret-position="728">
+          <caret line="67" column="0" lean-forward="true" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/utils/utils.py">
+    <entry file="file://$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" />
+    <entry file="file://$PROJECT_DIR$/src/models/TreeRecursiveNetwork.py" />
+    <entry file="file://$PROJECT_DIR$/src/models/HTLSTMs.py" />
+    <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="11" column="33" lean-forward="true" selection-start-line="11" selection-start-column="33" selection-end-line="11" selection-end-column="33" />
-          <folding />
+        <state relative-caret-position="309">
+          <caret line="39" column="49" lean-forward="true" selection-start-line="39" selection-start-column="49" selection-end-line="39" selection-end-column="49" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+    <entry file="file://$USER_HOME$/anaconda/lib/python3.6/site-packages/torch/nn/modules/module.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1218">
-          <caret line="1598" column="0" lean-forward="false" selection-start-line="1598" selection-start-column="0" selection-end-line="1598" selection-end-column="0" />
+        <state relative-caret-position="80">
+          <caret line="223" column="0" lean-forward="false" selection-start-line="223" selection-start-column="0" selection-end-line="223" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda/lib/python3.6/codecs.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-945">
-          <caret line="321" column="50" lean-forward="true" selection-start-line="321" selection-start-column="50" selection-end-line="321" selection-end-column="50" />
+        <state relative-caret-position="72">
+          <caret line="310" column="0" lean-forward="false" selection-start-line="310" selection-start-column="0" selection-end-line="310" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/ContextEncoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1602">
+          <caret line="92" column="43" lean-forward="false" selection-start-line="92" selection-start-column="43" selection-end-line="92" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3258">
+          <caret line="186" column="74" lean-forward="false" selection-start-line="186" selection-start-column="74" selection-end-line="186" selection-end-column="74" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="23" column="32" lean-forward="false" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
+        <state relative-caret-position="684">
+          <caret line="38" column="41" lean-forward="false" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="41" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py">
+    <entry file="file://$PROJECT_DIR$/src/models/EmbeddingLayer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="131" column="0" lean-forward="false" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+        <state relative-caret-position="810">
+          <caret line="47" column="18" lean-forward="false" selection-start-line="47" selection-start-column="18" selection-end-line="47" selection-end-column="18" />
           <folding>
-            <element signature="e#78#90#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/semantic_structure/DFS.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="33" column="19" lean-forward="true" selection-start-line="33" selection-start-column="19" selection-end-line="33" selection-end-column="19" />
+        <state relative-caret-position="3186">
+          <caret line="177" column="18" lean-forward="false" selection-start-line="177" selection-start-column="18" selection-end-line="177" selection-end-column="18" />
           <folding>
             <element signature="e#0#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/models/TreeModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1987">
+          <caret line="161" column="29" lean-forward="true" selection-start-line="161" selection-start-column="29" selection-end-line="161" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>

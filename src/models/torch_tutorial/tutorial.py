@@ -148,7 +148,7 @@ tag_to_ix = {"DET": 0, "NN": 1, "V": 2}
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
-bi_flag = True
+bi_flag = False
 
 ######################################################################
 # Create the model:
@@ -180,13 +180,16 @@ class LSTMTagger(nn.Module):
         # why they have this dimensionality.
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
         if bi_flag:
-            return (autograd.Variable(torch.zeros(2, 1, self.hidden_dim // 2)),
+            self.hidden = (autograd.Variable(torch.zeros(2, 1, self.hidden_dim // 2)),
                     autograd.Variable(torch.zeros(2, 1, self.hidden_dim // 2)))
         else:
-            return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
+            self.hidden = (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
                     autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
 
     def forward(self, sentence):
+
+        self.init_hidden()
+
         embeds = self.word_embeddings(sentence)
         lstm_out, self.hidden = self.lstm(
             embeds.view(len(sentence), 1, -1), self.hidden)
@@ -220,7 +223,7 @@ for epoch in range(500):  # again, normally you would NOT do 300 epochs, it is t
 
         # Also, we need to clear out the hidden state of the LSTM,
         # detaching it from its history on the last instance.
-        model.hidden = model.init_hidden()
+        # model.init_hidden()
 
         # Step 2. Get our inputs ready for the network, that is, turn them into
         # Variables of word indices.
