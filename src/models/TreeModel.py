@@ -3,97 +3,98 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import SemanticStructure as sstrut
+from queue import Queue
 
 
 class TreeStructureNetwork(nn.Module):
     
+    ''' 
+    base class of tree structure neural networks which can propagate information 
+    recursively with two directions(bottom up and top down). If you want to implement your tree model, 
+    extend this class and implement two type transform method
+
+    >>> class Mytree(TreeStructureNetwork):
+    >>>     def bu_transform(iterator):
+    >>>         "your implementation"
+    >>>     def tp_transform(iterator):
+    >>>         "your implementation"
+    '''
+
     def __init__(self, options):
         super(TreeStructureNetwork, self).__init__()
         self.options = options
 
     def bottom_up(self, graph):
-    
-        '''
-        bottom-up direction transform computation\n
-        @Parameter \n
-        graph : SemanticGraph class object\n
-        '''
-        # # iterator stack for DFS
-        # stack = []
-        #
-        # # push root node iterator into stack
-        # root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
-        # stack.append(root_ite)
-        #
-        # # DFS on the parse tree
-        # while len(stack) is not 0:
-        #     ite = stack[len(stack) - 1]
-        #
-        #     if ite.isLeaf():
-        #         # leaf node with specific transformation
-        #         # do something
-        #         self.transform()
-        #         o_list = ite.getOutgoingEdges()
-        #         p_list = ite.getIncomingEdges()
-        #         p = ite.getParent()
-        #         c = ite.getChildren()
-        #         print(ite.node.text)
-        #         stack.pop()
-        #
-        #     else:
-        #         if ite.allChildrenChecked():
-        #             # if all children are computed then transform parent node with children
-        #             # do something
-        #             self.transform()
-        #             o_list = ite.getOutgoingEdges()
-        #             p_list = ite.getIncomingEdges()
-        #             p = ite.getParent()
-        #             c = ite.getChildren()
-        #             print(ite.node.text)
-        #             stack.pop()
-        #
-        #         else:
-        #             # else traverse parent node's next child node
-        #             stack.append(ite.next())
-
-        self.bottom_up_v2(graph)
-
-    def bottom_up_v2(self, graph):
         
         '''
-        bottom-up 2nd version direction transform computation\n
+        bottom-up direction tranformation computation on parse tree(DFS)\n
         @Parameter \n
         graph : SemanticGraph class object\n
         '''
-        # iterator stack for DFS
-        stack = []
+        # iterator ite_stack for DFS
+        ite_stack = []
 
-        # push root node iterator into stack
+        # push root node iterator into ite_stack
         root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
-        stack.append(root_ite)
+        ite_stack.append(root_ite)
 
-        # DFS on the parse tree
-        while len(stack) is not 0:
-            ite = stack[len(stack) - 1]
+        # DFS on parse tree
+        while len(ite_stack) is not 0:
+            ite = ite_stack[len(ite_stack) - 1]
 
             if ite.allChildrenChecked():
                 # if all children have checked (leaf node has no children
                 # so that it's all children have been checked by default)
                 # print(ite.node.text)
-                self.transform(ite)
-                stack.pop()
+                self.bu_transform(ite)
+                ite_stack.pop()
 
             else:
-                stack.append(ite.next())
+                ite_stack.append(ite.next())
 
     def top_down(self, graph):
-        pass
+        
+        '''
+        top down direction transformation computation on parse tree(BFS)\n
+        @Parameter \n
+        graph : SemanticGraph class object\n
+        '''
+    
+        # iterator queue for BFS
+        ite_queue = Queue()
 
-    def transform(self, iterator):
-        pass
+        # push root node iterator into queue
+        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        ite_queue.put(root_ite)
+
+        # BFS on parse tree
+        while not ite_queue.empty():
+            ite = ite_queue.get()
+
+            # do something
+            self.tp_transform(ite)
+
+            # push current node's children into queue
+            for child in ite.children():
+                ite_queue.put(child)
+
+    def bu_transform(self, iterator):
+    
+        ''' 
+        base bottom up transformation function for recursive trans\n
+        @Param : semantic structure iterator
+        '''
+        raise NotImplementedError
+
+    def tp_transform(self, iterator):
+        
+        ''' 
+        base top down transformation function for recursive trans\n
+        @Param : semantic structure iterator
+        '''
+        raise NotImplementedError
     
     def forward(self):
-
         raise NotImplementedError
         
 
@@ -175,7 +176,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
     def init_weights(self):
         nn.init.xavier_normal(self.enc_linear.weight)
 
-    def transform(self, iterator):
+    def bu_transform(self, iterator):
         
         ''' 
         tree encdoing transformation\n
@@ -195,6 +196,10 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         # set context vector(as memory to next recursive stage)
         iterator.node.context_vec = hidden_vector
+
+    def tp_transform(self, iterator):
+        # print(iterator.node.text)
+        pass
 
     def left_chain(self, iterator):
         
@@ -256,6 +261,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             print("forward pass")
         else:
             self.bottom_up(graph)
+            self.top_down(graph)
 
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):
@@ -263,14 +269,24 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     def __init__(self, options):
         super(DynamicRecursiveNetwork, self).__init__(options)
 
-    def transform(self, iterator):
-        print("DynamicRecursiveNetwork")
+    def bu_transform(self, iterator):
+        self.attention()
+
+    def tp_transform(self, iterator):
+        self.dynamic_routing()
+
+    def attention(self):
+        print("DynamicRecursiveNetwork Bottom Up")
+
+    def dynamic_routing(self):
+        print("DynamicRecursiveNetwork Top Down")
 
     def forward(self, graph=None):
         if graph is None:
             print("forward pass")
         else:
             self.bottom_up(graph)
+            self.top_down(graph)
 
 
 class TestModel(nn.Module):

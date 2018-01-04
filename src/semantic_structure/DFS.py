@@ -123,7 +123,7 @@ model = tm.TestModel(embed=embed_model, tree_model=tree_model, encoder=encoder_m
 
 print(model.parameters())
 
-model(graph)
+print(model(graph))
 
 loss_function = nn.CrossEntropyLoss(size_average=True)
 # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.6)

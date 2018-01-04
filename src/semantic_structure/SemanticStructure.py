@@ -7,7 +7,7 @@ class SemanticGraph(object):
 
     ''' 
     Semantic graph stores the dependency tree structure\n
-    @Attribute :\n
+    @Attributes ::
     root : the root node of tree structure semantic graph\n
     outgoing_edges : outgoing edge map table\n
     incoming_edges : incoming edge map table\n
@@ -171,13 +171,13 @@ class SemanticGraphIterator(object):
     def getChildrenList(self):
         children_list = []
         for edge in self.getOutgoingEdges():
-            children_list.append(edge.target)
+            children_list.append(SemanticGraphIterator(edge.target, self.graph))
         return children_list
 
     def getParentList(self):
         parent_list = []
         for edge in self.getIncomingEdges():
-            parent_list.append(edge.source)
+            parent_list.append(SemanticGraphIterator(edge.source, self.graph))
         return parent_list
 
     def getOutgoingEdges(self):
@@ -200,12 +200,12 @@ class SemanticGraphIterator(object):
     def children(self):
         
         for edge in self.getOutgoingEdges():
-            yield edge.target
+            yield SemanticGraphIterator(edge.target, self.graph)
 
     def parents(self):
         
         for edge in self.getIncomingEdges():
-            yield edge.source
+            yield SemanticGraphIterator(edge.source, self.graph)
 
     def left_hiddens(self):
         
@@ -232,7 +232,6 @@ class SemanticGraphIterator(object):
         return len(self.c_list) == 0
 
     def next(self):
-        next_node = self.c_list[0]
-        next_ite = SemanticGraphIterator(next_node, self.graph)
-        self.c_list.remove(next_node)
+        next_ite = self.c_list[0]
+        self.c_list.remove(next_ite)
         return next_ite        
