@@ -2,8 +2,8 @@ import SemanticStructure as sStructure
 import TreeModel as tm
 import EmbeddingLayer as embed
 import ContextEncoder as encoder
-import Utils
-from Utils import options
+import utils
+from utils import options
 from matplotlib import pyplot as plt
 import torch
 from torch.autograd import Variable
@@ -16,11 +16,11 @@ pos = ["VV",  "NN", "CON"]
 
 relation = ["dsubj", "dobj", "conj"]
 
-word2ix = Utils.make_dictionary(word)
+word2ix = utils.make_dictionary(word)
 
-pos2ix = Utils.make_dictionary(pos)
+pos2ix = utils.make_dictionary(pos)
 
-rel2ix = Utils.make_dictionary(relation)
+rel2ix = utils.make_dictionary(relation)
 
 print(word2ix)
 print(pos2ix)

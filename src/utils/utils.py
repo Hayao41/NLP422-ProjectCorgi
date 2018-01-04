@@ -16,7 +16,7 @@ class options(object):
                 l_hid_dims=0,
                 r_hid_dims=0,
                 xavier=True,
-                use_bi_lstm=False
+                use_bi_lstm=True
                 ):
         super(options, self).__init__()
         self.pos_vocab_size = pos_vocab_size
