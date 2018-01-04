@@ -18,43 +18,45 @@ class TreeStructureNetwork(nn.Module):
         @Parameter \n
         graph : SemanticGraph class object\n
         '''
-        # iterator stack for DFS
-        stack = []
+        # # iterator stack for DFS
+        # stack = []
+        #
+        # # push root node iterator into stack
+        # root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        # stack.append(root_ite)
+        #
+        # # DFS on the parse tree
+        # while len(stack) is not 0:
+        #     ite = stack[len(stack) - 1]
+        #
+        #     if ite.isLeaf():
+        #         # leaf node with specific transformation
+        #         # do something
+        #         self.transform()
+        #         o_list = ite.getOutgoingEdges()
+        #         p_list = ite.getIncomingEdges()
+        #         p = ite.getParent()
+        #         c = ite.getChildren()
+        #         print(ite.node.text)
+        #         stack.pop()
+        #
+        #     else:
+        #         if ite.allChildrenChecked():
+        #             # if all children are computed then transform parent node with children
+        #             # do something
+        #             self.transform()
+        #             o_list = ite.getOutgoingEdges()
+        #             p_list = ite.getIncomingEdges()
+        #             p = ite.getParent()
+        #             c = ite.getChildren()
+        #             print(ite.node.text)
+        #             stack.pop()
+        #
+        #         else:
+        #             # else traverse parent node's next child node
+        #             stack.append(ite.next())
 
-        # push root node iterator into stack
-        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
-        stack.append(root_ite)
-
-        # DFS on the parse tree
-        while len(stack) is not 0:
-            ite = stack[len(stack) - 1]
-
-            if ite.isLeaf():
-                # leaf node with specific transformation
-                # do something
-                self.transform()
-                o_list = ite.getOutgoingEdges()
-                p_list = ite.getIncomingEdges()
-                p = ite.getParent()
-                c = ite.getChildren()
-                print(ite.node.text)
-                stack.pop()
-
-            else:
-                if ite.allChildrenChecked():
-                    # if all children are computed then transform parent node with children
-                    # do something
-                    self.transform()
-                    o_list = ite.getOutgoingEdges()
-                    p_list = ite.getIncomingEdges()
-                    p = ite.getParent()
-                    c = ite.getChildren()
-                    print(ite.node.text)
-                    stack.pop()
-
-                else:
-                    # else traverse parent node's next child node
-                    stack.append(ite.next())
+        self.bottom_up_v2(graph)
 
     def bottom_up_v2(self, graph):
         
@@ -75,8 +77,8 @@ class TreeStructureNetwork(nn.Module):
             ite = stack[len(stack) - 1]
 
             if ite.allChildrenChecked():
-                # if all children have checked (leaf node has no children so that it's all children checked by default)
-                # do something
+                # if all children have checked (leaf node has no children
+                # so that it's all children have been checked by default)
                 # print(ite.node.text)
                 self.transform(ite)
                 stack.pop()
@@ -87,7 +89,7 @@ class TreeStructureNetwork(nn.Module):
     def top_down(self, graph):
         pass
 
-    def transform(self):
+    def transform(self, iterator):
         pass
     
     def forward(self):
@@ -191,6 +193,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         # concatenate linear trans
         hidden_vector = self.combination(left_state, right_state)
 
+        # set context vector(as memory to nect recursive stage)
         iterator.node.context_vec = hidden_vector
 
     def left_chain(self, iterator):
@@ -202,7 +205,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         left_chain = iterator.node.context_vec
 
         for left_hidden in iterator.left_hiddens():
-            left_chain = torch.cat((left_chain.view(1, -1), left_hidden.view(1, -1)))
+            left_chain = torch.cat((left_hidden.view(1, -1), left_chain.view(1, -1)))
+            # print(left_chain.data)
 
         return self.chain_transform(left_chain, self.l_lstm)
 
@@ -251,7 +255,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         if graph is None:
             print("forward pass")
         else:
-            self.bottom_up_v2(graph)
+            self.bottom_up(graph)
 
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):

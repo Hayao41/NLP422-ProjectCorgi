@@ -106,8 +106,8 @@ options = options(
     rel_emb_dims=0,
     context_linear_dim=20,
     bi_hid_dims=10,
-    l_hid_dims=10,
-    r_hid_dims=10,
+    l_hid_dims=5,
+    r_hid_dims=5,
     xavier=True
 )
 
@@ -125,7 +125,7 @@ print(model.parameters())
 model(graph)
 
 loss_function = nn.CrossEntropyLoss(size_average=True)
-# optimizer = optim.SGD(model.parameters(), lr=0.08, momentum=0.6)
+# optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.6)
 
 # adam is better(as the author says (玄学))
 optimizer = optim.Adam(model.parameters(), lr=0.001)

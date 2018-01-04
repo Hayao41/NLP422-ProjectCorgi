@@ -63,7 +63,7 @@ class ContextEncoder(nn.Module):
 
     def nonlinear_transform(self, graph):
 
-        ''' nonlinear_transform for concatenated vector (word embeddings and pos embeddings) '''
+        ''' nonlinear transformation for concatenated vector (word embeddings and pos embeddings) '''
 
         pos_embeddings = graph.pos_embeddings
         if self.options.word_emb_dims is not 0:
@@ -77,6 +77,8 @@ class ContextEncoder(nn.Module):
 
     def bi_lstm_transform(self, hidden_vectors, graph):
         
+        ''' bi lstm transformation to get context vector '''
+        
         lstm_out, self.bi_hidden = self.bi_lstm(
             hidden_vectors.view(len(graph.indexedWords), 1, -1),
             self.bi_hidden
@@ -86,7 +88,7 @@ class ContextEncoder(nn.Module):
 
     def test_bi_transform(self, hidden_vectors, graph):
 
-        ''' pos tagging by bi_lstm '''
+        ''' pos tagging by bi_lstm (bi-lstm output test)'''
 
         self.init_bi_hidden()
 
@@ -105,7 +107,8 @@ class ContextEncoder(nn.Module):
         self.init_bi_hidden()
 
         hidden_vectors = self.nonlinear_transform(graph)
+        self.bi_lstm_transform(hidden_vectors, graph)
+        
         # hidden_vectors = graph.pos_embeddings
         # hidden_vectors = graph.word_embeddings
-        self.bi_lstm_transform(hidden_vectors, graph)
         # return self.test_bi_transform(hidden_vectors, graph)

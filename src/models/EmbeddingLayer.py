@@ -40,7 +40,7 @@ class EmbeddingLayer(nn.Module):
         if self.options.xavier:
             self.init_weights()
 
-    def LoadWeights(self):
+    def loadWeights(self):
         pass
 
     def init_weights(self):
@@ -56,7 +56,7 @@ class EmbeddingLayer(nn.Module):
         if self.options.word_emb_dims is not 0:
             nn.init.xavier_normal(self.word_emb_layer.weight)
 
-    def WordEmbedding(self, graph):
+    def wordEmbedding(self, graph):
         
         word_idxs = Variable(torch.LongTensor(graph.getWordIdxs()))
         word_embeddings = self.word_emb_layer(word_idxs)
@@ -68,7 +68,7 @@ class EmbeddingLayer(nn.Module):
         pos_embeddings = self.pos_emb_layer(pos_idxs)
         graph.setPOSEmbeddings(pos_embeddings)
         
-    def RelationEmbedding(self, graph):
+    def relationEmbedding(self, graph):
         
         rel_idxs = Variable(torch.LongTensor(graph.getArcRelationIdxs()))
         rel_embeddings = self.rel_emb_layer(rel_idxs)
@@ -76,9 +76,6 @@ class EmbeddingLayer(nn.Module):
 
     def forward(self, graph):
 
-        self.WordEmbedding(graph)
+        self.wordEmbedding(graph)
         self.POSEmbedding(graph)
-        self.RelationEmbedding(graph)
-        
-        # print("embedding complete!")
-
+        self.relationEmbedding(graph)
