@@ -15,7 +15,8 @@ class options(object):
                 bi_hid_dims=0,
                 l_hid_dims=0,
                 r_hid_dims=0,
-                xavier=True
+                xavier=True,
+                use_bi_lstm=False
                 ):
         super(options, self).__init__()
         self.pos_vocab_size = pos_vocab_size
@@ -29,7 +30,7 @@ class options(object):
         self.l_hid_dims = l_hid_dims
         self.r_hid_dims = r_hid_dims
         self.xavier = xavier
-
+        self.use_bi_lstm = use_bi_lstm
 
 def make_dictionary(vocab_list):
     

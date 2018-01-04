@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="fixed some bugs">
+    <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/utils/utils.py" afterPath="$PROJECT_DIR$/src/utils/utils.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -53,8 +54,8 @@
       <file leaf-file-name="Utils.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="394">
-              <caret line="39" column="7" lean-forward="true" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="7" />
+            <state relative-caret-position="194">
+              <caret line="18" column="33" lean-forward="false" selection-start-line="18" selection-start-column="33" selection-end-line="18" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -156,13 +157,13 @@
         <option value="$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" />
         <option value="$PROJECT_DIR$/src/models/TreeRecursiveNetwork.py" />
         <option value="$PROJECT_DIR$/src/models/HTLSTMs.py" />
-        <option value="$PROJECT_DIR$/src/utils/Utils.py" />
         <option value="$PROJECT_DIR$/src/models/torch_tutorial/tutorial.py" />
         <option value="$PROJECT_DIR$/src/models/EmbeddingLayer.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/DFS.py" />
         <option value="$PROJECT_DIR$/src/semantic_structure/SemanticStructure.py" />
         <option value="$PROJECT_DIR$/src/models/TreeModel.py" />
         <option value="$PROJECT_DIR$/src/models/ContextEncoder.py" />
+        <option value="$PROJECT_DIR$/src/utils/Utils.py" />
       </list>
     </option>
   </component>
@@ -500,7 +501,14 @@
       <option name="project" value="LOCAL" />
       <updated>1515048689175</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="fixed some bugs">
+      <created>1515048880196</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1515048880196</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -842,8 +850,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="394">
-          <caret line="39" column="7" lean-forward="true" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="7" />
+        <state relative-caret-position="194">
+          <caret line="18" column="33" lean-forward="false" selection-start-line="18" selection-start-column="33" selection-end-line="18" selection-end-column="33" />
           <folding />
         </state>
       </provider>
