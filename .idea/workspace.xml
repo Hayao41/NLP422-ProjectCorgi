@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="">
+    <list default="true" id="e374f4ff-40fb-46fb-89a6-c399540926d1" name="Default" comment="fixed some bugs">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/models/ContextEncoder.py" afterPath="$PROJECT_DIR$/src/models/ContextEncoder.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/models/TreeModel.py" afterPath="$PROJECT_DIR$/src/models/TreeModel.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/semantic_structure/DFS.py" afterPath="$PROJECT_DIR$/src/semantic_structure/DFS.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -41,14 +38,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ContextEncoder.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ContextEncoder.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/models/ContextEncoder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="276">
-              <caret line="22" column="46" lean-forward="true" selection-start-line="22" selection-start-column="46" selection-end-line="22" selection-end-column="46" />
+            <state relative-caret-position="348">
+              <caret line="26" column="40" lean-forward="true" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Utils.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="394">
+              <caret line="39" column="7" lean-forward="true" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="7" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -486,7 +493,14 @@
       <option name="project" value="LOCAL" />
       <updated>1515043634623</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="fixed some bugs">
+      <created>1515048689175</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1515048689175</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -578,7 +592,8 @@
     <MESSAGE value="add xavier weights initializing block(but i don't know how to initialize lstm's weigts :( )" />
     <MESSAGE value="complete hierarchical tree lstm(transformation without relation embeddings)." />
     <MESSAGE value="fix left chain computing order" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix left chain computing order" />
+    <MESSAGE value="fixed some bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed some bugs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -748,14 +763,6 @@
     <entry file="file://$PROJECT_DIR$/src/models/HierarchicalTreeLSTMs.py" />
     <entry file="file://$PROJECT_DIR$/src/models/TreeRecursiveNetwork.py" />
     <entry file="file://$PROJECT_DIR$/src/models/HTLSTMs.py" />
-    <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="309">
-          <caret line="39" column="49" lean-forward="true" selection-start-line="39" selection-start-column="49" selection-end-line="39" selection-end-column="49" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda/lib/python3.6/codecs.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
@@ -825,11 +832,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/models/ContextEncoder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="22" column="46" lean-forward="true" selection-start-line="22" selection-start-column="46" selection-end-line="22" selection-end-column="46" />
+        <state relative-caret-position="348">
+          <caret line="26" column="40" lean-forward="true" selection-start-line="26" selection-start-column="40" selection-end-line="26" selection-end-column="40" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils/Utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="394">
+          <caret line="39" column="7" lean-forward="true" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="7" />
+          <folding />
         </state>
       </provider>
     </entry>
