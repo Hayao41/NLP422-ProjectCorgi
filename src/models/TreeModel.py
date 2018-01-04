@@ -184,16 +184,16 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))\n
         '''
 
-        # left chain
+        # left chain last hidden state
         left_state = self.left_chain(iterator)[-1].view(-1, self.options.l_hid_dims)
 
-        # right chain
+        # right chain last hidden state
         right_state = self.right_chain(iterator)[-1].view(-1, self.options.r_hid_dims)
         
-        # concatenate linear trans
+        # concatenate non-linear trans
         hidden_vector = self.combination(left_state, right_state)
 
-        # set context vector(as memory to nect recursive stage)
+        # set context vector(as memory to next recursive stage)
         iterator.node.context_vec = hidden_vector
 
     def left_chain(self, iterator):
@@ -263,7 +263,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     def __init__(self, options):
         super(DynamicRecursiveNetwork, self).__init__(options)
 
-    def transform(self):
+    def transform(self, iterator):
         print("DynamicRecursiveNetwork")
 
     def forward(self, graph=None):
@@ -297,7 +297,7 @@ class TestModel(nn.Module):
         result = []
         for word in graph.indexedWords:
             out = self.linear(word.context_vec.view(-1, self.tree_model.options.bi_hid_dims))
-            out = F.log_softmax(out)
+            out = F.log_softmax(out, 1)
             result.append(out)
         
         for index in range(len(result) - 1):

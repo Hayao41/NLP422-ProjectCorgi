@@ -104,11 +104,12 @@ options = options(
     pos_emb_dims=20,
     rel_vocab_size=len(rel2ix),
     rel_emb_dims=0,
-    context_linear_dim=20,
+    context_linear_dim=10,
     bi_hid_dims=10,
     l_hid_dims=5,
     r_hid_dims=5,
-    xavier=True
+    xavier=True,
+    use_bi_lstm=True
 )
 
 print(options.pos_vocab_size)
@@ -128,9 +129,9 @@ loss_function = nn.CrossEntropyLoss(size_average=True)
 # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.6)
 
 # adam is better(as the author says (玄学))
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.00)
 
-e_list =[]
+e_list = []
 l_list = []
 
 TRAIN1 = False

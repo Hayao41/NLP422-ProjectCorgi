@@ -63,30 +63,43 @@ class ContextEncoder(nn.Module):
 
     def nonlinear_transform(self, graph):
 
-        ''' nonlinear transformation for concatenated vector (word embeddings and pos embeddings) '''
+        ''' 
+        nonlinear transformation for concatenated vector (word embeddings and pos embeddings)\n 
+        @Trans : vi = g(W (word_emb con pos_emb) + b)
+        '''
 
         pos_embeddings = graph.pos_embeddings
         if self.options.word_emb_dims is not 0:
             word_embeddings = graph.word_embeddings
             cat_vectors = torch.cat((word_embeddings, pos_embeddings), 1)
-            hidden_vectors = F.sigmoid(self.context_linear(cat_vectors))
+            input_vectors = F.sigmoid(self.context_linear(cat_vectors))
         else:
-            hidden_vectors = F.sigmoid(self.context_linear(pos_embeddings))
+            input_vectors = F.sigmoid(self.context_linear(pos_embeddings))
 
-        return hidden_vectors
+        graph.setContextVector(input_vectors.view(len(graph.indexedWords), -1))
 
-    def bi_lstm_transform(self, hidden_vectors, graph):
+        return input_vectors
+
+    def bi_lstm_transform(self, input_vectors, graph):
         
-        ''' bi lstm transformation to get context vector '''
+        ''' 
+        bi lstm transformation to get context vector \n
+        @Trans : \n
+        htl = LSTM(xt, ht-1)\n 
+        htr = LSTM(xt-1, ht)\n
+        ht = htl con htr\n
+        '''
+        
+        self.init_bi_hidden()
         
         lstm_out, self.bi_hidden = self.bi_lstm(
-            hidden_vectors.view(len(graph.indexedWords), 1, -1),
+            input_vectors.view(len(graph.indexedWords), 1, -1),
             self.bi_hidden
         )
         
         graph.setContextVector(lstm_out.view(len(graph.indexedWords), -1))
 
-    def test_bi_transform(self, hidden_vectors, graph):
+    def test_bi_transform(self, input_vectors, graph):
 
         ''' pos tagging by bi_lstm (bi-lstm output test)'''
 
@@ -94,7 +107,7 @@ class ContextEncoder(nn.Module):
 
         # feed word embeddings into bi_lstm
         lstm_out, self.bi_hidden = self.bi_lstm(
-            hidden_vectors.view(len(graph.indexedWords), 1, -1),
+            input_vectors.view(len(graph.indexedWords), 1, -1),
             self.bi_hidden
         )
         tag_space = self.hidden2tag(lstm_out.view(len(graph.indexedWords), -1))
@@ -103,12 +116,12 @@ class ContextEncoder(nn.Module):
         return tag_score
 
     def forward(self, graph):
-
-        self.init_bi_hidden()
-
-        hidden_vectors = self.nonlinear_transform(graph)
-        self.bi_lstm_transform(hidden_vectors, graph)
         
-        # hidden_vectors = graph.pos_embeddings
-        # hidden_vectors = graph.word_embeddings
-        # return self.test_bi_transform(hidden_vectors, graph)
+        input_vectors = self.nonlinear_transform(graph)
+
+        if self.options.use_bi_lstm:
+            self.bi_lstm_transform(input_vectors, graph)
+        
+        # input_vectors = graph.pos_embeddings
+        # input_vectors = graph.word_embeddings
+        # return self.test_bi_transform(input_vectors, graph)
