@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
-import SemanticStructure as sstrut
+from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 
 
@@ -35,7 +35,7 @@ class TreeStructureNetwork(nn.Module):
         ite_stack = []
 
         # push root node iterator into ite_stack
-        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        root_ite = siterator(graph.root, graph)
         ite_stack.append(root_ite)
 
         # DFS on parse tree
@@ -45,7 +45,6 @@ class TreeStructureNetwork(nn.Module):
             if ite.allChildrenChecked():
                 # if all children have checked (leaf node has no children
                 # so that it's all children have been checked by default)
-                # print(ite.node.text)
                 self.bu_transform(ite)
                 ite_stack.pop()
 
@@ -64,7 +63,7 @@ class TreeStructureNetwork(nn.Module):
         ite_queue = Queue()
 
         # push root node iterator into queue
-        root_ite = sstrut.SemanticGraphIterator(graph.root, graph)
+        root_ite = siterator(graph.root, graph)
         ite_queue.put(root_ite)
 
         # BFS on parse tree
@@ -179,7 +178,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
     def bu_transform(self, iterator):
         
         ''' 
-        tree encdoing transformation\n
+        bottom up direction tree encdoing transformation\n
         @Trans enc(t) = g(W( el(t) con er(t) ) + b)\n
         @Trans el(t) = RNNl(vi(t), enc(t.l1), enc(t.l2), ... , enc(t.lk))\n
         @Trans er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))\n
@@ -211,7 +210,6 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         for left_hidden in iterator.left_hiddens():
             left_chain = torch.cat((left_hidden.view(1, -1), left_chain.view(1, -1)))
-            # print(left_chain.data)
 
         return self.chain_transform(left_chain, self.l_lstm)
 
@@ -232,12 +230,12 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         
         ''' 
         head word encoding : left and right chain combination transformation\n
-        @Trans enc(t) = g(W( el(t) con er(t) ) + b)
+        @Trans enc(t) = g(W( el(t) con er(t) ) + b) where g is tanh
         '''
 
         con_vec = torch.cat((left_state, right_state), 1)
         out = self.enc_linear(con_vec)
-        hidden_vector = F.sigmoid(out)
+        hidden_vector = F.tanh(out)
         return hidden_vector
 
     def chain_transform(self, chain, lstm):
@@ -302,6 +300,8 @@ class TestModel(nn.Module):
         self.tree_model = tree_model
         self.encoder = encoder
         self.linear = nn.Linear(tree_model.options.bi_hid_dims, 2, bias=True)
+
+        nn.init.xavier_normal(self.linear.weight)
 
     def zero_grad(self):
         self.embed.zero_grad()

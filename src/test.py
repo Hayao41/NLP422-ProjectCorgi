@@ -1,9 +1,9 @@
-import SemanticStructure as sStructure
-import TreeModel as tm
-import EmbeddingLayer as embed
-import ContextEncoder as encoder
-import utils
-from utils import options
+import semantic.SemanticStructure as sStructure
+import models.TreeModel as tm
+import models.EmbeddingLayer as embed
+import models.ContextEncoder as encoder
+import utils.Utils as Utils
+from utils.Utils import options
 from matplotlib import pyplot as plt
 import torch
 from torch.autograd import Variable
@@ -16,11 +16,11 @@ pos = ["VV",  "NN", "CON"]
 
 relation = ["dsubj", "dobj", "conj"]
 
-word2ix = utils.make_dictionary(word)
+word2ix = Utils.make_dictionary(word)
 
-pos2ix = utils.make_dictionary(pos)
+pos2ix = Utils.make_dictionary(pos)
 
-rel2ix = utils.make_dictionary(relation)
+rel2ix = Utils.make_dictionary(relation)
 
 print(word2ix)
 print(pos2ix)
@@ -125,7 +125,8 @@ print(model.parameters())
 
 print(model(graph))
 
-loss_function = nn.CrossEntropyLoss(size_average=True)
+# loss_function = nn.CrossEntropyLoss(size_average=True)
+loss_function = nn.NLLLoss()
 # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.6)
 
 # adam is better(as the author says (玄学))

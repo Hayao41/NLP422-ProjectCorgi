@@ -148,7 +148,7 @@ tag_to_ix = {"DET": 0, "NN": 1, "V": 2}
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
-bi_flag = False
+bi_flag = True
 
 ######################################################################
 # Create the model:
@@ -206,7 +206,8 @@ l_list = []
 
 model = LSTMTagger(EMBEDDING_DIM, HIDDEN_DIM, len(word_to_ix), len(tag_to_ix))
 loss_function = nn.NLLLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.0)
+# optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # See what the scores are before training
 # Note that element i,j of the output is the score for tag j for word i.
