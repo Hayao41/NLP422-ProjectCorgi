@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from models.ContextEncoder import ContextEncoder
-import numpy as np
 import utils.Utils as Utils
 import torch.optim as optim
 from matplotlib import pyplot as plt
