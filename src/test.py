@@ -130,7 +130,7 @@ loss_function = nn.NLLLoss()
 # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.6)
 
 # adam is better(as the author says (玄学))
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.00)
+optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.00)
 
 e_list = []
 l_list = []
@@ -171,7 +171,7 @@ if TRAIN1:
 
 if TRAIN2:
 
-    for epoch in range(1000):
+    for epoch in range(100):
 
         e_list.append(epoch)
 

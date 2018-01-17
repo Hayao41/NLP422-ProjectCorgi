@@ -38,12 +38,12 @@ class EmbeddingLayer(nn.Module):
         # self.position_emb_layer = nn.Embedding()
 
         if self.options.xavier:
-            self.init_weights()
+            self.xavier_normal()
 
     def loadWeights(self):
         pass
 
-    def init_weights(self):
+    def xavier_normal(self):
         
         ''' xavier weights initialize '''
 
@@ -56,26 +56,26 @@ class EmbeddingLayer(nn.Module):
         if self.options.word_emb_dims is not 0:
             nn.init.xavier_normal(self.word_emb_layer.weight)
 
-    def wordEmbedding(self, graph):
-        
-        word_idxs = Variable(torch.LongTensor(graph.getWordIdxs()))
-        word_embeddings = self.word_emb_layer(word_idxs)
-        graph.setWordEmbeddings(word_embeddings)
+    def wordEmbedding(self, words):
+        return self.word_emb_layer(words)
 
-    def POSEmbedding(self, graph):
+    def POSEmbedding(self, pos):
+        return self.pos_emb_layer(pos)
         
-        pos_idxs = Variable(torch.LongTensor(graph.getPOSIdxs()))
-        pos_embeddings = self.pos_emb_layer(pos_idxs)
-        graph.setPOSEmbeddings(pos_embeddings)
+    def relationEmbedding(self, graphs):
         
-    def relationEmbedding(self, graph):
-        
-        rel_idxs = Variable(torch.LongTensor(graph.getArcRelationIdxs()))
-        rel_embeddings = self.rel_emb_layer(rel_idxs)
-        graph.setArcRelationEmbeddings(rel_embeddings)
+        for graph in graphs:
+            rel_idxs = graph.getArcRelationIdxs()
+            rel_embeddings = self.rel_emb_layer(rel_idxs)
+            graph.setArcRelationEmbeddings(rel_embeddings)
 
-    def forward(self, graph):
+    def forward(self, batch_data):
+        
+        sequences, graphs = batch_data
+        words, pos = sequences
 
-        self.wordEmbedding(graph)
-        self.POSEmbedding(graph)
-        self.relationEmbedding(graph)
+        wordEmbeddings =  self.wordEmbedding(words)
+        POSEmbeddings = self.POSEmbedding(pos)
+        self.relationEmbedding(graphs)
+
+        return (wordEmbeddings, POSEmbeddings)

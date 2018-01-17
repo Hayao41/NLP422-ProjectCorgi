@@ -6,16 +6,23 @@ import torch.nn.functional as F
 
 class ContextEncoder(nn.Module):
     
-    ''' stentence context encoder for sequential context '''
+    ''' sentence context rnn encoder '''
     
     def __init__(self, options):
+        
         super(ContextEncoder, self).__init__()
         self.options = options
 
-        # hidden states of lstms
-        self.bi_hidden = (
-            Variable(torch.zeros(2, 1, self.options.bi_hid_dims // 2)),
-            Variable(torch.zeros(2, 1, self.options.bi_hid_dims // 2))
+        # Sequence words embedding
+        self.word_embeddings = nn.Embedding(
+            self.options.word_vocab_size,
+            self.options.word_emb_dims
+        )
+
+        # Sequence pos embedding
+        self.pos_embeddings = nn.Embedding(
+            self.options.pos_vocab_size,
+            self.options.pos_emb_dims
         )
 
         # Encoding every word in context concatenated vector linear layer
@@ -30,98 +37,128 @@ class ContextEncoder(nn.Module):
             bias=True
         )
 
-        # Bi_directional LSTM unit for represent contextual word vector
+        # LSTM unit for represent contextual word vector
         #
-        # @Dimension : context_linear_dim -> bi_hid_dims
-        self.bi_lstm = nn.LSTM(
+        # @Dimension : context_linear_dim -> lstm_hid_dims
+        self.lstm = nn.LSTM(
             self.options.context_linear_dim,
-            self.options.bi_hid_dims // 2,
-            bidirectional=True
+            self.options.lstm_hid_dims // self.options.lstm_direction,
+            bidirectional=self.options.use_bi_lstm
         )
-
-        # test tagging linear layer
-        # make lstm out to be final predictions
-        # context_linear_dim -> pos_vocab_size
-        self.hidden2tag = nn.Linear(self.options.bi_hid_dims, self.options.pos_vocab_size)
 
         if options.xavier:
-            self.init_weights()
+            self.xavier_normal()
     
-    def init_weights(self):
+    def xavier_normal(self):
+        ''' xavier weights normalization '''
+
         nn.init.xavier_normal(self.context_linear.weight)
 
-    def init_bi_hidden(self):
-
-        '''
-        initialize bi-lstm's hidden state and memory cell state\n
-         '''
-
-        self.bi_hidden = (
-            Variable(torch.zeros(2, 1, self.options.bi_hid_dims // 2)),
-            Variable(torch.zeros(2, 1, self.options.bi_hid_dims // 2))
-        )
-
-    def nonlinear_transform(self, graph):
-
-        ''' 
-        nonlinear transformation for concatenated vector (word embeddings and pos embeddings)\n 
-        @Trans : vi = g(W (word_emb con pos_emb) + b)
-        '''
-
-        pos_embeddings = graph.pos_embeddings
         if self.options.word_emb_dims is not 0:
-            word_embeddings = graph.word_embeddings
-            cat_vectors = torch.cat((word_embeddings, pos_embeddings), 1)
-            input_vectors = F.sigmoid(self.context_linear(cat_vectors))
-        else:
-            input_vectors = F.sigmoid(self.context_linear(pos_embeddings))
+            nn.init.xavier_normal(self.word_embeddings.weight)
+        
+        if self.options.pos_emb_dims is not 0:
+            nn.init.xavier_normal(self.pos_embeddings.weight)
 
-        graph.setContextVector(input_vectors.view(len(graph.indexedWords), -1))
+    def embedding(self, sequences):
+        ''' sequence word or pos embedding '''
+        
+        if self.options.word_emb_dims is not 0:
+            
+            words_shape_size = len(sequences.words.data.shape)
+            assert 0 < words_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(words_shape_size)
+
+            sequences.WordEmbeddings = self.word_embeddings(sequences.words)
+
+        if self.options.pos_emb_dims is not 0:
+            
+            pos_shape_size = len(sequences.pos.data.shape)
+            assert 0 < pos_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(pos_shape_size)
+
+            sequences.PosEmbeddings = self.pos_embeddings(sequences.pos)
+
+    def nonlinear_transformation(self, sequences):
+    
+        ''' 
+        nonlinear transformation for embedding vector (word embeddings, pos embeddings or word and pos cat vector)\n 
+        @CatTrans : vi = g(W (word_emb con pos_emb) + b)\n
+        @WordTrans : vi = g(W word_emb + b)\n
+        @PosTrans : vi = g(W pos_emb + b)\n
+        '''
+
+        if min(self.options.word_emb_dims, self.options.pos_emb_dims) is not 0:
+            cat_vectors = torch.cat((sequences.WordEmbeddings, sequences.PosEmbeddings), 2)
+            input_vectors = F.tanh(self.context_linear(cat_vectors))
+
+        elif self.options.word_emb_dims is not 0:
+            input_vectors = F.tanh(self.context_linear(sequences.WordEmbeddings))
+            
+        else:
+            input_vectors = F.tanh(self.context_linear(sequences.PosEmbeddings))
 
         return input_vectors
 
-    def bi_lstm_transform(self, input_vectors, graph):
+    def lstm_transformation(self, input_vectors):
         
         ''' 
-        bi lstm transformation to get context vector \n
+        lstm transformation to get context vector \n
         @Trans : \n
-        htl = LSTM(xt, ht-1)\n 
-        htr = LSTM(xt-1, ht)\n
+        htl = LSTM(xt, ht-1) (-->)\n
+        ht = htl\n
+        @If use_bi_lstm is true\n
+        htr = LSTM(xt-1, ht) (<--)\n
         ht = htl con htr\n
         '''
+
+        def getInitHidden(cuda=False):
+            ''' initialize hidden and memory cell state of lstm at the first time step'''
+
+            if self.options.cuda:
+                return (
+                    Variable(torch.zeros(
+                        self.options.lstm_num_layers * self.options.lstm_direction, 
+                        self.options.batch_size, 
+                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                    ).cuda(),
+                    Variable(torch.zeros(
+                        self.options.lstm_num_layers * self.options.lstm_direction, 
+                        self.options.batch_size, 
+                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                    ).cuda()
+                )
+
+            else:
+                return (
+                    Variable(torch.zeros(
+                        self.options.lstm_num_layers * self.options.lstm_direction, 
+                        self.options.batch_size, 
+                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                    ),
+                    Variable(torch.zeros(
+                        self.options.lstm_num_layers * self.options.lstm_direction, 
+                        self.options.batch_size, 
+                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                    )
+                )
         
-        self.init_bi_hidden()
+        hidden_state = getInitHidden(cuda=self.options.cuda)
         
-        lstm_out, self.bi_hidden = self.bi_lstm(
-            input_vectors.view(len(graph.indexedWords), 1, -1),
-            self.bi_hidden
+        # lstm contextual encoding
+        lstm_out, hidden_state = self.lstm(
+            input_vectors.view(
+                -1, # batch sentence length
+                self.options.batch_size, # batch_size
+                self.options.context_linear_dim # input vector size
+            ),
+            hidden_state
         )
+
+        return lstm_out
+
+    def forward(self, sequences):
         
-        graph.setContextVector(lstm_out.view(len(graph.indexedWords), -1))
+        self.embedding(sequences)
 
-    def test_bi_transform(self, input_vectors, graph):
+        input_vectors = self.nonlinear_transformation(sequences)
 
-        ''' pos tagging by bi_lstm (bi-lstm output test)'''
-
-        self.init_bi_hidden()
-
-        # feed word embeddings into bi_lstm
-        lstm_out, self.bi_hidden = self.bi_lstm(
-            input_vectors.view(len(graph.indexedWords), 1, -1),
-            self.bi_hidden
-        )
-        tag_space = self.hidden2tag(lstm_out.view(len(graph.indexedWords), -1))
-        tag_score = F.log_softmax(tag_space)
-        graph.setContextVector(lstm_out.view(len(graph.indexedWords), -1))
-        return tag_score
-
-    def forward(self, graph):
-        
-        input_vectors = self.nonlinear_transform(graph)
-
-        if self.options.use_bi_lstm:
-            self.bi_lstm_transform(input_vectors, graph)
-        
-        # input_vectors = graph.pos_embeddings
-        # input_vectors = graph.word_embeddings
-        # return self.test_bi_transform(input_vectors, graph)
+        return self.lstm_transformation(input_vectors)

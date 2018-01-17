@@ -264,20 +264,16 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):
     
-    def __init__(self, options):
+    def __init__(self, options, att_layer, dy_rout):
         super(DynamicRecursiveNetwork, self).__init__(options)
+        self.att_layer = att_layer
+        self.dy_rout = dy_rout
 
     def bu_transform(self, iterator):
-        self.attention()
+        self.att_layer()
 
     def tp_transform(self, iterator):
-        self.dynamic_routing()
-
-    def attention(self):
-        print("DynamicRecursiveNetwork Bottom Up")
-
-    def dynamic_routing(self):
-        print("DynamicRecursiveNetwork Top Down")
+        self.dy_rout()
 
     def forward(self, graph=None):
         if graph is None:
@@ -285,6 +281,16 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         else:
             self.bottom_up(graph)
             self.top_down(graph)
+
+class AttentionUnit(nn.Module):
+    
+    def __init__(self):
+        pass
+
+class DynamicRoutingUnit(nn.Module):
+    
+    def __init__(self):
+        pass
 
 
 class TestModel(nn.Module):
@@ -321,10 +327,22 @@ class TestModel(nn.Module):
 
         return result[-1]
 
-    def forward(self, graph):
+    def setContextVecotr2Graph(self, batch_sequence, batch_graph):
+        pass
 
-        self.embed(graph)
-        self.encoder(graph)
-        self.tree_model(graph)
-        out = self.classify(graph)
+    def forward(self, batch_data):
+        
+        batch_sequence, batch_graph = batch_data
+
+        # sequence encoding
+        embedded_sequence = self.embed(batch_sequence)
+        context_vectors = self.encoder(embedded_sequence)
+
+        # graph encoding
+        self.setContextVecotr2Graph(context_vectors, batch_graph)
+        self.tree_model(batch_graph)
+
+        # calssify
+        out = self.classify(batch_graph)
+        
         return out

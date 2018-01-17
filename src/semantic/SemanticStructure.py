@@ -1,58 +1,40 @@
 ''' 
 This file is semantic structure definition
  '''
+import torch
+from torch.autograd import Variable
 
 
 class SemanticGraph(object):
 
     ''' 
     Semantic graph stores the dependency tree structure\n
-    @Attributes ::
+    @Attributes :
     root : the root node of tree structure semantic graph\n
     outgoing_edges : outgoing edge map table\n
     incoming_edges : incoming edge map table\n
-    indexedWords : word node list with sentence index\n
-    word_embeddings : word embedding of whole sentence\n
-    pos_embeddings : pos embedding of whole sentence\n
     '''
 
     def __init__(self, 
                 root=None,
                 outgoing_edges=None,
                 incoming_edges=None,
-                indexedWords=None,
-                word_embeddings=None,
-                pos_embeddings=None
+                sentence=None
                 ):
         super(SemanticGraph, self).__init__()
         self.root = root
-        self.outgoing_edges = {}
-        self.incoming_edges = {}
-        self.indexedWords = indexedWords
-        self.word_embeddings = word_embeddings
-        self.pos_embeddings = pos_embeddings
+        self.outgoing_edges = outgoing_edges
+        self.incoming_edges = incoming_edges
+        self.sentence = sentence
 
     def getWordIdxs(self):
-        
-        wordIdxs = []
-        for word in self.indexedWords:
-            wordIdxs.append(word.word_idx)
-        return wordIdxs
+        return self.sentence.getWordIdxs()
 
     def getPOSIdxs(self):
-        
-        POSIdxs = []
-        for word in self.indexedWords:
-            POSIdxs.append(word.pos_idx)
-        return POSIdxs
+        return self.sentence.getPOSIdxs()
 
-    def getLabel(self):
-        
-        labels = []
-        
-        for word in self.indexedWords:
-            labels.append(word.label)
-        return labels
+    def getLabels(self):
+        return self.sentence.getLabels()
 
     def getArcRelationIdxs(self):
         
@@ -102,6 +84,41 @@ class SemanticGraph(object):
             self.indexedWords[index].context_vec = context_vectors[index]
 
 
+class sentence(object):
+    
+    def __init__(self):
+        
+        self.indexedWords = []
+
+    def getWordIdxs(self):
+        word_idxs = []
+        for word in self.indexedWords:
+            word_idxs.append(word.word_idx)
+        
+        return Variable(torch.LongTensor(word_idxs))
+
+    def getPOSIdxs(self):
+        pos_idxs = []
+        for word in self.indexedWords:
+            pos_idxs.append(word.pos_idx)
+        
+        return Variable(torch.LongTensor(pos_idxs))
+
+    def getLabels(self):
+        word_labels = []
+        for word in self.indexedWords:
+            word_labels.append()
+
+    def getWordEmbeddings(self):
+        pass
+
+    def getPosEmbeddings(self):
+        pass
+
+    def append(self, object):
+        self.indexedWords.append(object)
+    
+
 class SemanticGraphNode(object):
     
     def __init__(self,
@@ -113,13 +130,10 @@ class SemanticGraphNode(object):
                 pos_idx=None,
                 rp_idx=None,
                 label=0,
-                word_vec=None,
-                pos_vec=None,
                 rp_vec=None,
                 context_vec=None,
-                isLeaf=False,
-                isChecked=False
-                ):
+                isLeaf=False
+    ):
         super(SemanticGraphNode, self)
         self.text = text
         self.pos = pos
@@ -129,12 +143,9 @@ class SemanticGraphNode(object):
         self.pos_idx = pos_idx
         self.rp_idx = rp_idx
         self.label = label
-        self.word_vec = word_vec
-        self.pos_vec = pos_vec
         self.rp_vec = rp_vec
         self.context_vec = context_vec
         self.isLeaf = isLeaf
-        self.isChecked = isChecked
 
 
 class SemanticGraphEdge(object):
