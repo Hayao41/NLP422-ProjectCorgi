@@ -11,18 +11,28 @@ class ContextEncoder(nn.Module):
     def __init__(self, options):
         
         super(ContextEncoder, self).__init__()
-        self.options = options
 
-        # Sequence words embedding
+        #============Hyperparameters==================#
+        self.word_emb_dims = options.word_emb_dims
+        self.pos_emb_dims = options.pos_emb_dims
+        self.context_linear_dim = options.context_linear_dim
+        self.lstm_hid_dims = options.lstm_hid_dims
+        self.lstm_num_layers = options.lstm_num_layers
+        self.lstm_direction = options.lstm_direction
+        self.use_bi_lstm = options.use_bi_lstm
+        self.use_cuda = options.cuda
+        self.batch_size = 1   # default batch size 1 (inference stage)
+
+        # Sequences words embedding
         self.word_embeddings = nn.Embedding(
-            self.options.word_vocab_size,
-            self.options.word_emb_dims
+            options.word_vocab_size,
+            options.word_emb_dims
         )
 
-        # Sequence pos embedding
+        # Sequences pos embedding
         self.pos_embeddings = nn.Embedding(
-            self.options.pos_vocab_size,
-            self.options.pos_emb_dims
+            options.pos_vocab_size,
+            options.pos_emb_dims
         )
 
         # Encoding every word in context concatenated vector linear layer
@@ -32,18 +42,19 @@ class ContextEncoder(nn.Module):
         #
         # @Dimension : word_emb_dims + pos_emb_dims -> context_linear_dim
         self.context_linear = nn.Linear(
-            self.options.word_emb_dims + self.options.pos_emb_dims,
-            self.options.context_linear_dim,
-            bias=True
+            options.word_emb_dims + options.pos_emb_dims,
+            options.context_linear_dim
         )
 
         # LSTM unit for represent contextual word vector
         #
         # @Dimension : context_linear_dim -> lstm_hid_dims
         self.lstm = nn.LSTM(
-            self.options.context_linear_dim,
-            self.options.lstm_hid_dims // self.options.lstm_direction,
-            bidirectional=self.options.use_bi_lstm
+            options.context_linear_dim,
+            options.lstm_hid_dims // options.lstm_direction,
+            num_layers=options.lstm_num_layers,
+            dropout=options.dropout,
+            bidirectional=options.use_bi_lstm
         )
 
         if options.xavier:
@@ -54,30 +65,35 @@ class ContextEncoder(nn.Module):
 
         nn.init.xavier_normal(self.context_linear.weight)
 
-        if self.options.word_emb_dims is not 0:
+        if self.word_emb_dims is not 0:
             nn.init.xavier_normal(self.word_embeddings.weight)
         
-        if self.options.pos_emb_dims is not 0:
+        if self.pos_emb_dims is not 0:
             nn.init.xavier_normal(self.pos_embeddings.weight)
 
     def embedding(self, sequences):
         ''' sequence word or pos embedding '''
+
+        WordEmbeddings = None
+        PosEmbeddings = None
         
-        if self.options.word_emb_dims is not 0:
+        if self.word_emb_dims is not 0:
             
             words_shape_size = len(sequences.words.data.shape)
             assert 0 < words_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(words_shape_size)
 
-            sequences.WordEmbeddings = self.word_embeddings(sequences.words)
+            WordEmbeddings = self.word_embeddings(sequences.words)
 
-        if self.options.pos_emb_dims is not 0:
+        if self.pos_emb_dims is not 0:
             
             pos_shape_size = len(sequences.pos.data.shape)
             assert 0 < pos_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(pos_shape_size)
 
-            sequences.PosEmbeddings = self.pos_embeddings(sequences.pos)
+            PosEmbeddings = self.pos_embeddings(sequences.pos)
 
-    def nonlinear_transformation(self, sequences):
+        return WordEmbeddings, PosEmbeddings
+
+    def nonlinear_transformation(self, WordEmbeddings=None, PosEmbeddings=None):
     
         ''' 
         nonlinear transformation for embedding vector (word embeddings, pos embeddings or word and pos cat vector)\n 
@@ -86,15 +102,19 @@ class ContextEncoder(nn.Module):
         @PosTrans : vi = g(W pos_emb + b)\n
         '''
 
-        if min(self.options.word_emb_dims, self.options.pos_emb_dims) is not 0:
-            cat_vectors = torch.cat((sequences.WordEmbeddings, sequences.PosEmbeddings), 2)
+        # if WordEmbeddings and PosEmbeddings is not None:
+        if WordEmbeddings is not None and PosEmbeddings is not None:
+            
+            # cat word embeddings and pos embeddings along the last dimension
+            cat_vectors = torch.cat((WordEmbeddings, PosEmbeddings), -1)
+
             input_vectors = F.tanh(self.context_linear(cat_vectors))
 
-        elif self.options.word_emb_dims is not 0:
-            input_vectors = F.tanh(self.context_linear(sequences.WordEmbeddings))
+        elif WordEmbeddings is not None:
+            input_vectors = F.tanh(self.context_linear(WordEmbeddings))
             
         else:
-            input_vectors = F.tanh(self.context_linear(sequences.PosEmbeddings))
+            input_vectors = F.tanh(self.context_linear(PosEmbeddings))
 
         return input_vectors
 
@@ -110,55 +130,70 @@ class ContextEncoder(nn.Module):
         ht = htl con htr\n
         '''
 
-        def getInitHidden(cuda=False):
+        def getInitHidden():
             ''' initialize hidden and memory cell state of lstm at the first time step'''
 
-            if self.options.cuda:
+            if self.use_cuda:
                 return (
                     Variable(torch.zeros(
-                        self.options.lstm_num_layers * self.options.lstm_direction, 
-                        self.options.batch_size, 
-                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                        self.lstm_num_layers * self.lstm_direction, 
+                        self.batch_size, 
+                        self.lstm_hid_dims // self.lstm_direction)
                     ).cuda(),
                     Variable(torch.zeros(
-                        self.options.lstm_num_layers * self.options.lstm_direction, 
-                        self.options.batch_size, 
-                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                        self.lstm_num_layers * self.lstm_direction, 
+                        self.batch_size, 
+                        self.lstm_hid_dims // self.lstm_direction)
                     ).cuda()
                 )
 
             else:
                 return (
                     Variable(torch.zeros(
-                        self.options.lstm_num_layers * self.options.lstm_direction, 
-                        self.options.batch_size, 
-                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                        self.lstm_num_layers * self.lstm_direction, 
+                        self.batch_size, 
+                        self.lstm_hid_dims // self.lstm_direction)
                     ),
                     Variable(torch.zeros(
-                        self.options.lstm_num_layers * self.options.lstm_direction, 
-                        self.options.batch_size, 
-                        self.options.lstm_hid_dims // self.options.lstm_direction)
+                        self.lstm_num_layers * self.lstm_direction, 
+                        self.batch_size, 
+                        self.lstm_hid_dims // self.lstm_direction)
                     )
                 )
         
-        hidden_state = getInitHidden(cuda=self.options.cuda)
+        hidden_state = getInitHidden()
         
         # lstm contextual encoding
         lstm_out, hidden_state = self.lstm(
             input_vectors.view(
-                -1, # batch sentence length
-                self.options.batch_size, # batch_size
-                self.options.context_linear_dim # input vector size
+                -1,  # batch sentence length
+                self.batch_size,  # batch_size
+                self.context_linear_dim  # input vector size
             ),
             hidden_state
         )
 
         return lstm_out
 
+    def switch2cpu(self):
+        self.use_cuda = False
+        self.cpu()
+
+    def switch2gpu(self):
+        self.use_cuda = True
+        self.cuda()
+
     def forward(self, sequences):
         
-        self.embedding(sequences)
+        # get batch data size
+        self.batch_size = len(sequences)
+        
+        WordEmbeddings, PosEmbeddings = self.embedding(sequences)
 
-        input_vectors = self.nonlinear_transformation(sequences)
+        input_vectors = self.nonlinear_transformation(WordEmbeddings, PosEmbeddings)
 
-        return self.lstm_transformation(input_vectors)
+        out = self.lstm_transformation(input_vectors).view(self.batch_size, 
+                                                            -1,
+                                                            self.lstm_hid_dims)
+
+        return out

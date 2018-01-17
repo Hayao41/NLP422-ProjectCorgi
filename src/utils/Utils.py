@@ -20,6 +20,7 @@ class options(object):
                 r_hid_dims=0,
                 xavier=True,
                 batch_size=1,
+                dropout=0.,
                 cuda=False
                 ):
         super(options, self).__init__()
@@ -38,6 +39,7 @@ class options(object):
         self.r_hid_dims = r_hid_dims
         self.xavier = xavier
         self.batch_size = batch_size
+        self.dropout = dropout
         self.cuda = cuda
 
 def make_dictionary(vocab_list):
