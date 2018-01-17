@@ -26,7 +26,7 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=False
+    cuda=True
 )
 
 word1 = "I like this dog.".split()
@@ -47,8 +47,6 @@ words = Variable(torch.LongTensor([idx1, idx2]))
 
 pos = Variable(torch.LongTensor([pos1, pos2]))
 
-print(words, pos)
-
 
 class Sequences(object):
     
@@ -62,12 +60,16 @@ class Sequences(object):
         return self.batch_size
 
     def switch2gpu(self):
-        self.words.cuda()
-        self.pos.cuda()
+        if self.words is not None:
+            self.words = self.words.cuda()
+        if self.pos is not None:
+            self.pos = self.pos.cuda()
 
     def switch2cpu(self):
-        self.words.cpu()
-        self.pos.cpu()
+        if self.words is not  None:
+            self.words = self.words.cpu()
+        if self.pos is not None:
+            self.pos = self.pos.cpu()
         
 
 class TestModel(nn.Module):
@@ -81,6 +83,10 @@ class TestModel(nn.Module):
 
         self.hid2tag = nn.Linear(self.options.lstm_hid_dims, 3)
 
+    def switch2gpu(self):
+        self.encoder.switch2gpu()
+        self.cuda()
+
     def forward(self, sequences):
         
         out = self.encoder(sequences)
@@ -92,14 +98,15 @@ class TestModel(nn.Module):
 sequences = Sequences(words=words, pos=pos, batch_size=2)
 encoder = ContextEncoder(options=options)
 test = TestModel(options=options, encoder=encoder)
-
-if options.cuda:
-    encoder.switch2gpu()
-    sequences.switch2gpu()
-
 crit = nn.NLLLoss()
 optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.2)
 
+if options.cuda:
+    test.switch2gpu()
+    sequences.switch2gpu()
+    crit = crit.cuda()
+
+print(sequences.words, sequences.pos)
 
 e_list = []
 l_list = []
@@ -120,9 +127,11 @@ for epoch in range(1000):
     loss.backward()
     optimizer.step()
 
-sequences = Sequences(words=Variable(torch.LongTensor(idx1)))
-
-print(test(sequences))
+# sequences = Sequences(words=Variable(torch.LongTensor(idx1)))
+# if options.cuda:
+#     sequences.switch2gpu()
+#
+# print(test(sequences))
 
 plt.plot(e_list, l_list)
 plt.xlabel('Epoch')

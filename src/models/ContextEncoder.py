@@ -80,14 +80,14 @@ class ContextEncoder(nn.Module):
         if self.word_emb_dims is not 0:
             
             words_shape_size = len(sequences.words.data.shape)
-            assert 0 < words_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(words_shape_size)
+            assert 0 < words_shape_size < 3, 'out of shape range, expected less than 3 and bigger than 0 but got {}'.format(words_shape_size)
 
             WordEmbeddings = self.word_embeddings(sequences.words)
 
         if self.pos_emb_dims is not 0:
             
             pos_shape_size = len(sequences.pos.data.shape)
-            assert 0 < pos_shape_size < 3, 'out of shape size, expected less than 3 and bigger than 0 but got {}'.format(pos_shape_size)
+            assert 0 < pos_shape_size < 3, 'out of shape range, expected less than 3 and bigger than 0 but got {}'.format(pos_shape_size)
 
             PosEmbeddings = self.pos_embeddings(sequences.pos)
 
