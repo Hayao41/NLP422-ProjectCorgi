@@ -21,12 +21,11 @@ options = options(
     lstm_hid_dims=20,
     lstm_direction=2,
     lstm_num_layers=1,
-    l_hid_dims=5,
-    r_hid_dims=5,
+    chain_hid_dims=20,
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=True
+    cuda=False
 )
 
 word1 = "I like this dog.".split()
@@ -34,8 +33,8 @@ word2 = "He loves that pen.".split()
 
 POS = ["VV", "NN", "CON"]
 
-word2idx = Utils.make_dictionary(word1+word2)
-pos2idx = Utils.make_dictionary(POS)
+word2idx = {element : i for i, element in enumerate(word1 + word2)}
+pos2idx = {element : i for i, element in enumerate(POS)}
 
 idx1 = [word2idx[w] for w in word1]
 idx2 = [word2idx[w] for w in word2]
@@ -81,7 +80,7 @@ class TestModel(nn.Module):
 
         self.encoder = encoder
 
-        self.hid2tag = nn.Linear(self.options.lstm_hid_dims, 3)
+        self.hid2tag = nn.Linear(self.options.lstm_hid_dims, len(pos2idx))
 
     def switch2gpu(self):
         self.encoder.switch2gpu()
@@ -120,18 +119,14 @@ for epoch in range(1000):
     loss = 0
 
     for inst in range(sequences.batch_size):
+        print(out[inst])
+        print(sequences.pos[inst])
         loss = loss + (1/sequences.batch_size) * crit(out[inst], sequences.pos[inst])
 
     l_list.append(loss.data[0])
 
     loss.backward()
     optimizer.step()
-
-# sequences = Sequences(words=Variable(torch.LongTensor(idx1)))
-# if options.cuda:
-#     sequences.switch2gpu()
-#
-# print(test(sequences))
 
 plt.plot(e_list, l_list)
 plt.xlabel('Epoch')

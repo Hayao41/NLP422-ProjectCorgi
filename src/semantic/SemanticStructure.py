@@ -1,9 +1,6 @@
 ''' 
 This file is semantic structure definition
  '''
-import torch
-from torch.autograd import Variable
-
 
 class SemanticGraph(object):
 
@@ -19,104 +16,42 @@ class SemanticGraph(object):
                 root=None,
                 outgoing_edges=None,
                 incoming_edges=None,
-                sentence=None
+                indexedWords=None
                 ):
         super(SemanticGraph, self).__init__()
         self.root = root
         self.outgoing_edges = outgoing_edges
         self.incoming_edges = incoming_edges
-        self.sentence = sentence
-
-    def getWordIdxs(self):
-        return self.sentence.getWordIdxs()
-
-    def getPOSIdxs(self):
-        return self.sentence.getPOSIdxs()
+        self.indexedWords = indexedWords
 
     def getLabels(self):
-        return self.sentence.getLabels()
+        
+        for word in self.indexedWords:
+            yield word.label
+
+    def edges(self):
+        
+        for source in self.outgoing_edges:
+            edges = self.outgoing_edges[source]
+            for edge in edges:
+                yield edge
 
     def getArcRelationIdxs(self):
-        
-        relIdxs = []
-        edges = self.getOutgoingEdges()
-        for edge in edges:
-            relIdxs.append(edge.rel_idx)
-        return relIdxs
-
-    def getOutgoingEdges(self):
-        
-        edges = []
-        for source in self.outgoing_edges:
-            edge_list = self.outgoing_edges[source]
-            for edge in edge_list:
-                edges.append(edge)
-        return edges
-
-    def getContextVectors(self):
-
-        context_vecotrs = []
-        for word in self.indexedWords:
-            context_vecotrs.append(word.context_vec)
-        return context_vecotrs
-
-    def setWordEmbeddings(self, word_embeddings):
-        
-        self.word_embeddings = word_embeddings
-        for index in range(len(word_embeddings)):
-            self.indexedWords[index].word_vec = word_embeddings[index]
-
-    def setPOSEmbeddings(self, pos_embeddings):
-        
-        self.pos_embeddings = pos_embeddings
-        for index in range(len(pos_embeddings)):
-            self.indexedWords[index].pos_vec = pos_embeddings[index]
+    
+        for edge in self.edges():
+           yield edge.rel_idx
 
     def setArcRelationEmbeddings(self, rel_embeddings):
         
-        edges = self.getOutgoingEdges()
-        for index in range(len(rel_embeddings)):
-            edges[index].rel_vec = rel_embeddings[index]
+        index = 0
+        for edge in self.edges():
+            edge.rel_vec = rel_embeddings[index]
+            index = index + 1
 
     def setContextVector(self, context_vectors):
         
         for index in range(len(self.indexedWords)):
             self.indexedWords[index].context_vec = context_vectors[index]
-
-
-class sentence(object):
-    
-    def __init__(self):
-        
-        self.indexedWords = []
-
-    def getWordIdxs(self):
-        word_idxs = []
-        for word in self.indexedWords:
-            word_idxs.append(word.word_idx)
-        
-        return Variable(torch.LongTensor(word_idxs))
-
-    def getPOSIdxs(self):
-        pos_idxs = []
-        for word in self.indexedWords:
-            pos_idxs.append(word.pos_idx)
-        
-        return Variable(torch.LongTensor(pos_idxs))
-
-    def getLabels(self):
-        word_labels = []
-        for word in self.indexedWords:
-            word_labels.append()
-
-    def getWordEmbeddings(self):
-        pass
-
-    def getPosEmbeddings(self):
-        pass
-
-    def append(self, object):
-        self.indexedWords.append(object)
     
 
 class SemanticGraphNode(object):
@@ -132,9 +67,10 @@ class SemanticGraphNode(object):
                 label=0,
                 rp_vec=None,
                 context_vec=None,
+                atten_prob=0.,
                 isLeaf=False
     ):
-        super(SemanticGraphNode, self)
+        super(SemanticGraphNode, self).__init__()
         self.text = text
         self.pos = pos
         self.sentence_index = sentence_index
@@ -145,6 +81,7 @@ class SemanticGraphNode(object):
         self.label = label
         self.rp_vec = rp_vec
         self.context_vec = context_vec
+        self.atten_prob = atten_prob
         self.isLeaf = isLeaf
 
 
@@ -157,7 +94,7 @@ class SemanticGraphEdge(object):
                 rel_idx=None,
                 rel_vec=None
                 ):
-        super(SemanticGraphEdge, self)
+        super(SemanticGraphEdge, self).__init__()
         self.source = source
         self.target = target
         self.relation = relation
@@ -177,36 +114,23 @@ class SemanticGraphIterator(object):
         self.graph = graph
 
         # list for recording unchecked children node
-        self.c_list = self.getChildrenList()
-
-    def getChildrenList(self):
-        children_list = []
-        for edge in self.getOutgoingEdges():
-            children_list.append(SemanticGraphIterator(edge.target, self.graph))
-        return children_list
-
-    def getParentList(self):
-        parent_list = []
-        for edge in self.getIncomingEdges():
-            parent_list.append(SemanticGraphIterator(edge.source, self.graph))
-        return parent_list
+        self.c_list = list(self.children())
 
     def getOutgoingEdges(self):
         if self.node in self.graph.outgoing_edges:
             for edge in self.graph.outgoing_edges[self.node]:
                 yield edge
         else:
-            # if there are no outgoing edges starts with current node return a empty list
-            temp = []
-            return temp
+            # if there are no outgoing edges starts with current node, stop iteration
+            raise StopIteration
 
     def getIncomingEdges(self):
         if self.node in self.graph.incoming_edges:
             for edge in self.graph.incoming_edges[self.node]:
                 yield edge
         else:
-            temp = []
-            return temp
+            # if there are no incoming edges ends with current node, stop iteration
+            raise StopIteration
 
     def children(self):
         
@@ -220,15 +144,42 @@ class SemanticGraphIterator(object):
 
     def left_hiddens(self):
         
+        targets = []
+        
         for edge in self.getOutgoingEdges():
-            if edge.target.sentence_index < self.node.sentence_index:
-                yield edge.target.context_vec
+            target = edge.target
+            if target.sentence_index < self.node.sentence_index:
+                targets.append(target)
+        
+        if len(targets) is not 0:
+            # sort right target nodes by sentence index DES
+            targets.sort(reverse=True, key=lambda target: target.sentence_index)
+
+            for target in targets:
+                yield target.context_vec
+
+        else:
+            raise StopIteration
     
     def right_hiddens(self):
         
+        targets = []
+        
         for edge in self.getOutgoingEdges():
-            if edge.target.sentence_index > self.node.sentence_index:
-                yield edge.target.context_vec
+            target = edge.target
+            if target.sentence_index > self.node.sentence_index:
+                targets.append(target)
+
+            
+        if len(targets) is not 0:
+            # sort right target nodes by sentence index ASC
+            targets.sort(key=lambda SemanticGraphNode: SemanticGraphNode.sentence_index)
+
+            for target in targets:
+                yield target.context_vec
+            
+        else:
+            raise StopIteration
 
     def isLeaf(self):
         
@@ -241,6 +192,12 @@ class SemanticGraphIterator(object):
         
         # if children record list is empty, current node's children all have checked
         return len(self.c_list) == 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.next()
 
     def next(self):
         next_ite = self.c_list[0]

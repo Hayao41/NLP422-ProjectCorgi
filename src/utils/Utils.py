@@ -1,3 +1,4 @@
+
 class options(object):
         
     ''' 
@@ -16,8 +17,7 @@ class options(object):
                 lstm_num_layers=1,
                 lstm_direction=2,
                 lstm_hid_dims=0,
-                l_hid_dims=0,
-                r_hid_dims=0,
+                chain_hid_dims=0,
                 xavier=True,
                 batch_size=1,
                 dropout=0.,
@@ -35,18 +35,22 @@ class options(object):
         self.lstm_num_layers = lstm_num_layers
         self.lstm_direction = lstm_direction
         self.lstm_hid_dims = lstm_hid_dims
-        self.l_hid_dims = l_hid_dims
-        self.r_hid_dims = r_hid_dims
+        self.chain_hid_dims = chain_hid_dims
         self.xavier = xavier
         self.batch_size = batch_size
         self.dropout = dropout
         self.cuda = cuda
 
-def make_dictionary(vocab_list):
+def make_dictionary(vocab_list, pad):
     
     '''
     build index dictionary for vocabulary
     '''
 
-    idxs = {element: i for i, element in enumerate(set(vocab_list))}
+    idxs = pad
+
+    for element in vocab_list:
+        if element not in idxs:
+            idxs[element] = len(idxs)
+
     return idxs

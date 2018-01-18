@@ -102,7 +102,6 @@ class ContextEncoder(nn.Module):
         @PosTrans : vi = g(W pos_emb + b)\n
         '''
 
-        # if WordEmbeddings and PosEmbeddings is not None:
         if WordEmbeddings is not None and PosEmbeddings is not None:
             
             # cat word embeddings and pos embeddings along the last dimension
@@ -130,7 +129,7 @@ class ContextEncoder(nn.Module):
         ht = htl con htr\n
         '''
 
-        def getInitHidden():
+        def init_hidden():
             ''' initialize hidden and memory cell state of lstm at the first time step'''
 
             if self.use_cuda:
@@ -161,7 +160,7 @@ class ContextEncoder(nn.Module):
                     )
                 )
         
-        hidden_state = getInitHidden()
+        hidden_state = init_hidden()
         
         # lstm contextual encoding
         lstm_out, hidden_state = self.lstm(
