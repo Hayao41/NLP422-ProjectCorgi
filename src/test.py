@@ -24,13 +24,13 @@ word_pad = {
 }
 
 pos_pad = {
-    Constants.PAD_POS : Constants.PAD,
-    Constants.UNK_POS : Constants.UNK
+    Constants.PAD_POS: Constants.PAD,
+    Constants.UNK_POS: Constants.UNK
 }
 
 rel_pad = {
-    Constants.PAD_REL : Constants.PAD,
-    Constants.UNK_REL : Constants.UNK
+    Constants.PAD_REL: Constants.PAD,
+    Constants.UNK_REL: Constants.UNK
 }
 
 word2ix = Utils.make_dictionary(word, word_pad)
@@ -63,7 +63,7 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=True
+    cuda=False
 )
 
 
@@ -130,7 +130,9 @@ class TestModel(nn.Module):
         return F.log_softmax(out, dim=-1)
 
 
-temp = Variable(torch.zeros(1, options.lstm_hid_dims)).cuda()
+temp = Variable(torch.zeros(1, options.lstm_hid_dims))
+if options.cuda:
+    temp = temp.cuda()
 
 # like
 root1 = sStructure.SemanticGraphNode(word[1],
@@ -338,22 +340,20 @@ optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
 test_data = Variable(torch.from_numpy(word_data))
 
+tree = TreeNN.HierarchicalTreeLSTMs(options=options)
+
 if options.cuda:
     sequences.switch2gpu()
     test.switch2gpu()
     crit = crit.cuda()
     test_data = test_data.cuda()
+    tree.switch2gpu()
 
 print(test_data)
-
-RUN = False
-
-tree = TreeNN.HierarchicalTreeLSTMs(options=options)
-tree.switch2gpu()
-
 tree(graph1)
-
 print(graph1)
+
+RUN = True
 
 if RUN:
 
@@ -380,7 +380,8 @@ if RUN:
         optimizer.step()
 
     test_seq = Sequences(words=test_data, batch_size=2)
-    test_seq.switch2gpu()
+    if options.cuda:
+        test_seq.switch2gpu()
 
     test_out = test(test_seq)
 

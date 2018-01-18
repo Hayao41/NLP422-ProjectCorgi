@@ -5,7 +5,8 @@ import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 
-TEST = True
+TEST = False
+
 
 class TreeStructureNetwork(nn.Module):
     
@@ -199,12 +200,14 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
             # set context vector(as memory to next recursive stage)
             iterator.node.context_vec = hidden_vector
-        
-        # for left_hidden in iterator.left_hiddens():
-        #     print(left_hidden)
-        #
-        # for right_hidden in iterator.right_hiddens():
-        #     print(right_hidden)
+
+        else:
+
+            for left_hidden in iterator.left_hiddens():
+                print(left_hidden)
+
+            for right_hidden in iterator.right_hiddens():
+                print(right_hidden)
 
     def tp_transform(self, iterator):
         # print(iterator.node.text)
