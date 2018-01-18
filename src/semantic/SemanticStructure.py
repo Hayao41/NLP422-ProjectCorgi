@@ -39,7 +39,7 @@ class SemanticGraph(object):
     def getArcRelationIdxs(self):
     
         for edge in self.edges():
-           yield edge.rel_idx
+            yield edge.rel_idx
 
     def setArcRelationEmbeddings(self, rel_embeddings):
         
@@ -113,7 +113,7 @@ class SemanticGraphIterator(object):
         self.node = node
         self.graph = graph
 
-        # list for recording unchecked children node
+        # list for recording unchecked children
         self.c_list = list(self.children())
 
     def getOutgoingEdges(self):

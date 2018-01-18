@@ -63,7 +63,7 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=False
+    cuda=True
 )
 
 
@@ -130,7 +130,7 @@ class TestModel(nn.Module):
         return F.log_softmax(out, dim=-1)
 
 
-temp = 0
+temp = Variable(torch.zeros(1, options.lstm_hid_dims)).cuda()
 
 # like
 root1 = sStructure.SemanticGraphNode(word[1],
@@ -332,15 +332,28 @@ print(batch_word_data, batch_pos_data)
 
 encoder = ContextEncoder(options=options)
 test = TestModel(options=options, encoder=encoder)
-crit = nn.NLLLoss()
+crit = nn.NLLLoss(size_average=True)
 # optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.3)
 optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
 test_data = Variable(torch.from_numpy(word_data))
 
+if options.cuda:
+    sequences.switch2gpu()
+    test.switch2gpu()
+    crit = crit.cuda()
+    test_data = test_data.cuda()
+
 print(test_data)
 
-RUN = True
+RUN = False
+
+tree = TreeNN.HierarchicalTreeLSTMs(options=options)
+tree.switch2gpu()
+
+tree(graph1)
+
+print(graph1)
 
 if RUN:
 
@@ -355,8 +368,11 @@ if RUN:
 
         loss = 0
 
-        for inst in range(sequences.batch_size):
-            loss = loss + (1 / sequences.batch_size) * crit(out[inst], sequences.pos[inst])
+        # for inst in range(sequences.batch_size):
+        #     print(out, sequences.pos[inst])
+        #     loss = loss + (1 / sequences.batch_size) * crit(out[inst], sequences.pos[inst])
+        # print(out.view(-1, len(pos2ix)), sequences.pos.view(-1))
+        loss = crit(out.view(-1, len(pos2ix)), sequences.pos.view(-1))
 
         l_list.append(loss.data[0])
 
@@ -364,11 +380,12 @@ if RUN:
         optimizer.step()
 
     test_seq = Sequences(words=test_data, batch_size=2)
+    test_seq.switch2gpu()
 
     test_out = test(test_seq)
 
     insts_pos = []
-    for inst in test_out:
+    for inst in test_out.cpu():
         inst_pos = []
         for word in inst:
             word = word.data.numpy().tolist()

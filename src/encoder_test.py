@@ -25,7 +25,7 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=False
+    cuda=True
 )
 
 word1 = "I like this dog.".split()
@@ -119,8 +119,8 @@ for epoch in range(1000):
     loss = 0
 
     for inst in range(sequences.batch_size):
-        print(out[inst])
-        print(sequences.pos[inst])
+        # print(out[inst])
+        # print(sequences.pos[inst])
         loss = loss + (1/sequences.batch_size) * crit(out[inst], sequences.pos[inst])
 
     l_list.append(loss.data[0])

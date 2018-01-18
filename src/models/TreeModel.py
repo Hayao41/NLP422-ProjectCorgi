@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 
-TEST = False
+TEST = True
 
 class TreeStructureNetwork(nn.Module):
     
@@ -24,6 +24,7 @@ class TreeStructureNetwork(nn.Module):
     def __init__(self, options):
         super(TreeStructureNetwork, self).__init__()
         self.options = options
+        self.use_cuda = options.cuda
 
     def bottom_up(self, graph):
         
@@ -46,6 +47,8 @@ class TreeStructureNetwork(nn.Module):
             if ite.allChildrenChecked():
                 # if all children have checked (leaf node has no children
                 # so that it's all children have been checked by default)
+                if TEST:
+                    print(ite.node.text)
                 self.bu_transform(ite)
                 ite_stack.pop()
 
@@ -93,7 +96,15 @@ class TreeStructureNetwork(nn.Module):
         @Param : semantic structure iterator
         '''
         raise NotImplementedError
-    
+
+    def switch2gpu(self):
+        self.use_cuda = True
+        self.cuda()
+
+    def switch2cpu(self):
+        self.use_cuda = False
+        self.cpu()
+
     def forward(self):
         raise NotImplementedError
         
@@ -110,7 +121,6 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         super(HierarchicalTreeLSTMs, self).__init__(options)
 
         self.chain_hid_dims = self.options.chain_hid_dims
-        self.use_cuda = self.options.cuda
         self.lstm_hid_dims = self.options.lstm_hid_dims
 
         # Encoding children concatenated vector linear layer
@@ -190,11 +200,11 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             # set context vector(as memory to next recursive stage)
             iterator.node.context_vec = hidden_vector
         
-        for left_hidden in iterator.left_hiddens():
-            print(left_hidden)
-
-        for right_hidden in iterator.right_hiddens():
-            print(right_hidden)
+        # for left_hidden in iterator.left_hiddens():
+        #     print(left_hidden)
+        #
+        # for right_hidden in iterator.right_hiddens():
+        #     print(right_hidden)
 
     def tp_transform(self, iterator):
         # print(iterator.node.text)
