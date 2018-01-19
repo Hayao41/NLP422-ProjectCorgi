@@ -61,8 +61,9 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=False
+    cuda=True
 )
+
 
 class Sequences(object):
     def __init__(self, words=None, pos=None, batch_size=1):

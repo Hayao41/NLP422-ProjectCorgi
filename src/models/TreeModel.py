@@ -335,7 +335,7 @@ class TestModel(nn.Module):
 
     def switch2gpu(self):
         self.cuda()
-        self.encoder.switch2cpu()
+        self.encoder.switch2gpu()
         self.tree_model.switch2gpu()
 
     def switch2cpu(self):
