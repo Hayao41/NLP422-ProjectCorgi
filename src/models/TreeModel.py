@@ -313,18 +313,6 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
             self.top_down(graph)
 
 
-class AttentionUnit(nn.Module):
-    
-    def __init__(self):
-        pass
-
-
-class DynamicRoutingUnit(nn.Module):
-    
-    def __init__(self):
-        pass
-
-
 class TestModel(nn.Module):
 
     ''' 
@@ -332,49 +320,65 @@ class TestModel(nn.Module):
     for every layer testing
     '''
     
-    def __init__(self, embed, tree_model, encoder):
+    def __init__(self, tree_model, encoder, options):
         super(TestModel, self).__init__()
-        self.embed = embed
         self.tree_model = tree_model
         self.encoder = encoder
-        self.linear = nn.Linear(tree_model.options.lstm_hid_dims, 2, bias=True)
-
+        self.pos_vocab_size = options.pos_vocab_size
+        self.linear = nn.Linear(options.lstm_hid_dims, options.pos_vocab_size)
         nn.init.xavier_normal(self.linear.weight)
 
     def zero_grad(self):
-        self.embed.zero_grad()
         self.encoder.zero_grad()
         self.tree_model.zero_grad()
         self.linear.zero_grad()
 
+    def switch2gpu(self):
+        self.cuda()
+        self.encoder.switch2cpu()
+        self.tree_model.switch2gpu()
+
+    def switch2cpu(self):
+        self.cpu()
+        self.encoder.switch2cpu()
+        self.tree_model.switch2cpu()
+
     def classify(self, graph):
-        result = []
-        for word in graph.indexedWords:
-            out = self.linear(word.context_vec.view(-1, self.tree_model.options.lstm_hid_dims))
-            out = F.log_softmax(out, 1)
-            result.append(out)
-        
-        for index in range(len(result) - 1):
-            result[index + 1] = torch.cat((result[index], result[index + 1]))
+        context_vecs = [w.context_vec for w in graph.indexedWords]
+        context_vecs = torch.cat((context_vecs), 0)
+        pred = self.linear(context_vecs)
+        pred = F.log_softmax(pred, dim=-1)
+        return pred
+            
 
-        return result[-1]
+    def setContextVecotr2Graph(self, context_vectors, batch_graph):
+        batch_size = len(batch_graph)
 
-    def setContextVecotr2Graph(self, batch_sequence, batch_graph):
-        pass
+        for inst in range(batch_size):
+            sequence = context_vectors[inst]
+            graph = batch_graph[inst]
+            for idx in range(len(graph.indexedWords)):
+                graph.indexedWords[idx].context_vec = sequence[idx]
 
     def forward(self, batch_data):
         
         batch_sequence, batch_graph = batch_data
 
-        # sequence encoding
-        embedded_sequence = self.embed(batch_sequence)
-        context_vectors = self.encoder(embedded_sequence)
+        assert len(batch_sequence) == len(batch_graph), "sequence batch's size does not match batch graphs"
 
-        # graph encoding
+        # sequence encoding
+        context_vectors = self.encoder(batch_sequence)
+
+        # set context vectors onto semantic tree
         self.setContextVecotr2Graph(context_vectors, batch_graph)
-        self.tree_model(batch_graph)
+
+        # tree hierarchical encoding stage
+        for graph in batch_graph:
+            self.tree_model(graph)
 
         # calssify
-        out = self.classify(batch_graph)
-        
-        return out
+        outs = []
+        for graph in batch_graph:
+            outs.append(self.classify(graph))
+
+        return outs

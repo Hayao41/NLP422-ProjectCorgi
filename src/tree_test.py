@@ -1,10 +1,11 @@
 import semantic.SemanticStructure as sStructure
 import utils.Utils as Utils
 from utils.Utils import options
-import models.TreeModel as TreeNN
 import torch.nn as nn
 import torch.nn.functional as F
 from models.ContextEncoder import ContextEncoder
+from models.TreeModel import HierarchicalTreeLSTMs as hlstm
+from models.TreeModel import TestModel as Test
 import torch.optim as optim
 import torch
 from torch.autograd import Variable
@@ -24,12 +25,11 @@ word_pad = {
 }
 
 pos_pad = {
-    Constants.PAD_POS: Constants.PAD,
-    Constants.UNK_POS: Constants.UNK
+    Constants.UNK_POS: Constants.PAD
 }
 
 rel_pad = {
-    Constants.UNK_REL: Constants.UNK
+    Constants.UNK_REL: Constants.PAD
 }
 
 word2ix = Utils.make_dictionary(word, word_pad)
@@ -68,7 +68,7 @@ options = options(
 
 def make_training_data(indexwords_list):
     words_list = [[word.word_idx for word in words] for words in indexwords_list]
-    pos_list = [[word.pos_idx for word in words] for words in indexwords_list]
+    pos_list = [Variable(torch.LongTensor([word.pos_idx for word in words])) for words in indexwords_list]
 
     max_len = max(len(inst) for inst in words_list)
 
@@ -77,10 +77,7 @@ def make_training_data(indexwords_list):
         for inst in words_list
     ])
 
-    pos_data = np.array([
-        inst + [Constants.PAD] * (max_len - len(inst))
-        for inst in pos_list
-    ])
+    pos_data = torch.cat((pos_list), -1)
 
     return word_data, pos_data
 
@@ -106,27 +103,6 @@ class Sequences(object):
             self.words = self.words.cpu()
         if self.pos is not None:
             self.pos = self.pos.cpu()
-
-
-class TestModel(nn.Module):
-    def __init__(self, options, encoder):
-        super(TestModel, self).__init__()
-
-        self.encoder = encoder
-
-        self.out_dims = options.pos_vocab_size
-
-        self.hid2tag = nn.Linear(options.lstm_hid_dims, self.out_dims)
-
-    def switch2gpu(self):
-        self.encoder.switch2gpu()
-        self.cuda()
-
-    def forward(self, sequences):
-        out = self.encoder(sequences)
-        out = self.hid2tag(out)
-
-        return F.log_softmax(out, dim=-1)
 
 
 temp = Variable(torch.zeros(1, options.lstm_hid_dims))
@@ -325,32 +301,33 @@ indexwords_list.append(sentence2)
 word_data, pos_data = make_training_data(indexwords_list)
 
 batch_word_data = Variable(torch.from_numpy(word_data))
-batch_pos_data = Variable(torch.from_numpy(pos_data))
+batch_pos_data = pos_data
 
 sequences = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
+batch_graph = [graph1, graph2]
+batch_data = (sequences, batch_graph)
 
 print(batch_word_data, batch_pos_data)
+print(batch_data)
 
 encoder = ContextEncoder(options=options)
-test = TestModel(options=options, encoder=encoder)
+tree_model = hlstm(options=options)
+test = Test(options=options, encoder=encoder, tree_model=tree_model)
+
 crit = nn.NLLLoss(size_average=True)
 # optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.3)
 optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
-test_data = Variable(torch.from_numpy(word_data))
+test_sequence = Sequences(words=Variable(torch.from_numpy(word_data)), batch_size=len(indexwords_list))
+test_graph = [graph1, graph2]
 
-tree = TreeNN.HierarchicalTreeLSTMs(options=options)
+test_data = (test_sequence, test_graph)
 
 if options.cuda:
     sequences.switch2gpu()
     test.switch2gpu()
     crit = crit.cuda()
-    test_data = test_data.cuda()
-    tree.switch2gpu()
-
-print(test_data)
-tree(graph1)
-print(graph1)
+    test_data = test_sequence.cuda()
 
 RUN = True
 
@@ -359,32 +336,30 @@ if RUN:
     e_list = []
     l_list = []
 
-    for epoch in range(1000):
+    for epoch in range(500):
         e_list.append(epoch)
 
         test.zero_grad()
-        out = test(sequences)
+        out = torch.cat((test(batch_data)), 0)
 
         loss = 0
 
-
-        loss = crit(out.view(-1, len(pos2ix)), sequences.pos.view(-1))
+        loss = crit(out.view(-1, len(pos2ix)), batch_data[0].pos.view(-1))
 
         l_list.append(loss.data[0])
 
         loss.backward()
         optimizer.step()
 
-    test_seq = Sequences(words=test_data, batch_size=2)
-    if options.cuda:
-        test_seq.switch2gpu()
 
-    test_out = test(test_seq)
+    test_out = test(test_data)
+
+    print(test_out)
 
     insts_pos = []
-    for inst in test_out.cpu():
+    for inst in test_out:
         inst_pos = []
-        for word in inst:
+        for word in inst.cpu():
             word = word.data.numpy().tolist()
             inst_pos.append(ix2pos[word.index(max(word))])
         insts_pos.append(inst_pos)
