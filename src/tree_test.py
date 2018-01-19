@@ -308,6 +308,7 @@ if options.cuda:
     test_data[0].switch2gpu()
     test.switch2gpu()
     crit = crit.cuda()
+    target_data = target_data.cuda()
 
 RUN = True
 
