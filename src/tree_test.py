@@ -47,17 +47,17 @@ print(rel2ix)
 
 options = options(
     word_vocab_size=len(word2ix),
-    word_emb_dims=20,
+    word_emb_dims=50,
     pos_vocab_size=len(pos2ix),
     pos_emb_dims=0,
     rel_vocab_size=len(rel2ix),
     rel_emb_dims=0,
-    context_linear_dim=20,
+    context_linear_dim=30,
     use_bi_lstm=True,
-    lstm_hid_dims=10,
+    lstm_hid_dims=30,
     lstm_direction=2,
     lstm_num_layers=1,
-    chain_hid_dims=20,
+    chain_hid_dims=30,
     batch_size=2,
     xavier=True,
     dropout=0.1,
@@ -288,7 +288,7 @@ sequences = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(
 batch_graph = [graph1, graph2]
 batch_data = (sequences, batch_graph)
 
-test_sequence = Sequences(words=batch_word_data, batch_size=len(indexwords_list))
+test_sequence = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
 test_graph = [graph1, graph2]
 
 test_data = (test_sequence, test_graph)
@@ -299,7 +299,7 @@ tree_model = hlstm(options=options)
 test = Test(options=options, encoder=encoder, tree_model=tree_model)
 
 crit = nn.NLLLoss(size_average=True)
-# optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.3)
+# optimizer = optim.SGD(test.parameters(), lr=1, momentum=0.6)
 optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
 
@@ -317,7 +317,7 @@ if RUN:
     e_list = []
     l_list = []
 
-    for epoch in range(500):
+    for epoch in range(200):
         e_list.append(epoch)
 
         test.zero_grad()
@@ -331,7 +331,6 @@ if RUN:
 
         loss.backward()
         optimizer.step()
-
 
     test_out = test(test_data)
 
@@ -352,3 +351,4 @@ if RUN:
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
+
