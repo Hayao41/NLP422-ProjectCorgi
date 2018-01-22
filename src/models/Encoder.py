@@ -20,7 +20,7 @@ class ContextEncoder(nn.Module):
         self.lstm_num_layers = options.lstm_num_layers
         self.lstm_direction = options.lstm_direction
         self.use_bi_lstm = options.use_bi_lstm
-        self.use_cuda = options.cuda
+        self.use_cuda = options.use_cuda
         self.batch_size = 1   # default batch size 1 (inference stage)
 
         # Sequences words embedding

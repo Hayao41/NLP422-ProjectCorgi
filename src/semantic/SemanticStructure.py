@@ -1,6 +1,7 @@
 ''' 
 This file is semantic structure definition
  '''
+import torch
 
 class SemanticGraph(object):
 
@@ -47,11 +48,15 @@ class SemanticGraph(object):
         for edge in self.edges():
             edge.rel_vec = rel_embeddings[index]
             index = index + 1
-
-    def setContextVector(self, context_vectors):
+    
+    def getContextVecs(self):
         
-        for index in range(len(self.indexedWords)):
-            self.indexedWords[index].context_vec = context_vectors[index]
+        vec_list = [word.context_vec for word in self.indexedWords]
+        context_vecs = torch.cat((vec_list), 0)
+        return context_vecs
+    
+    def __len__(self):
+        return len(self.indexedWords)
     
 
 class SemanticGraphNode(object):

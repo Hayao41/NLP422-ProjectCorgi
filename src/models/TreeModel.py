@@ -25,7 +25,7 @@ class TreeStructureNetwork(nn.Module):
     def __init__(self, options):
         super(TreeStructureNetwork, self).__init__()
         self.options = options
-        self.use_cuda = options.cuda
+        self.use_cuda = options.use_cuda
 
     def bottom_up(self, graph):
         
@@ -175,8 +175,6 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         if options.xavier:
             self.init_weights
 
-    
-
     def init_weights(self):
         nn.init.xavier_normal(self.enc_linear.weight)
 
@@ -188,29 +186,23 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans el(t) = RNNl(vi(t), enc(t.l1), enc(t.l2), ... , enc(t.lk))\n
         @Trans er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))\n
         '''
-        if not TEST:
-            # left chain last hidden state
-            left_state = self.left_chain(iterator)[-1].view(1, -1)
+        
+        # left chain last hidden state
+        left_state = self.left_chain(iterator)[-1].view(1, -1)
 
-            # right chain last hidden state
-            right_state = self.right_chain(iterator)[-1].view(1, -1)
-            
-            # concatenate non-linear trans
-            hidden_vector = self.combination(left_state, right_state)
+        # right chain last hidden state
+        right_state = self.right_chain(iterator)[-1].view(1, -1)
+        
+        # concatenate non-linear trans
+        hidden_vector = self.combination(left_state, right_state)
 
-            # set context vector(as memory to next recursive stage)
-            iterator.node.context_vec = hidden_vector
-
-        else:
-
-            for left_hidden in iterator.left_hiddens():
-                print(left_hidden)
-
-            for right_hidden in iterator.right_hiddens():
-                print(right_hidden)
+        # set context vector(as memory to next recursive stage)
+        iterator.node.context_vec = hidden_vector
 
     def tp_transform(self, iterator):
-        # print(iterator.node.text)
+        
+        # there can be dynamic routing block
+
         pass
 
     def left_chain(self, iterator):
@@ -219,11 +211,9 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         left children chain transformation from head word to most left word
         '''
         
-        left_chain = iterator.node.context_vec.view(1, -1)
-
         # stack vectors from head node to most left node
-        for left_hidden in iterator.left_hiddens():
-            left_chain = torch.cat((left_chain, left_hidden.view(1, -1)), 0)
+        left_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.left_hiddens())
+        left_chain = torch.cat((left_hiddens), 0)
 
         return self.chain_transform(left_chain, self.l_lstm)
 
@@ -232,11 +222,9 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         ''' 
         right children chain transformation from head word to most right word
         '''
-        
-        right_chain = iterator.node.context_vec.view(1, -1)
 
-        for right_hidden in iterator.right_hiddens():
-            right_chain = torch.cat((right_chain, right_hidden.view(1, -1)), 0)
+        right_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.right_hiddens())
+        right_chain = torch.cat((right_hiddens), 0)
 
         return self.chain_transform(right_chain, self.r_lstm)
 
@@ -283,13 +271,11 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         )
         return out
 
-    def forward(self, graph=None):
+    def forward(self, graph):
 
-        if graph is None:
-            print("[Error] : the input graph is none!")
-        else:
-            self.bottom_up(graph)
-            self.top_down(graph)
+        assert graph is not None, "[Error] Tree model's input graph is None type!"
+
+        self.bottom_up(graph)
 
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):
@@ -305,12 +291,13 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     def tp_transform(self, iterator):
         self.dy_rout()
 
-    def forward(self, graph=None):
-        if graph is None:
-            print("forward pass")
-        else:
-            self.bottom_up(graph)
-            self.top_down(graph)
+    def forward(self, graph):
+        
+        assert graph is not None, "[Error] Tree model's input graph is None type!"
+
+        self.bottom_up(graph)
+
+        self.top_down(graph)
 
 
 class TestModel(nn.Module):
@@ -380,5 +367,5 @@ class TestModel(nn.Module):
         outs = []
         for graph in batch_graph:
             outs.append(self.classify(graph))
-
+        
         return outs

@@ -16,6 +16,7 @@ class options(object):
                 rel_emb_dims=0,
                 word_vocab_size=0,
                 word_emb_dims=0,
+                label_dims=0,
                 context_linear_dim=0,
                 use_bi_lstm=True,
                 lstm_num_layers=1,
@@ -25,7 +26,7 @@ class options(object):
                 xavier=True,
                 batch_size=1,
                 dropout=0.,
-                cuda=False
+                use_cuda=False
                 ):
         super(options, self).__init__()
         self.pos_vocab_size = pos_vocab_size
@@ -34,6 +35,7 @@ class options(object):
         self.rel_emb_dims = rel_emb_dims
         self.word_vocab_size = word_vocab_size
         self.word_emb_dims = word_emb_dims
+        self.label_dims = label_dims
         self.context_linear_dim = context_linear_dim
         self.use_bi_lstm = use_bi_lstm
         self.lstm_num_layers = lstm_num_layers
@@ -43,7 +45,7 @@ class options(object):
         self.xavier = xavier
         self.batch_size = batch_size
         self.dropout = dropout
-        self.cuda = cuda
+        self.use_cuda = use_cuda
 
 def make_dictionary(vocab_list, pad):
     

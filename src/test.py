@@ -1,15 +1,15 @@
 import semantic.SemanticStructure as sStructure
 import utils.Utils as Utils
 from utils.Utils import options
-import models.TreeModel as TreeNN
 import torch.nn as nn
-import torch.nn.functional as F
-from models.ContextEncoder import ContextEncoder
+from models.Encoder import ContextEncoder
+from models.TreeModel import HierarchicalTreeLSTMs as hlstm
+from models.SubLayer import MLP
+from models.Detector import ClauseDetector
 import torch.optim as optim
 import torch
 from torch.autograd import Variable
 import utils.Constants as Constants
-import numpy as np
 from matplotlib import pyplot as plt
 
 word = "I like this dog".split() + "He loves that colorful pen.".split()
@@ -18,9 +18,11 @@ pos = ["VV",  "NN", "IN", "JJ"]
 
 relation = ["dsubj", "dobj", "det", "amod"]
 
+label = ["RECURSE", "SPLIT"]
+
 word_pad = {
-        Constants.PAD_WORD: Constants.PAD,
-        Constants.UNK_WORD: Constants.UNK
+    Constants.PAD_WORD: Constants.PAD,
+    Constants.UNK_WORD: Constants.UNK
 }
 
 pos_pad = {
@@ -29,60 +31,46 @@ pos_pad = {
 }
 
 rel_pad = {
-    Constants.UNK_REL: Constants.UNK
+    Constants.UNK_REL: Constants.PAD
 }
 
-word2ix = Utils.make_dictionary(word, word_pad)
+word2idx = Utils.make_dictionary(word, word_pad)
 
-ix2word = {ix : word for word, ix in word2ix.items()}
+idx2word = {idx: word for word, idx in word2idx.items()}
 
-pos2ix = Utils.make_dictionary(pos, pos_pad)
+pos2idx = Utils.make_dictionary(pos, pos_pad)
 
-ix2pos = {ix : pos for pos, ix in pos2ix.items()}
+idx2pos = {idx: pos for pos, idx in pos2idx.items()}
 
-rel2ix = Utils.make_dictionary(relation, rel_pad)
+rel2idx = Utils.make_dictionary(relation, rel_pad)
 
-print(word2ix)
-print(pos2ix)
-print(rel2ix)
+label2idx = Utils.make_dictionary(label, {})
+
+idx2label = {idx: label for label, idx in label2idx.items()}
+
+print(word2idx)
+print(pos2idx)
+print(rel2idx)
 
 options = options(
-    word_vocab_size=len(word2ix),
-    word_emb_dims=20,
-    pos_vocab_size=len(pos2ix),
+    word_vocab_size=len(word2idx),
+    word_emb_dims=50,
+    pos_vocab_size=len(pos2idx),
     pos_emb_dims=0,
-    rel_vocab_size=len(rel2ix),
+    rel_vocab_size=len(rel2idx),
     rel_emb_dims=0,
-    context_linear_dim=20,
+    label_dims=len(label2idx),
+    context_linear_dim=30,
     use_bi_lstm=True,
-    lstm_hid_dims=10,
+    lstm_hid_dims=30,
     lstm_direction=2,
     lstm_num_layers=1,
-    chain_hid_dims=20,
+    chain_hid_dims=30,
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    cuda=False
+    use_cuda=False
 )
-
-
-def make_training_data(indexwords_list):
-    words_list = [[word.word_idx for word in words] for words in indexwords_list]
-    pos_list = [[word.pos_idx for word in words] for words in indexwords_list]
-
-    max_len = max(len(inst) for inst in words_list)
-
-    word_data = np.array([
-        inst + [Constants.PAD] * (max_len - len(inst))
-        for inst in words_list
-    ])
-
-    pos_data = np.array([
-        inst + [Constants.PAD] * (max_len - len(inst))
-        for inst in pos_list
-    ])
-
-    return word_data, pos_data
 
 
 class Sequences(object):
@@ -108,110 +96,89 @@ class Sequences(object):
             self.pos = self.pos.cpu()
 
 
-class TestModel(nn.Module):
-    def __init__(self, options, encoder):
-        super(TestModel, self).__init__()
-
-        self.encoder = encoder
-
-        self.out_dims = options.pos_vocab_size
-
-        self.hid2tag = nn.Linear(options.lstm_hid_dims, self.out_dims)
-
-    def switch2gpu(self):
-        self.encoder.switch2gpu()
-        self.cuda()
-
-    def forward(self, sequences):
-        out = self.encoder(sequences)
-        out = self.hid2tag(out)
-
-        return F.log_softmax(out, dim=-1)
-
-
 temp = Variable(torch.zeros(1, options.lstm_hid_dims))
-if options.cuda:
+if options.use_cuda:
     temp = temp.cuda()
 
 # like
 root1 = sStructure.SemanticGraphNode(word[1],
                                     pos[0],
                                     2,
-                                    word_idx=word2ix[word[1]],
+                                    word_idx=word2idx[word[1]],
                                     label=1,
                                     context_vec=temp,
-                                    pos_idx=pos2ix[pos[0]])
+                                    pos_idx=pos2idx[pos[0]])
 # I
 node1 = sStructure.SemanticGraphNode(word[0],
                                      pos[1],
                                      1,
                                      label=0,
                                      isLeaf=True,
-                                     word_idx=word2ix[word[0]],
+                                     word_idx=word2idx[word[0]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[1]])
+                                     pos_idx=pos2idx[pos[1]])
 # this
 node2 = sStructure.SemanticGraphNode(word[2],
                                      pos[2],
                                      3,
                                      label=0,
                                      isLeaf=True,
-                                     word_idx=word2ix[word[2]],
+                                     word_idx=word2idx[word[2]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[2]])
+                                     pos_idx=pos2idx[pos[2]])
 # dog
 node3 = sStructure.SemanticGraphNode(word[3],
                                      pos[1],
                                      4,
                                      label=0,
-                                     word_idx=word2ix[word[3]],
+                                     word_idx=word2idx[word[3]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[1]])
+                                     pos_idx=pos2idx[pos[1]])
 
 # love
 root2 = sStructure.SemanticGraphNode(word[5],
                                      pos[0],
                                      2,
                                      label=1,
-                                     word_idx=word2ix[word[5]],
+                                     word_idx=word2idx[word[5]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[0]])
+                                     pos_idx=pos2idx[pos[0]])
 
 # he
 node4 = sStructure.SemanticGraphNode(word[4],
                                      pos[1],
                                      1,
                                      label=0,
-                                     word_idx=word2ix[word[4]],
+                                     word_idx=word2idx[word[4]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[1]])
+                                     pos_idx=pos2idx[pos[1]])
 
 # that
 node5 = sStructure.SemanticGraphNode(word[6],
                                      pos[2],
                                      3,
                                      label=0,
-                                     word_idx=word2ix[word[6]],
+                                     word_idx=word2idx[word[6]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[2]])
+                                     pos_idx=pos2idx[pos[2]])
 
 # colorful
 node6 = sStructure.SemanticGraphNode(word[7],
                                      pos[3],
                                      4,
                                      label=0,
-                                     word_idx=word2ix[word[7]],
+                                     word_idx=word2idx[word[7]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[3]])
+                                     pos_idx=pos2idx[pos[3]])
 
 # pen
 node7 = sStructure.SemanticGraphNode(word[8],
                                      pos[1],
                                      5,
                                      label=0,
-                                     word_idx=word2ix[word[8]],
+                                     word_idx=word2idx[word[8]],
                                      context_vec=temp,
-                                     pos_idx=pos2ix[pos[1]])
+                                     pos_idx=pos2idx[pos[1]])
 
 
 sentence1 = []
@@ -231,43 +198,43 @@ sentence2.append(node7)
 edge1 = sStructure.SemanticGraphEdge(root1,
                                      node1,
                                      relation[0],
-                                     rel_idx=rel2ix[relation[0]])
+                                     rel_idx=rel2idx[relation[0]])
 
 # like -> dog
 edge2 = sStructure.SemanticGraphEdge(root1,
                                      node3,
                                      relation[1],
-                                     rel_idx=rel2ix[relation[1]])
+                                     rel_idx=rel2idx[relation[1]])
 
 # dog -> this
 edge3 = sStructure.SemanticGraphEdge(node3,
                                      node2,
                                      relation[2],
-                                     rel_idx=rel2ix[relation[2]])
+                                     rel_idx=rel2idx[relation[2]])
 
 # love -> he
 edge4 = sStructure.SemanticGraphEdge(root2,
                                      node4,
                                      relation[0],
-                                     rel_idx=rel2ix[relation[0]])
+                                     rel_idx=rel2idx[relation[0]])
 
 # love -> pen
 edge5 = sStructure.SemanticGraphEdge(root2,
                                      node7,
                                      relation[1],
-                                     rel_idx=rel2ix[relation[1]])
+                                     rel_idx=rel2idx[relation[1]])
 
 # pen -> that
 edge6 = sStructure.SemanticGraphEdge(node7,
                                      node5,
                                      relation[2],
-                                     rel_idx=rel2ix[relation[2]])
+                                     rel_idx=rel2idx[relation[2]])
 
 # pen -> colorful
 edge7 = sStructure.SemanticGraphEdge(node7,
                                      node6,
                                      relation[3],
-                                     rel_idx=rel2ix[relation[3]])
+                                     rel_idx=rel2idx[relation[3]])
 
 
 outedge_list1 = [edge1, edge2]
@@ -322,35 +289,35 @@ indexwords_list = []
 indexwords_list.append(sentence1)
 indexwords_list.append(sentence2)
 
-word_data, pos_data = make_training_data(indexwords_list)
-
-batch_word_data = Variable(torch.from_numpy(word_data))
-batch_pos_data = Variable(torch.from_numpy(pos_data))
+batch_word_data, batch_pos_data = Utils.make_training_data(indexwords_list)
+target_data = Utils.make_target_data(indexwords_list)
 
 sequences = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
+batch_graph = [graph1, graph2]
+batch_data = (sequences, batch_graph)
 
-print(batch_word_data, batch_pos_data)
+test_sequence = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
+test_graph = [graph1, graph2]
+
+test_data = (test_sequence, test_graph)
+
 
 encoder = ContextEncoder(options=options)
-test = TestModel(options=options, encoder=encoder)
+tree_model = hlstm(options=options)
+mlp = MLP(options=options)
+test = ClauseDetector(options=options, encoder=encoder, tree=tree_model, classifier=mlp)
+
 crit = nn.NLLLoss(size_average=True)
-# optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.3)
+# optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.6)
 optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
-test_data = Variable(torch.from_numpy(word_data))
 
-tree = TreeNN.HierarchicalTreeLSTMs(options=options)
-
-if options.cuda:
-    sequences.switch2gpu()
+if options.use_cuda:
+    batch_data[0].switch2gpu()
+    test_data[0].switch2gpu()
     test.switch2gpu()
     crit = crit.cuda()
-    test_data = test_data.cuda()
-    tree.switch2gpu()
-
-print(test_data)
-tree(graph1)
-print(graph1)
+    target_data = target_data.cuda()
 
 RUN = True
 
@@ -359,40 +326,38 @@ if RUN:
     e_list = []
     l_list = []
 
-    for epoch in range(1000):
+    for epoch in range(100):
         e_list.append(epoch)
 
         test.zero_grad()
-        out = test(sequences)
+        out = test(batch_data).outputs
 
         loss = 0
+        
+        loss = crit(out, target_data)
 
-
-        loss = crit(out.view(-1, len(pos2ix)), sequences.pos.view(-1))
-
-        l_list.append(loss.data[0])
+        l_list.append(loss.cpu().data[0])
 
         loss.backward()
         optimizer.step()
 
-    test_seq = Sequences(words=test_data, batch_size=2)
-    if options.cuda:
-        test_seq.switch2gpu()
+    test_out = test(test_data).preds
 
-    test_out = test(test_seq)
+    print(test_out)
 
-    insts_pos = []
-    for inst in test_out.cpu():
-        inst_pos = []
-        for word in inst:
+    insts_label = []
+    for inst in test_out:
+        inst_label = []
+        for word in inst.cpu():
             word = word.data.numpy().tolist()
-            inst_pos.append(ix2pos[word.index(max(word))])
-        insts_pos.append(inst_pos)
+            inst_label.append(idx2label[word.index(max(word))])
+        insts_label.append(inst_label)
 
-    print(insts_pos)
+    print(insts_label)
 
     plt.plot(e_list, l_list)
     plt.title('Test Model Training')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
+
