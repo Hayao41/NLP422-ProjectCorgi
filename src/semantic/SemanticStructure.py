@@ -175,10 +175,9 @@ class SemanticGraphIterator(object):
             if target.sentence_index > self.node.sentence_index:
                 targets.append(target)
 
-            
         if len(targets) is not 0:
             # sort right target nodes by sentence index ASC
-            targets.sort(key=lambda SemanticGraphNode: SemanticGraphNode.sentence_index)
+            targets.sort(key=lambda target: target.sentence_index)
 
             for target in targets:
                 yield target.context_vec
@@ -191,7 +190,7 @@ class SemanticGraphIterator(object):
         if self.node.isLeaf is not None:
             return self.node.isLeaf
         else:
-            return len(self.getChildren()) == 0
+            return len(list(self.children())) == 0
 
     def allChildrenChecked(self):
         
