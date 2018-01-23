@@ -85,17 +85,22 @@ class TreeEmbedding(nn.Module):
             # embedding then set embeddings onto tree
             if self.rel_emb_dims is not 0:
                 # get look up table index
+                rel_idx = list(graph.getArcRelationIdxs())
+
                 if self.use_cuda:
-                    rel_idx = Variable(torch.LongTensor(list(graph.getArcRelationIdxs()))).cuda()
+                    rel_idx = Variable(torch.LongTensor(rel_idx)).cuda()
                 else:
-                    rel_idx = Variable(torch.LongTensor(list(graph.getArcRelationIdxs())))
+                    rel_idx = Variable(torch.LongTensor(rel_idx))
                 rel_embeddings = self.relation_embed(rel_idx)
                 graph.setArcRelationEmbeddings(rel_embeddings)
 
             if self.rp_emb_dims is not 0:
+
+                position_idx = list(graph.getNodePositionIdxs())
+
                 if self.use_cuda:
-                    position_idx = Variable(torch.LongTensor(list(graph.getNodePositionIdxs()))).cuda()
+                    position_idx = Variable(torch.LongTensor(position_idx)).cuda()
                 else:
-                    position_idx = Variable(torch.LongTensor(list(graph.getNodePositionIdxs())))
+                    position_idx = Variable(torch.LongTensor(position_idx))
                 position_embeddings = self.position_embed(position_idx)
                 graph.setNodePositionEmbeddings(position_embeddings)
