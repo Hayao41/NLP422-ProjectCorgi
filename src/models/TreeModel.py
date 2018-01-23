@@ -196,10 +196,11 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         # incom-relation embedding
         if self.rel_emb_dims is not 0:
             incom_rel = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-            # concatenate non-linear trans
-            hidden_vector = self.combination(left_state, right_state, incom_rel)
         else:
-            hidden_vector = self.combination(left_state, right_state, incom_rel=None)
+            incom_rel = None
+
+        # concatenate non-linear trans
+        hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
 
         # set context vector(as memory to next recursive stage)
         iterator.node.context_vec = hidden_vector
@@ -233,7 +234,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         return self.chain_transform(right_chain, self.r_lstm)
 
-    def combination(self, left_state, right_state, incom_rel):
+    def combination(self, left_state, right_state, incom_rel=None):
         
         ''' 
         head word encoding : left and right chain combination transformation\n
@@ -306,74 +307,3 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         self.bottom_up(graph)
 
         self.top_down(graph)
-
-
-# class TestModel(nn.Module):
-
-#     ''' 
-#     test model that implements detector encapsulate embedding layer, context encoder, tree encoder
-#     for every layer testing
-#     '''
-    
-#     def __init__(self, tree_model, encoder, options):
-#         super(TestModel, self).__init__()
-#         self.tree_model = tree_model
-#         self.encoder = encoder
-#         self.pos_vocab_size = options.pos_vocab_size
-#         self.linear = nn.Linear(options.lstm_hid_dims, options.pos_vocab_size)
-#         nn.init.xavier_normal(self.linear.weight)
-
-#     def zero_grad(self):
-#         self.encoder.zero_grad()
-#         self.tree_model.zero_grad()
-#         self.linear.zero_grad()
-
-#     def switch2gpu(self):
-#         self.cuda()
-#         self.encoder.switch2gpu()
-#         self.tree_model.switch2gpu()
-
-#     def switch2cpu(self):
-#         self.cpu()
-#         self.encoder.switch2cpu()
-#         self.tree_model.switch2cpu()
-
-#     def classify(self, graph):
-#         context_vecs = [w.context_vec for w in graph.indexedWords]
-#         context_vecs = torch.cat((context_vecs), 0)
-#         pred = self.linear(context_vecs)
-#         pred = F.log_softmax(pred, dim=-1)
-#         return pred
-            
-
-#     def setContextVecotr2Graph(self, context_vectors, batch_graph):
-#         batch_size = len(batch_graph)
-
-#         for inst in range(batch_size):
-#             sequence = context_vectors[inst]
-#             graph = batch_graph[inst]
-#             for idx in range(len(graph.indexedWords)):
-#                 graph.indexedWords[idx].context_vec = sequence[idx]
-
-#     def forward(self, batch_data):
-        
-#         batch_sequence, batch_graph = batch_data
-
-#         assert len(batch_sequence) == len(batch_graph), "sequence batch's size does not match batch graphs"
-
-#         # sequence encoding
-#         context_vectors = self.encoder(batch_sequence)
-
-#         # set context vectors onto semantic tree
-#         self.setContextVecotr2Graph(context_vectors, batch_graph)
-
-#         # tree hierarchical encoding stage
-#         for graph in batch_graph:
-#             self.tree_model(graph)
-
-#         # calssify
-#         outs = []
-#         for graph in batch_graph:
-#             outs.append(self.classify(graph))
-        
-#         return outs

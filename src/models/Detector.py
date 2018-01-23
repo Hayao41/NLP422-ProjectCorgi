@@ -1,9 +1,7 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from collections import namedtuple
-from torch.autograd import Variable
 
 
 class ClauseDetector(nn.Module):
@@ -55,7 +53,6 @@ class ClauseDetector(nn.Module):
             for idx in range(len(graph.indexedWords)):
                 graph.indexedWords[idx].context_vec = sequence[idx]
 
-
     def mapGraph2Sequence(self, batch_graph):
         pass
 
@@ -97,8 +94,3 @@ class ClauseDetector(nn.Module):
             preds.append(self.clf(graph.getContextVecs()))
 
         return self.makeOuputTuple(preds)
-
-        
-
-
-    

@@ -75,7 +75,7 @@ options = options(
     batch_size=2,
     xavier=True,
     dropout=0.1,
-    use_cuda=False
+    use_cuda=True
 )
 
 

@@ -40,6 +40,7 @@ class TreeEmbedding(nn.Module):
 
         self.rp_emb_dims = options.rp_emb_dims
         self.rel_emb_dims = options.rel_emb_dims
+        self.use_cuda = options.use_cuda
 
         # relative position embedding
         # @Dimension:
@@ -68,9 +69,11 @@ class TreeEmbedding(nn.Module):
             nn.init.xavier_normal(self.relation_embed.weight)
 
     def switch2gpu(self):
+        self.use_cuda = True
         self.cuda()
 
     def switch2cpu(self):
+        self.use_cuda = False
         self.cpu()
 
     def forward(self, batch_graph):
@@ -82,11 +85,17 @@ class TreeEmbedding(nn.Module):
             # embedding then set embeddings onto tree
             if self.rel_emb_dims is not 0:
                 # get look up table index
-                rel_idx = Variable(torch.LongTensor(list(graph.getArcRelationIdxs())))
+                if self.use_cuda:
+                    rel_idx = Variable(torch.LongTensor(list(graph.getArcRelationIdxs()))).cuda()
+                else:
+                    rel_idx = Variable(torch.LongTensor(list(graph.getArcRelationIdxs())))
                 rel_embeddings = self.relation_embed(rel_idx)
                 graph.setArcRelationEmbeddings(rel_embeddings)
 
             if self.rp_emb_dims is not 0:
-                position_idx = Variable(torch.LongTensor(list(graph.getNodePositionIdxs())))
+                if self.use_cuda:
+                    position_idx = Variable(torch.LongTensor(list(graph.getNodePositionIdxs()))).cuda()
+                else:
+                    position_idx = Variable(torch.LongTensor(list(graph.getNodePositionIdxs())))
                 position_embeddings = self.position_embed(position_idx)
                 graph.setNodePositionEmbeddings(position_embeddings)
