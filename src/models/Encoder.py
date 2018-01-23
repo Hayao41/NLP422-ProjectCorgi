@@ -101,7 +101,7 @@ class ContextEncoder(nn.Module):
         @WordTrans : vi = g(W word_emb + b)\n
         @PosTrans : vi = g(W pos_emb + b)\n
         '''
-
+        
         if WordEmbeddings is not None and PosEmbeddings is not None:
             
             # cat word embeddings and pos embeddings along the last dimension

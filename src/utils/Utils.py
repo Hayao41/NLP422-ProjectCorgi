@@ -14,6 +14,8 @@ class options(object):
                 pos_emb_dims=0,
                 rel_vocab_size=0,
                 rel_emb_dims=0,
+                rp_vocab_size=0,
+                rp_emb_dims=0,
                 word_vocab_size=0,
                 word_emb_dims=0,
                 label_dims=0,
@@ -33,6 +35,8 @@ class options(object):
         self.pos_emb_dims = pos_emb_dims
         self.rel_vocab_size = rel_vocab_size
         self.rel_emb_dims = rel_emb_dims
+        self.rp_vocab_size = rp_vocab_size
+        self.rp_emb_dims = rp_emb_dims
         self.word_vocab_size = word_vocab_size
         self.word_emb_dims = word_emb_dims
         self.label_dims = label_dims

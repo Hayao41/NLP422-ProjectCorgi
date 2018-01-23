@@ -2,6 +2,7 @@
 This file is semantic structure definition
  '''
 import torch
+from collections import namedtuple
 
 class SemanticGraph(object):
 
@@ -30,22 +31,40 @@ class SemanticGraph(object):
         for word in self.indexedWords:
             yield word.label
 
-    def edges(self):
+    def outcomingEdges(self):
         
         for source in self.outgoing_edges:
             edges = self.outgoing_edges[source]
             for edge in edges:
                 yield edge
 
+    def incomingEdges(self):
+        
+        for target in self.incoming_edges:
+            edges = self.incoming_edges[target]
+            for edge in edges:
+                yield edge
+
+    def getNodePositionIdxs(self):
+        
+        for word in self.indexedWords:
+            yield word.rp_idx
+
+    def setNodePositionEmbeddings(self, position_embeddings):
+        
+        for index in range(len(self.indexedWords)):
+            self.indexedWords[index].rp_vec = position_embeddings[index]
+
+
     def getArcRelationIdxs(self):
     
-        for edge in self.edges():
+        for edge in self.incomingEdges():
             yield edge.rel_idx
 
     def setArcRelationEmbeddings(self, rel_embeddings):
         
         index = 0
-        for edge in self.edges():
+        for edge in self.incomingEdges():
             edge.rel_vec = rel_embeddings[index]
             index = index + 1
     
@@ -69,10 +88,10 @@ class SemanticGraphNode(object):
                 word_idx=None,
                 pos_idx=None,
                 rp_idx=None,
-                label=0,
                 rp_vec=None,
                 context_vec=None,
                 atten_prob=0.,
+                label=0,
                 isLeaf=False
     ):
         super(SemanticGraphNode, self).__init__()
@@ -83,9 +102,9 @@ class SemanticGraphNode(object):
         self.word_idx = word_idx
         self.pos_idx = pos_idx
         self.rp_idx = rp_idx
-        self.label = label
         self.rp_vec = rp_vec
         self.context_vec = context_vec
+        self.label = label
         self.atten_prob = atten_prob
         self.isLeaf = isLeaf
 
@@ -146,6 +165,17 @@ class SemanticGraphIterator(object):
         
         for edge in self.getIncomingEdges():
             yield SemanticGraphIterator(edge.source, self.graph)
+
+    def queryIncomRelation(self):
+        
+        IncomRelation = namedtuple('IncomRelation', ['relation', 'rel_idx', 'rel_vec'])
+        
+        for edge in self.getIncomingEdges():
+            yield IncomRelation(
+                relation=edge.relation,
+                rel_idx=edge.rel_idx,
+                rel_vec=edge.rel_vec
+            )
 
     def left_hiddens(self):
         

@@ -6,7 +6,7 @@ EOS = 3
 
 PAD_WORD = '<blank>'
 PAD_POS = '<none>'
-PAD_REL = "<none>"
+PAD_REL = "<root>"
 UNK_WORD = '<unk>'
 UNK_POS = '<unk>'
 UNK_REL = '<unk>'

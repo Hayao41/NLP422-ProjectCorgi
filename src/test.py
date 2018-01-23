@@ -6,6 +6,7 @@ from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs as hlstm
 from models.SubLayer import MLP
 from models.Detector import ClauseDetector
+from models.SubLayer import TreeEmbedding
 import torch.optim as optim
 import torch
 from torch.autograd import Variable
@@ -31,7 +32,8 @@ pos_pad = {
 }
 
 rel_pad = {
-    Constants.UNK_REL: Constants.PAD
+    Constants.PAD_REL: Constants.PAD,
+    Constants.UNK_REL: Constants.UNK
 }
 
 word2idx = Utils.make_dictionary(word, word_pad)
@@ -44,6 +46,8 @@ idx2pos = {idx: pos for pos, idx in pos2idx.items()}
 
 rel2idx = Utils.make_dictionary(relation, rel_pad)
 
+idx2rel = {idx: rel for rel, idx in rel2idx.items()}
+
 label2idx = Utils.make_dictionary(label, {})
 
 idx2label = {idx: label for label, idx in label2idx.items()}
@@ -54,11 +58,13 @@ print(rel2idx)
 
 options = options(
     word_vocab_size=len(word2idx),
-    word_emb_dims=50,
+    word_emb_dims=0,
     pos_vocab_size=len(pos2idx),
-    pos_emb_dims=0,
+    pos_emb_dims=50,
     rel_vocab_size=len(rel2idx),
-    rel_emb_dims=0,
+    rel_emb_dims=50,
+    rp_vocab_size=10,
+    rp_emb_dims=0,
     label_dims=len(label2idx),
     context_linear_dim=30,
     use_bi_lstm=True,
@@ -104,6 +110,7 @@ if options.use_cuda:
 root1 = sStructure.SemanticGraphNode(word[1],
                                     pos[0],
                                     2,
+                                    rp_idx=0,
                                     word_idx=word2idx[word[1]],
                                     label=1,
                                     context_vec=temp,
@@ -112,6 +119,7 @@ root1 = sStructure.SemanticGraphNode(word[1],
 node1 = sStructure.SemanticGraphNode(word[0],
                                      pos[1],
                                      1,
+                                     rp_idx=0,
                                      label=0,
                                      isLeaf=True,
                                      word_idx=word2idx[word[0]],
@@ -121,6 +129,7 @@ node1 = sStructure.SemanticGraphNode(word[0],
 node2 = sStructure.SemanticGraphNode(word[2],
                                      pos[2],
                                      3,
+                                     rp_idx=0,
                                      label=0,
                                      isLeaf=True,
                                      word_idx=word2idx[word[2]],
@@ -130,6 +139,7 @@ node2 = sStructure.SemanticGraphNode(word[2],
 node3 = sStructure.SemanticGraphNode(word[3],
                                      pos[1],
                                      4,
+                                     rp_idx=0,
                                      label=0,
                                      word_idx=word2idx[word[3]],
                                      context_vec=temp,
@@ -139,6 +149,7 @@ node3 = sStructure.SemanticGraphNode(word[3],
 root2 = sStructure.SemanticGraphNode(word[5],
                                      pos[0],
                                      2,
+                                     rp_idx=0,
                                      label=1,
                                      word_idx=word2idx[word[5]],
                                      context_vec=temp,
@@ -148,6 +159,7 @@ root2 = sStructure.SemanticGraphNode(word[5],
 node4 = sStructure.SemanticGraphNode(word[4],
                                      pos[1],
                                      1,
+                                     rp_idx=0,
                                      label=0,
                                      word_idx=word2idx[word[4]],
                                      context_vec=temp,
@@ -157,6 +169,7 @@ node4 = sStructure.SemanticGraphNode(word[4],
 node5 = sStructure.SemanticGraphNode(word[6],
                                      pos[2],
                                      3,
+                                     rp_idx=0,
                                      label=0,
                                      word_idx=word2idx[word[6]],
                                      context_vec=temp,
@@ -166,6 +179,7 @@ node5 = sStructure.SemanticGraphNode(word[6],
 node6 = sStructure.SemanticGraphNode(word[7],
                                      pos[3],
                                      4,
+                                     rp_idx=0,
                                      label=0,
                                      word_idx=word2idx[word[7]],
                                      context_vec=temp,
@@ -175,6 +189,7 @@ node6 = sStructure.SemanticGraphNode(word[7],
 node7 = sStructure.SemanticGraphNode(word[8],
                                      pos[1],
                                      5,
+                                     rp_idx=0,
                                      label=0,
                                      word_idx=word2idx[word[8]],
                                      context_vec=temp,
@@ -194,6 +209,11 @@ sentence2.append(node5)
 sentence2.append(node6)
 sentence2.append(node7)
 
+root_edge1 = sStructure.SemanticGraphEdge(None,
+                                        root1,
+                                        Constants.PAD_REL,
+                                        rel_idx=rel2idx[Constants.PAD_REL])
+
 # like -> I
 edge1 = sStructure.SemanticGraphEdge(root1,
                                      node1,
@@ -211,6 +231,11 @@ edge3 = sStructure.SemanticGraphEdge(node3,
                                      node2,
                                      relation[2],
                                      rel_idx=rel2idx[relation[2]])
+
+root_edge2 = sStructure.SemanticGraphEdge(None,
+                                        root2,
+                                        Constants.PAD_REL,
+                                        rel_idx=rel2idx[Constants.PAD_REL])
 
 # love -> he
 edge4 = sStructure.SemanticGraphEdge(root2,
@@ -252,6 +277,9 @@ inedge_list5 = [edge5]
 inedge_list6 = [edge6]
 inedge_list7 = [edge7]
 
+inedge_list8 = [root_edge1]
+inedge_list9 = [root_edge2]
+
 graph1 = sStructure.SemanticGraph(root1)
 outgoing_edges = {}
 outgoing_edges[root1] = outedge_list1
@@ -259,6 +287,7 @@ outgoing_edges[node3] = outedge_list2
 graph1.outgoing_edges = outgoing_edges
 
 incoming_edges = {}
+incoming_edges[root1] = inedge_list8
 incoming_edges[node1] = inedge_list1
 incoming_edges[node3] = inedge_list2
 incoming_edges[node2] = inedge_list3
@@ -271,6 +300,7 @@ outgoing_edges2[node7] = outedge_list4
 graph2.outgoing_edges = outgoing_edges2
 
 incoming_edges2 = {}
+incoming_edges2[root2] = inedge_list9
 incoming_edges2[node4] = inedge_list4
 incoming_edges2[node5] = inedge_list5
 incoming_edges2[node6] = inedge_list6
@@ -304,8 +334,9 @@ test_data = (test_sequence, test_graph)
 
 encoder = ContextEncoder(options=options)
 tree_model = hlstm(options=options)
+tree_embed = TreeEmbedding(options=options)
 mlp = MLP(options=options)
-test = ClauseDetector(options=options, encoder=encoder, tree=tree_model, classifier=mlp)
+test = ClauseDetector(options=options, encoder=encoder, tree_embed=tree_embed, tree=tree_model, classifier=mlp)
 
 crit = nn.NLLLoss(size_average=True)
 # optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.6)
