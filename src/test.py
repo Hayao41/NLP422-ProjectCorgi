@@ -1,60 +1,15 @@
-import semantic.SemanticStructure as sStructure
-import utils.Utils as Utils
+
 from utils.Utils import options
 import torch.nn as nn
 from models.Encoder import ContextEncoder
-from models.TreeModel import HierarchicalTreeLSTMs as hlstm
+from models.TreeModel import HierarchicalTreeLSTMs
 from models.SubLayer import MLP
 from models.Detector import ClauseDetector
 from models.SubLayer import TreeEmbedding
 import torch.optim as optim
-import torch
-from torch.autograd import Variable
-import utils.Constants as Constants
 from matplotlib import pyplot as plt
-
-word = "I like this dog".split() + "He loves that colorful pen.".split()
-
-pos = ["VV",  "NN", "IN", "JJ"]
-
-relation = ["dsubj", "dobj", "det", "amod"]
-
-label = ["RECURSE", "SPLIT"]
-
-word_pad = {
-    Constants.PAD_WORD: Constants.PAD,
-    Constants.UNK_WORD: Constants.UNK
-}
-
-pos_pad = {
-    Constants.PAD_POS: Constants.PAD,
-    Constants.UNK_POS: Constants.UNK
-}
-
-rel_pad = {
-    Constants.PAD_REL: Constants.PAD,
-    Constants.UNK_REL: Constants.UNK
-}
-
-word2idx = Utils.make_dictionary(word, word_pad)
-
-idx2word = {idx: word for word, idx in word2idx.items()}
-
-pos2idx = Utils.make_dictionary(pos, pos_pad)
-
-idx2pos = {idx: pos for pos, idx in pos2idx.items()}
-
-rel2idx = Utils.make_dictionary(relation, rel_pad)
-
-idx2rel = {idx: rel for rel, idx in rel2idx.items()}
-
-label2idx = Utils.make_dictionary(label, {})
-
-idx2label = {idx: label for label, idx in label2idx.items()}
-
-print(word2idx)
-print(pos2idx)
-print(rel2idx)
+from data.DataLoader import MiniBatchLoader
+from preprocessing import *
 
 options = options(
     word_vocab_size=len(word2idx),
@@ -62,317 +17,159 @@ options = options(
     pos_vocab_size=len(pos2idx),
     pos_emb_dims=100,
     rel_vocab_size=len(rel2idx),
-    rel_emb_dims=30,
+    rel_emb_dims=100,
     rp_vocab_size=20,
     rp_emb_dims=0,
     label_dims=len(label2idx),
-    context_linear_dim=30,
+    context_linear_dim=50,
     use_bi_lstm=True,
     lstm_hid_dims=50,
-    lstm_direction=2,
     lstm_num_layers=1,
     chain_hid_dims=50,
-    batch_size=2,
+    batch_size=5,
     xavier=True,
     dropout=0.1,
-    use_cuda=True
+    padding=0,
+    use_cuda=False
+)
+
+test_dp1 = "-> like/VBP-2 (root)"\
+        "\n  -> I/PRP-1 (nsubj:to)"\
+        "\n  -> dog/NN-4 (dobj)"\
+        "\n    -> this/DT-3 (det)"\
+        "\n  -> ./.-5 (punct)"
+
+test_dp2 = "-> loves/VBZ-2 (root)"\
+        "\n   -> He/PRP-1 (nsubj)"\
+        "\n   -> pen/NN-5 (dobj)"\
+        "\n     -> that/IN-3 (det)"\
+        "\n     -> colorful/JJ-4 (amod)"\
+        "\n   -> ./.-6 (punct)"
+
+test_dp3 = "-> went/VBD-3 (root)"\
+        "\n  -> He/PRP-1 (nsubj)"\
+        "\n  -> eventually/RB-2 (advmod)"\
+        "\n  -> City/NNP-7 (nmod:to)"\
+        "\n    -> to/TO-4 (case)"\
+        "\n    -> New/NNP-5 (compound)"\
+        "\n    -> York/NNP-6 (compound)"\
+        "\n  -> and/CC-9 (cc)"\
+        "\n  -> made/VBD-10 (conj:and)"\
+        "\n    -> records/NNS-11 (dobj)"\
+        "\n      -> Records/NNPS-14 (nmod:for)"\
+        "\n        -> for/IN-12 (case)"\
+        "\n        -> King/NNP-13 (compound)"\
+        "\n    -> name/NN-17 (nmod:under)"\
+        "\n      -> under/IN-15 (case)"\
+        "\n      -> the/DT-16 (det)"\
+        "\n      -> Grant/NNP-19 (dep)"\
+        "\n        -> Al/NNP-18 (compound)"\
+        "\n      -> one/CD-21 (dep)"\
+        "\n        -> particular/JJ-23 (nmod:in)"\
+        "\n          -> in/IN-22 (case)"\
+        "\n          -> Cabaret/NN-26 (dep)"\
+        "\n            -> appeared/VBN-29 (acl)"\
+        "\n              -> charts/NNS-34 (nmod:in)"\
+        "\n              -> in/IN-30 (case)"\
+        "\n                -> the/DT-31 (det)"\
+        "\n                -> Variety/NNP-32 (compound)"\
+        "\n                -> magazine/NN-33 (compound)"
+
+print(word2idx)
+print(pos2idx)
+print(rel2idx)
+
+use_word = (options.word_emb_dims != 0)
+use_pos = (options.pos_emb_dims != 0)
+use_rel = (options.rel_emb_dims != 0)
+
+test_graph1 = buildSemanticGraph(test_dp1, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
+test_graph2 = buildSemanticGraph(test_dp2, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
+test_graph3 = buildSemanticGraph(test_dp3, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
+
+data1 = DataTuple(indexedWords=test_graph1.indexedWords, graph=test_graph1)
+data2 = DataTuple(indexedWords=test_graph2.indexedWords, graph=test_graph2)
+data3 = DataTuple(indexedWords=test_graph3.indexedWords, graph=test_graph3)
+
+train_data_list = [data1, data2, data3, data1, data2, data3, data1, data2, data3]
+test_data_list = [data1, data2, data3]
+
+train_data = MiniBatchLoader(
+    Dataset=train_data_list,
+    shuffle=True,
+    batch_size=4,
+    use_cuda=options.use_cuda,
+    use_word=use_word,
+    use_pos=use_pos,
+    has_graph=True
+)
+
+test_data = MiniBatchLoader(
+    Dataset=test_data_list,
+    shuffle=True,
+    batch_size=1,
+    use_cuda=options.use_cuda,
+    use_word=use_word,
+    use_pos=use_pos,
+    has_graph=True
 )
 
 
-class Sequences(object):
-    def __init__(self, words=None, pos=None, batch_size=1):
-
-        self.words = words
-        self.pos = pos
-        self.batch_size = batch_size
-
-    def __len__(self):
-        return self.batch_size
-
-    def switch2gpu(self):
-        if self.words is not None:
-            self.words = self.words.cuda()
-        if self.pos is not None:
-            self.pos = self.pos.cuda()
-
-    def switch2cpu(self):
-        if self.words is not None:
-            self.words = self.words.cpu()
-        if self.pos is not None:
-            self.pos = self.pos.cpu()
-
-
-temp = Variable(torch.zeros(1, options.lstm_hid_dims))
-if options.use_cuda:
-    temp = temp.cuda()
-
-# like
-root1 = sStructure.SemanticGraphNode(word[1],
-                                    pos[0],
-                                    2,
-                                    rp_idx=0,
-                                    word_idx=word2idx[word[1]],
-                                    label=1,
-                                    context_vec=temp,
-                                    pos_idx=pos2idx[pos[0]])
-# I
-node1 = sStructure.SemanticGraphNode(word[0],
-                                     pos[1],
-                                     1,
-                                     rp_idx=0,
-                                     label=0,
-                                     isLeaf=True,
-                                     word_idx=word2idx[word[0]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[1]])
-# this
-node2 = sStructure.SemanticGraphNode(word[2],
-                                     pos[2],
-                                     3,
-                                     rp_idx=0,
-                                     label=0,
-                                     isLeaf=True,
-                                     word_idx=word2idx[word[2]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[2]])
-# dog
-node3 = sStructure.SemanticGraphNode(word[3],
-                                     pos[1],
-                                     4,
-                                     rp_idx=0,
-                                     label=0,
-                                     word_idx=word2idx[word[3]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[1]])
-
-# love
-root2 = sStructure.SemanticGraphNode(word[5],
-                                     pos[0],
-                                     2,
-                                     rp_idx=0,
-                                     label=1,
-                                     word_idx=word2idx[word[5]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[0]])
-
-# he
-node4 = sStructure.SemanticGraphNode(word[4],
-                                     pos[1],
-                                     1,
-                                     rp_idx=0,
-                                     label=0,
-                                     word_idx=word2idx[word[4]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[1]])
-
-# that
-node5 = sStructure.SemanticGraphNode(word[6],
-                                     pos[2],
-                                     3,
-                                     rp_idx=0,
-                                     label=0,
-                                     word_idx=word2idx[word[6]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[2]])
-
-# colorful
-node6 = sStructure.SemanticGraphNode(word[7],
-                                     pos[3],
-                                     4,
-                                     rp_idx=0,
-                                     label=0,
-                                     word_idx=word2idx[word[7]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[3]])
-
-# pen
-node7 = sStructure.SemanticGraphNode(word[8],
-                                     pos[1],
-                                     5,
-                                     rp_idx=0,
-                                     label=0,
-                                     word_idx=word2idx[word[8]],
-                                     context_vec=temp,
-                                     pos_idx=pos2idx[pos[1]])
-
-
-sentence1 = []
-sentence1.append(node1)
-sentence1.append(root1)
-sentence1.append(node2)
-sentence1.append(node3)
-
-sentence2 = []
-sentence2.append(node4)
-sentence2.append(root2)
-sentence2.append(node5)
-sentence2.append(node6)
-sentence2.append(node7)
-
-root_edge1 = sStructure.SemanticGraphEdge(None,
-                                        root1,
-                                        Constants.PAD_REL,
-                                        rel_idx=rel2idx[Constants.PAD_REL])
-
-# like -> I
-edge1 = sStructure.SemanticGraphEdge(root1,
-                                     node1,
-                                     relation[0],
-                                     rel_idx=rel2idx[relation[0]])
-
-# like -> dog
-edge2 = sStructure.SemanticGraphEdge(root1,
-                                     node3,
-                                     relation[1],
-                                     rel_idx=rel2idx[relation[1]])
-
-# dog -> this
-edge3 = sStructure.SemanticGraphEdge(node3,
-                                     node2,
-                                     relation[2],
-                                     rel_idx=rel2idx[relation[2]])
-
-root_edge2 = sStructure.SemanticGraphEdge(None,
-                                        root2,
-                                        Constants.PAD_REL,
-                                        rel_idx=rel2idx[Constants.PAD_REL])
-
-# love -> he
-edge4 = sStructure.SemanticGraphEdge(root2,
-                                     node4,
-                                     relation[0],
-                                     rel_idx=rel2idx[relation[0]])
-
-# love -> pen
-edge5 = sStructure.SemanticGraphEdge(root2,
-                                     node7,
-                                     relation[1],
-                                     rel_idx=rel2idx[relation[1]])
-
-# pen -> that
-edge6 = sStructure.SemanticGraphEdge(node7,
-                                     node5,
-                                     relation[2],
-                                     rel_idx=rel2idx[relation[2]])
-
-# pen -> colorful
-edge7 = sStructure.SemanticGraphEdge(node7,
-                                     node6,
-                                     relation[3],
-                                     rel_idx=rel2idx[relation[3]])
-
-
-outedge_list1 = [edge1, edge2]
-outedge_list2 = [edge3]
-
-outedge_list3 = [edge4, edge5]
-outedge_list4 = [edge6, edge7]
-
-inedge_list1 = [edge1]
-inedge_list2 = [edge2]
-inedge_list3 = [edge3]
-
-inedge_list4 = [edge4]
-inedge_list5 = [edge5]
-inedge_list6 = [edge6]
-inedge_list7 = [edge7]
-
-inedge_list8 = [root_edge1]
-inedge_list9 = [root_edge2]
-
-graph1 = sStructure.SemanticGraph(root1)
-outgoing_edges = {}
-outgoing_edges[root1] = outedge_list1
-outgoing_edges[node3] = outedge_list2
-graph1.outgoing_edges = outgoing_edges
-
-incoming_edges = {}
-incoming_edges[root1] = inedge_list8
-incoming_edges[node1] = inedge_list1
-incoming_edges[node3] = inedge_list2
-incoming_edges[node2] = inedge_list3
-graph1.incoming_edges = incoming_edges
-
-graph2 = sStructure.SemanticGraph(root2)
-outgoing_edges2 = {}
-outgoing_edges2[root2] = outedge_list3
-outgoing_edges2[node7] = outedge_list4
-graph2.outgoing_edges = outgoing_edges2
-
-incoming_edges2 = {}
-incoming_edges2[root2] = inedge_list9
-incoming_edges2[node4] = inedge_list4
-incoming_edges2[node5] = inedge_list5
-incoming_edges2[node6] = inedge_list6
-incoming_edges2[node7] = inedge_list7
-graph2.incoming_edges = incoming_edges2
-
-graph1.indexedWords = sentence1
-graph2.indexedWords = sentence2
-
-print(list(graph1.getLabels()))
-print(list(graph2.getLabels()))
-
-
-
-indexwords_list = []
-indexwords_list.append(sentence1)
-indexwords_list.append(sentence2)
-
-batch_word_data, batch_pos_data = Utils.make_training_data(indexwords_list)
-target_data = Utils.make_target_data(indexwords_list)
-
-sequences = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
-batch_graph = [graph1, graph2]
-batch_data = (sequences, batch_graph)
-
-test_sequence = Sequences(words=batch_word_data, pos=batch_pos_data, batch_size=len(indexwords_list))
-test_graph = [graph1, graph2]
-
-test_data = (test_sequence, test_graph)
-
-
-encoder = ContextEncoder(options=options)
-tree_model = hlstm(options=options)
+#===================  Train testing   ===================#
+# detector module 
+context_encoder = ContextEncoder(options=options)
+tree_model = HierarchicalTreeLSTMs(options=options)
 tree_embed = TreeEmbedding(options=options)
 mlp = MLP(options=options)
-test = ClauseDetector(options=options, encoder=encoder, tree_embed=tree_embed, tree=tree_model, classifier=mlp)
+
+# clause detector
+detector = ClauseDetector(
+    options=options, 
+    context_encoder=context_encoder, 
+    tree_embed=tree_embed, 
+    tree_encoder=tree_model, 
+    classifier=mlp
+)
 
 crit = nn.NLLLoss(size_average=True)
-# optimizer = optim.SGD(test.parameters(), lr=0.1, momentum=0.6)
-optimizer = optim.Adam(test.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
-
+# optimizer = optim.SGD(detector.parameters(), lr=0.1, momentum=0.5)
+# optimizer = optim.Adagrad(detector.parameters(), lr=1e-2, lr_decay=0.1)
+optimizer = optim.Adam(detector.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
 
 if options.use_cuda:
-    batch_data[0].switch2gpu()
-    test_data[0].switch2gpu()
-    test.switch2gpu()
+    detector.switch2gpu()
     crit = crit.cuda()
-    target_data = target_data.cuda()
 
-RUN = True
+e_list = []
+l_list = []
 
-if RUN:
+steps = 0
 
-    e_list = []
-    l_list = []
+for epoch in range(20):
+    
+    for batch_index, batch_data in enumerate(train_data):
 
-    for epoch in range(100):
-        e_list.append(epoch)
+        e_list.append(steps)
 
-        test.zero_grad()
-        out = test(batch_data).outputs
+        steps += 1
 
-        loss = 0
-        
+        sequneces, batch_graph, target_data = batch_data
+
+        out = detector((sequneces, batch_graph)).outputs
+    
         loss = crit(out, target_data)
 
         l_list.append(loss.cpu().data[0])
 
         loss.backward()
+
         optimizer.step()
 
-    test_out = test(test_data).preds
+for batch_data in test_data:
+
+    sequneces, batch_graph, target_data = batch_data
+    
+    test_out = detector((sequneces, batch_graph)).preds
 
     print(test_out)
 
@@ -386,9 +183,9 @@ if RUN:
 
     print(insts_label)
 
-    plt.plot(e_list, l_list)
-    plt.title('Test Model Training')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.show()
+plt.plot(e_list, l_list)
+plt.xlabel('Steps')
+plt.ylabel('Loss')
+plt.title('Test Training Loss')
+plt.show()
 

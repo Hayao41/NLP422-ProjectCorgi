@@ -5,14 +5,12 @@ import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 
-TEST = False
-
 
 class TreeStructureNetwork(nn.Module):
     
     ''' 
     base class of tree structure neural networks which can propagate information 
-    recursively with two directions(bottom up and top down). If you want to implement your tree model, 
+    recursively with two directions(bottom up and top down). If you want to implement your tree model,
     extend this class and implement two type transform method
 
     >>> class Mytree(TreeStructureNetwork):
@@ -47,8 +45,6 @@ class TreeStructureNetwork(nn.Module):
             if ite.allChildrenChecked():
                 # if all children have checked (leaf node has no children
                 # so that it's all children have been checked by default)
-                if TEST:
-                    print(ite.node.text)
                 self.bu_transform(ite)
                 ite_stack.pop()
 
@@ -115,6 +111,10 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
     Model implements HierarchicalTreeLSTMs(Yoav et al., 2016, https://arxiv.org/abs/1603.00375)\n
     This class contains three lstm unit for supporting hierarchical lstms for encoding a given
     dependency parse tree.\n
+    @Attribute:
+    enc_linear: non-linear trans for combining left chain final state and right chain final state
+    l_lstm: LSTMs unit computing left children vector
+    r_lstm: LSTMs unit computing right children vector
     '''
     
     def __init__(self, options):
@@ -144,7 +144,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             options.lstm_hid_dims
         )
 
-        # LSTM unit computing left children vector
+        # LSTMs unit computing left children vector
         #
         # el(t) = RNNl(vi(t), enc(t.l1), enc(t.l2), ... , enc(t.lk))
         #
@@ -158,7 +158,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             dropout=options.dropout
         )
 
-        # LSTM unit computing right children vector
+        # LSTMs unit computing right children vector
         #
         # er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))
         #

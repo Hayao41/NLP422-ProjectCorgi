@@ -9,21 +9,22 @@ class SemanticGraph(object):
     ''' 
     Semantic graph stores the dependency tree structure\n
     @Attributes :
-    root : the root node of tree structure semantic graph\n
-    outgoing_edges : outgoing edge map table\n
-    incoming_edges : incoming edge map table\n
+    root : root node of tree structure semantic graph\n
+    edgesOutgoing : outgoing edge map table\n
+    edgesIncoming : incoming edge map table\n
+    indexedWords : sentence order node list
     '''
 
     def __init__(self, 
                 root=None,
-                outgoing_edges=None,
-                incoming_edges=None,
+                edgesOutgoing=None,
+                edgesIncoming=None,
                 indexedWords=None
                 ):
         super(SemanticGraph, self).__init__()
         self.root = root
-        self.outgoing_edges = outgoing_edges
-        self.incoming_edges = incoming_edges
+        self.edgesOutgoing = edgesOutgoing
+        self.edgesIncoming = edgesIncoming
         self.indexedWords = indexedWords
 
     def getLabels(self):
@@ -33,15 +34,15 @@ class SemanticGraph(object):
 
     def outcomingEdges(self):
         
-        for source in self.outgoing_edges:
-            edges = self.outgoing_edges[source]
+        for source in self.edgesOutgoing:
+            edges = self.edgesOutgoing[source]
             for edge in edges:
                 yield edge
 
     def incomingEdges(self):
         
-        for target in self.incoming_edges:
-            edges = self.incoming_edges[target]
+        for target in self.edgesIncoming:
+            edges = self.edgesIncoming[target]
             for edge in edges:
                 yield edge
 
@@ -97,6 +98,9 @@ class SemanticGraphNode(object):
         super(SemanticGraphNode, self).__init__()
         self.text = text
         self.pos = pos
+        assert isinstance(sentence_index, int), "[Error] sentence index must be <int> data type but got {type}".format(
+            type=type(sentence_index)
+        )
         self.sentence_index = sentence_index
         self.parent_index = parent_index
         self.word_idx = word_idx
@@ -107,6 +111,21 @@ class SemanticGraphNode(object):
         self.label = label
         self.atten_prob = atten_prob
         self.isLeaf = isLeaf
+
+    def __str__(self):
+        
+        label = ""
+        if self.label != 0:
+            label = "CLASUE_SPLIT"
+        else:
+            label = "NO_ACTION"
+
+        return "[Text]{text} [POS]{pos} [Index]{index} [Label]{label}".format(
+            text=self.text,
+            pos=self.pos,
+            index=self.sentence_index,
+            label = label
+        )
 
 
 class SemanticGraphEdge(object):
@@ -129,7 +148,9 @@ class SemanticGraphEdge(object):
 class SemanticGraphIterator(object):
 
     '''
-    iterator for traversing semantic graph structure
+    iterator for traversing semantic graph structure\n
+    @Iterable\n
+    returns current node's next child
     '''
 
     def __init__(self, node, graph):
@@ -141,16 +162,16 @@ class SemanticGraphIterator(object):
         self.c_list = list(self.children())
 
     def getOutgoingEdges(self):
-        if self.node in self.graph.outgoing_edges:
-            for edge in self.graph.outgoing_edges[self.node]:
+        if self.node in self.graph.edgesOutgoing:
+            for edge in self.graph.edgesOutgoing[self.node]:
                 yield edge
         else:
             # if there are no outgoing edges starts with current node, stop iteration
             raise StopIteration
 
     def getIncomingEdges(self):
-        if self.node in self.graph.incoming_edges:
-            for edge in self.graph.incoming_edges[self.node]:
+        if self.node in self.graph.edgesIncoming:
+            for edge in self.graph.edgesIncoming[self.node]:
                 yield edge
         else:
             # if there are no incoming edges ends with current node, stop iteration
@@ -168,6 +189,8 @@ class SemanticGraphIterator(object):
 
     def queryIncomRelation(self):
         
+        ''' get current node's incoming arc relation list  '''
+
         IncomRelation = namedtuple('IncomRelation', ['relation', 'rel_idx', 'rel_vec'])
         
         for edge in self.getIncomingEdges():
@@ -178,6 +201,11 @@ class SemanticGraphIterator(object):
             )
 
     def left_hiddens(self):
+        
+        ''' 
+        get current node's left side words matrix form current to 
+        most left(sentence index ordered by DES)
+        '''
         
         targets = []
         
@@ -197,6 +225,11 @@ class SemanticGraphIterator(object):
             raise StopIteration
     
     def right_hiddens(self):
+        
+        ''' 
+        get current node's right side words matrix form current to 
+        most right(sentence index ordered by ASC)
+        '''
         
         targets = []
         
@@ -237,3 +270,38 @@ class SemanticGraphIterator(object):
         next_ite = self.c_list[0]
         self.c_list.remove(next_ite)
         return next_ite        
+
+
+class Sequence(object):
+    
+    ''' 
+    sequential data structure for sentence, containing words index sequence tenor and pos index sequence tensor\n
+    @Attribute\n
+    words_tensor: word index sequence 1d tensor(wrapped by Variable, if batch_size > 1 it should be 2d)
+    pos_tensor: pos index sequence 1d tensor(wrapped by Variable, if batch_size > 1 it should be 2d)
+    batch_size: mini batch size, for supporting mini batch, sequences can be stacked to a batched 2d tensor
+    '''
+    
+    def __init__(self, words_tensor=None, pos_tensor=None, batch_size=1):
+        
+        super(Sequence, self).__init__()
+        self.words_tensor = words_tensor
+        self.pos_tensor = pos_tensor
+        self.batch_size = batch_size
+
+    def __len__(self):
+        return self.batch_size
+
+    def switch2gpu(self):
+        
+        if self.words_tensor is not None:
+            self.words_tensor = self.words_tensor.cuda()
+        if self.pos_tensor is not None:
+            self.pos_tensor = self.pos_tensor.cuda()
+
+    def switch2cpu(self):
+        
+        if self.words_tensor is not None:
+            self.words_tensor = self.words_tensor.cpu()
+        if self.pos_tensor is not None:
+            self.pos_tensor = self.pos_tensor.cpu()
