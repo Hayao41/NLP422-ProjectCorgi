@@ -34,17 +34,17 @@ options = options(
     word_vocab_size=len(word2idx),
     word_emb_dims=0,
     pos_vocab_size=len(pos2idx),
-    pos_emb_dims=100,
+    pos_emb_dims=30,
     rel_vocab_size=len(rel2idx),
-    rel_emb_dims=100,
+    rel_emb_dims=30,
     rp_vocab_size=20,
     rp_emb_dims=0,
     label_dims=len(label2idx),
-    context_linear_dim=50,
+    context_linear_dim=30,
     use_bi_lstm=True,
-    lstm_hid_dims=50,
+    lstm_hid_dims=60,
     lstm_num_layers=1,
-    chain_hid_dims=50,
+    chain_hid_dims=60,
     batch_size=5,
     xavier=True,
     dropout=0.1,
@@ -59,11 +59,11 @@ use_rel = (options.rel_emb_dims != 0)
 train_data_list = []
 test_data_list = []
 
-for data_item in test_dataset:
+for data_item in test_dataset[2:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:3]:
+for data_item in test_dataset[:2]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
@@ -144,9 +144,15 @@ for batch_data in test_data:
     
     test_out = detector((sequences, batch_graph)).preds
 
+    listLabel = []
+
+    for word in batch_graph[0].indexedWords:
+        listLabel.append(idx2label[word.label])
+
     print(test_out)
 
     insts_label = []
+
     for inst in test_out:
         inst_label = []
         for word in inst.cpu():
@@ -155,6 +161,7 @@ for batch_data in test_data:
         insts_label.append(inst_label)
 
     print(insts_label)
+    print(listLabel)
 
 plt.plot(e_list, l_list)
 plt.xlabel('Steps')
