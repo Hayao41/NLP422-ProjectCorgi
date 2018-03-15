@@ -54,6 +54,7 @@ class ClauseDetector(nn.Module):
                 graph.indexedWords[idx].context_vec = sequence[idx]
 
     def makeOuputTuple(self, preds):
+        
         ''' 
         make output namedtuple cuz ResNN can't be batched accelerating(waiting for high performance solution)\n
         @return\n
@@ -73,7 +74,7 @@ class ClauseDetector(nn.Module):
 
         assert len(batch_sequence) == len(batch_graph), "[Error] sequences' batch size does not match graphs'!"
 
-        # sequence context encoing
+        # sequence context encoding
         context_vecs = self.context_encoder(batch_sequence)
 
         # map sequence context vectors onto tree(resursive model is hard to batch accelerating)

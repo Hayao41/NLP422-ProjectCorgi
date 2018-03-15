@@ -63,7 +63,7 @@ class TreeEmbedding(nn.Module):
             
             # relative position embedding
             # @Dimension:
-            #       relative position vocab size(max distance) -> relative position embedding dimension
+            # relative position vocab size(max distance) -> relative position embedding dimension
             self.position_embedding = nn.Embedding(
                 options.rp_vocab_size,
                 options.rp_emb_dims,
@@ -74,7 +74,7 @@ class TreeEmbedding(nn.Module):
             
             # arc relation embedding
             # @Dimension
-            #       arc relation vocab size -> arc relation embedding dimension
+            # arc relation vocab size -> arc relation embedding dimension
             self.relation_embedding = nn.Embedding(
                 options.rel_vocab_size,
                 options.rel_emb_dims,

@@ -207,7 +207,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
     def tp_transform(self, iterator):
         
-        # there can be dynamic routing block
+        # here can be dynamic routing block
 
         pass
 

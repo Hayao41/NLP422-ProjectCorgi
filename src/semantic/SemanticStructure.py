@@ -4,6 +4,7 @@ This file is semantic structure definition
 import torch
 from collections import namedtuple
 
+
 class SemanticGraph(object):
 
     ''' 
@@ -77,6 +78,13 @@ class SemanticGraph(object):
     
     def __len__(self):
         return len(self.indexedWords)
+
+    def __str__(self):
+
+        graphStr = ""
+        for word in self.indexedWords:
+            graphStr += str(word) + "\n"
+        return graphStr
     
 
 class SemanticGraphNode(object):
@@ -120,11 +128,11 @@ class SemanticGraphNode(object):
         else:
             label = "NO_ACTION"
 
-        return "[Text]{text} [POS]{pos} [Index]{index} [Label]{label}".format(
+        return "Text:[{text}], POS:[{pos}], Index:[{index}], Label:[{label}]".format(
             text=self.text,
             pos=self.pos,
             index=self.sentence_index,
-            label = label
+            label=label
         )
 
 
@@ -143,6 +151,12 @@ class SemanticGraphEdge(object):
         self.relation = relation
         self.rel_idx = rel_idx
         self.rel_vec = rel_vec
+
+    def __str__(self):
+        return "(Source)[{}] -> (Target)[{}]".format(
+            str(self.source),
+            str(self.target)
+        )
 
 
 class SemanticGraphIterator(object):

@@ -1,44 +1,63 @@
-''' preprocess semantic graph structure data from data file '''
+''' pre-processing for semantic graph structure data from data file or database'''
 
 import re
 from semantic.SemanticStructure import SemanticGraphNode
 from semantic.SemanticStructure import SemanticGraphEdge
 from semantic.SemanticStructure import SemanticGraph
-from semantic.SemanticStructure import SemanticGraphIterator
 from utils import Constants
 import utils.Utils as Utils
 from collections import namedtuple
 
 # split temp to [text], [pos], [index], [edge_type]
-PATTERN = r'-> (.*?)/(.*?)\-(.*?) \((.*?)\)'
+PATTERN = r'-> (.*?)/(.*?)-(\d+) \((.*?)\)'
+NUM_PATTERN = r'\d+'
 
-#=================== word, pos, relation dictionary =======================#
-word = "I like this dog .".split() + "He loves that colorful pen .".split() + "He eventually went to New York City , and made records for King Records under the name Al Grant ( one in particular , ' Cabaret ' , appeared in the Variety magazine charts ) .".split()
-
-pos = ["VBP",  "PRP", "NN", "DT", ".", "VBZ", "IN", "JJ"]+"PRP RB VBD TO NNP NNP NNP CC VBD NNS IN NNP NNPS IN DT NN NNP NNP CD IN JJ NN VBN IN DT NNP NN NNS ".split()
-
-relation = ["nsubj", "dobj", "det", "punct", "amod", "punct", "root", "advmod", "nmod", "case", "compound", "cc", "conj", "acl", "dep"]
-
-label = ["NO_ACTION", "CLAUSE_SPLIT"]
-
-word2idx = Utils.make_dictionary(set(word), Constants.word_pad)
-
-idx2word = {idx: word for word, idx in word2idx.items()}
-
-pos2idx = Utils.make_dictionary(set(pos), Constants.pos_pad)
-
-idx2pos = {idx: pos for pos, idx in pos2idx.items()}
-
-rel2idx = Utils.make_dictionary(set(relation), Constants.rel_pad)
-
-idx2rel = {idx: rel for rel, idx in rel2idx.items()}
-
-label2idx = Utils.make_dictionary(label)
-
-idx2label = {idx: label for label, idx in label2idx.items()}
-
+# data namedTuple for wrapping sequence and semantic graph
 DataTuple = namedtuple('DataTuple', ['indexedWords', 'graph'])
-#==========================================================================#
+
+
+def buildAndSaveVocabDic(vocbList, vocabType, dic_path):
+    
+    ''' 
+    build vocabulary dictionary then save into '*Dic.txt' file under 'src/vocabDic/' \n
+    @Param:
+    vocbList: vocabulary(word, pos, arc relation, action space)
+    vocabType: word, pos, rel, act
+    '''
+    
+    if "word" == vocabType or "pos" == vocabType or "rel" == vocabType or "act" == vocabType:
+        padVocabType = {"word": Constants.word_pad, "pos": Constants.pos_pad, "rel": Constants.rel_pad, "act": {}}
+        item2idx = Utils.make_dictionary(set(vocbList), padVocabType[vocabType])
+        
+        with open(dic_path + vocabType + "Dic.txt", "w", encoding="utf-8") as outputFile:
+            outputFile.write(str(item2idx))
+    else:
+        raise Exception("no such vocab(word, pos, rel, act) type[{}]".format(vocabType))
+
+
+def loadVocabDic(vocabTypes, dic_path):
+    
+    ''' 
+    load builded vocabulary dictionary form 'src/vocabDic/*Dic.txt' file\n
+    @Param:
+    vocabTypes: vocabulary type list which you want to load from file, 
+    4 types(word, pos, rel, act) at most
+    '''
+    
+    vocabs = {"word": {}, "pos": {}, "rel": {}}
+
+    if len(vocabTypes) > 3:
+        raise Exception(
+            "there are just 4 vocab types(word, pos, rel, act) but got [{}] types request".format(len(vocabTypes))
+        )
+
+    for vocabType in vocabTypes:
+        if "word" == vocabType or "pos" == vocabType or "rel" == vocabType or "act" == vocabType: 
+            with open(dic_path + vocabType + "Dic.txt", "r", encoding="utf-8") as inputFile:
+                vocabs[vocabType] = eval(inputFile.read())
+        else:
+            raise Exception("no such vocab(word, pos, rel) type[{}]".format(vocabType))
+    return vocabs
 
 
 def back_off(line_stack, indexedWords, 
@@ -67,20 +86,16 @@ def back_off(line_stack, indexedWords,
         relation = line_stack[-1][2]
 
         target.parent_index = source.sentence_index
-        indexedWords.append(target)
+        if target.sentence_index not in indexedWords:
+            indexedWords[target.sentence_index] = target
 
-        if relation not in rel2idx:
-            rel_idx = rel2idx[Constants.UNK_REL]
-        else:
-            rel_idx = rel2idx[relation]
-
-        curr_rel_idx = {True: rel_idx, False: None}
+        curr_rel_idx = lookUp(rel2idx, relation, use_item=use_rel)
 
         edge = SemanticGraphEdge(
             source, 
             target, 
             relation, 
-            rel_idx=curr_rel_idx[use_rel]
+            rel_idx=curr_rel_idx
         )
 
         # add edge into outgoing edge table
@@ -96,6 +111,27 @@ def back_off(line_stack, indexedWords,
             edgesIncoming[target].append(edge)
 
         line_stack.pop()
+
+
+def lookUp(item2idx, item, use_item=True):
+    
+    ''' look up dictionary to get item idx '''
+    
+    if use_item:
+        if item not in item2idx:
+            if item == '-LRB-':
+                item_idx = item2idx['(']
+            elif item == '-RRB-':
+                item_idx = item2idx[')']
+            else:
+                item_idx = item2idx[Constants.UNKV]
+                print(item)
+        else:
+            item_idx = item2idx[item]
+    else:
+        item_idx = None
+
+    return item_idx
 
 
 def buildSemanticGraph(DependencyTreeStr, listLabel=None, 
@@ -124,63 +160,54 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
         assert rel2idx is not None, "[Error]use_rel set to 'True' but rel2idx is None"
     
     line_stack = []
-    indexedWords = []
+    indexedWords = {}
     edgesOutgoing = {}
     edgesIncoming = {}
     
-    listTemp = DependencyTreeStr.split("\n")
+    listTemp = DependencyTreeStr.split("\n")[0:-1]
     listLines = []
 
     # split temp to [text], [pos], [index], [edge_type]
     for temp in listTemp:
-        listLines.append(re.split(PATTERN, temp))
+        line = re.split(PATTERN, temp)
+        if line[2].find("/") != -1:
+            line[2] = line[2].split("/")[1]
+        listLines.append(line)
 
     #=========== tree root processing ================#
 
     # root node and root incoming arc attribute
     root_text = listLines[0][1]
     root_pos = listLines[0][2]
+    listLines[0][3] = re.findall(NUM_PATTERN, listLines[0][3])[0]
     root_senidx = int(listLines[0][3])
     root_incomarc_rel = listLines[0][4]
 
-    if root_text not in word2idx:
-        word_idx = word2idx[Constants.UNK_WORD]
-    else:
-        word_idx = word2idx[root_text]
-
-    if root_pos not in pos2idx:
-        pos_idx = pos2idx[Constants.UNK_POS]
-    else:
-        pos_idx = pos2idx[root_pos]
-
-    if root_incomarc_rel not in rel2idx:
-        rel_idx = rel2idx[Constants.UNK_REL]
-    else:
-        rel_idx = rel2idx[root_incomarc_rel]
-
-    root_word_idx = {True: word_idx, False: None}
-    root_pos_idx = {True: pos_idx, False: None}
-    root_rel_idx = {True: rel_idx, False: None}
+    root_word_idx = lookUp(word2idx, root_text, use_item=use_word)
+    root_pos_idx = lookUp(pos2idx, root_pos, use_item=use_pos)
+    root_rel_idx = lookUp(rel2idx, root_incomarc_rel, use_item=use_rel)
 
     # create root node
     root_node = SemanticGraphNode(
         text=root_text,
         pos=root_pos,
         sentence_index=root_senidx,
-        word_idx=root_word_idx[use_word],
-        pos_idx=root_pos_idx[use_pos],
-        label=1
+        word_idx=root_word_idx,
+        pos_idx=root_pos_idx
     )
+
+    if root_node.sentence_index in listLabel:
+        root_node.label = 1
 
     # create root's incoming edge(Padding edge)
     edgesIncoming[root_node] = [SemanticGraphEdge(
         source=None,
         target=root_node,
         relation=root_incomarc_rel,
-        rel_idx=root_rel_idx[use_rel]
+        rel_idx=root_rel_idx
     )]
 
-    indexedWords.append(root_node)
+    indexedWords[root_senidx] = root_node
 
     line_stack.append((0, root_node, root_incomarc_rel))
 
@@ -191,29 +218,23 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
         offset = len(line[0]) // 2
         text = line[1]
         pos = line[2]
+        line[3] = re.findall(NUM_PATTERN, line[3])[0]
         index = int(line[3])
         relation_type = line[4].split(":")[0]
 
-        if text not in word2idx:
-            word_idx = word2idx[Constants.UNK_WORD]
+        curr_word_idx = lookUp(word2idx, text, use_item=use_word)
+        curr_pos_idx = lookUp(pos2idx, pos, use_item=use_pos)
+
+        if index in indexedWords:
+            current_node = indexedWords[index]
         else:
-            word_idx = word2idx[text]
-
-        if pos not in pos2idx:
-            pos_idx = pos2idx[Constants.UNK_POS]
-        else:
-            pos_idx = pos2idx[pos]
-
-        curr_word_idx = {True: word_idx, False: None}
-        curr_pos_idx = {True: pos_idx, False: None}
-
-        current_node = SemanticGraphNode(
-                text=text,
-                pos=pos,
-                sentence_index=index,
-                word_idx=curr_word_idx[use_word],
-                pos_idx=curr_pos_idx[use_pos]
-        )
+            current_node = SemanticGraphNode(
+                    text=text,
+                    pos=pos,
+                    sentence_index=index,
+                    word_idx=curr_word_idx,
+                    pos_idx=curr_pos_idx
+            )
 
         if current_node.sentence_index in listLabel:
             current_node.label = 1
@@ -245,6 +266,7 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
                     use_rel, rel2idx)
 
     # sort indexed words by sentence index
+    indexedWords = list(indexedWords.values())
     indexedWords.sort(key=lambda indexedWord: indexedWord.sentence_index)
 
     # build semantic graph

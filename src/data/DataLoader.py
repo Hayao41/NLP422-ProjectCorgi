@@ -69,7 +69,6 @@ class MiniBatchLoader(object):
     target_tensor : training target data tensor
     '''
 
-    
     def __init__(self, Dataset=None, shuffle=False, 
                 use_cuda=False, use_word=True, use_pos=True,
                 batch_size=64, has_graph=True):
@@ -145,7 +144,7 @@ class MiniBatchLoader(object):
             else:
                 end_index = len(self.dataset)
             
-            # cliping batch insts
+            # clipping batch insts
             batch_data = self.dataset[start_index:end_index]
 
             indexwords_list = [data.indexedWords for data in batch_data]

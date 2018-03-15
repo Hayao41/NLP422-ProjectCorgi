@@ -10,6 +10,25 @@ import torch.optim as optim
 from matplotlib import pyplot as plt
 from data.DataLoader import MiniBatchLoader
 from preprocessing import *
+import data.conect2db as conect2db
+
+test_dataset = conect2db.getDatasetfromDB()
+
+vocabDics = loadVocabDic(["pos", "rel", "act"], "/Users/joelchen/PycharmProjects/NLP422-ProjectCorgi/src/vocabDic/")
+word2idx = vocabDics["word"]
+pos2idx = vocabDics["pos"]
+rel2idx = vocabDics["rel"]
+label2idx = vocabDics["act"]
+
+idx2word = {idx: inst for inst, idx in word2idx.items()}
+idx2pos = {idx: inst for inst, idx in pos2idx.items()}
+idx2rel = {idx: inst for inst, idx in rel2idx.items()}
+idx2label = {idx: inst for inst, idx in label2idx.items()}
+
+print("word dictionary: \n", word2idx)
+print("pos dictionary: \n", pos2idx)
+print("arc relation dictionary: \n", rel2idx)
+print("action space dictionary: \n", label2idx)
 
 options = options(
     word_vocab_size=len(word2idx),
@@ -33,66 +52,20 @@ options = options(
     use_cuda=False
 )
 
-test_dp1 = "-> like/VBP-2 (root)"\
-        "\n  -> I/PRP-1 (nsubj:to)"\
-        "\n  -> dog/NN-4 (dobj)"\
-        "\n    -> this/DT-3 (det)"\
-        "\n  -> ./.-5 (punct)"
-
-test_dp2 = "-> loves/VBZ-2 (root)"\
-        "\n   -> He/PRP-1 (nsubj)"\
-        "\n   -> pen/NN-5 (dobj)"\
-        "\n     -> that/IN-3 (det)"\
-        "\n     -> colorful/JJ-4 (amod)"\
-        "\n   -> ./.-6 (punct)"
-
-test_dp3 = "-> went/VBD-3 (root)"\
-        "\n  -> He/PRP-1 (nsubj)"\
-        "\n  -> eventually/RB-2 (advmod)"\
-        "\n  -> City/NNP-7 (nmod:to)"\
-        "\n    -> to/TO-4 (case)"\
-        "\n    -> New/NNP-5 (compound)"\
-        "\n    -> York/NNP-6 (compound)"\
-        "\n  -> and/CC-9 (cc)"\
-        "\n  -> made/VBD-10 (conj:and)"\
-        "\n    -> records/NNS-11 (dobj)"\
-        "\n      -> Records/NNPS-14 (nmod:for)"\
-        "\n        -> for/IN-12 (case)"\
-        "\n        -> King/NNP-13 (compound)"\
-        "\n    -> name/NN-17 (nmod:under)"\
-        "\n      -> under/IN-15 (case)"\
-        "\n      -> the/DT-16 (det)"\
-        "\n      -> Grant/NNP-19 (dep)"\
-        "\n        -> Al/NNP-18 (compound)"\
-        "\n      -> one/CD-21 (dep)"\
-        "\n        -> particular/JJ-23 (nmod:in)"\
-        "\n          -> in/IN-22 (case)"\
-        "\n          -> Cabaret/NN-26 (dep)"\
-        "\n            -> appeared/VBN-29 (acl)"\
-        "\n              -> charts/NNS-34 (nmod:in)"\
-        "\n              -> in/IN-30 (case)"\
-        "\n                -> the/DT-31 (det)"\
-        "\n                -> Variety/NNP-32 (compound)"\
-        "\n                -> magazine/NN-33 (compound)"
-
-print(word2idx)
-print(pos2idx)
-print(rel2idx)
-
 use_word = (options.word_emb_dims != 0)
 use_pos = (options.pos_emb_dims != 0)
 use_rel = (options.rel_emb_dims != 0)
 
-test_graph1 = buildSemanticGraph(test_dp1, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
-test_graph2 = buildSemanticGraph(test_dp2, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
-test_graph3 = buildSemanticGraph(test_dp3, use_word=use_word, use_pos=use_pos, use_rel=use_rel, listLabel=[0], word2idx=word2idx, pos2idx=pos2idx, rel2idx=rel2idx)
+train_data_list = []
+test_data_list = []
 
-data1 = DataTuple(indexedWords=test_graph1.indexedWords, graph=test_graph1)
-data2 = DataTuple(indexedWords=test_graph2.indexedWords, graph=test_graph2)
-data3 = DataTuple(indexedWords=test_graph3.indexedWords, graph=test_graph3)
+for data_item in test_dataset:
+    data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
+    train_data_list.append(data_tuple)
 
-train_data_list = [data1, data2, data3, data1, data2, data3, data1, data2, data3]
-test_data_list = [data1, data2, data3]
+for data_item in test_dataset[:3]:
+    data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
+    test_data_list.append(data_tuple)
 
 train_data = MiniBatchLoader(
     Dataset=train_data_list,
@@ -145,7 +118,7 @@ l_list = []
 
 steps = 0
 
-for epoch in range(20):
+for epoch in range(30):
     
     for batch_index, batch_data in enumerate(train_data):
 
@@ -153,9 +126,9 @@ for epoch in range(20):
 
         steps += 1
 
-        sequneces, batch_graph, target_data = batch_data
+        sequences, batch_graph, target_data = batch_data
 
-        out = detector((sequneces, batch_graph)).outputs
+        out = detector((sequences, batch_graph)).outputs
     
         loss = crit(out, target_data)
 
@@ -167,9 +140,9 @@ for epoch in range(20):
 
 for batch_data in test_data:
 
-    sequneces, batch_graph, target_data = batch_data
+    sequences, batch_graph, target_data = batch_data
     
-    test_out = detector((sequneces, batch_graph)).preds
+    test_out = detector((sequences, batch_graph)).preds
 
     print(test_out)
 
