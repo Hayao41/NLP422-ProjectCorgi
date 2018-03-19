@@ -35,6 +35,14 @@ def buildAndSaveVocabDic(vocbList, vocabType, dic_path):
         raise Exception("no such vocab(word, pos, rel, act) type[{}]".format(vocabType))
 
 
+def readDictionary(dic_path, mode='r', encoding='utf-8'):
+
+    with open(dic_path, mode=mode, encoding=encoding) as file:
+        dictionary = eval(file.read())
+
+    return dictionary
+
+
 def loadVocabDic(vocabTypes, dic_path):
     
     ''' 
@@ -52,9 +60,13 @@ def loadVocabDic(vocabTypes, dic_path):
         )
 
     for vocabType in vocabTypes:
-        if "word" == vocabType or "pos" == vocabType or "rel" == vocabType or "act" == vocabType: 
-            with open(dic_path + vocabType + "Dic.txt", "r", encoding="utf-8") as inputFile:
-                vocabs[vocabType] = eval(inputFile.read())
+        if "word" == vocabType or "pos" == vocabType or "rel" == vocabType or "act" == vocabType:
+            vocabs[vocabType] = readDictionary(
+                dic_path + vocabType + "Dic.txt",
+                mode="r",
+                encoding="utf-8"
+            )
+
         else:
             raise Exception("no such vocab(word, pos, rel) type[{}]".format(vocabType))
     return vocabs

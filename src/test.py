@@ -12,9 +12,15 @@ from data.DataLoader import MiniBatchLoader
 from preprocessing import *
 import data.conect2db as conect2db
 
-test_dataset = conect2db.getDatasetfromDB()
+options_dic = readDictionary("../src/properties/options.properties")
+fpath = readDictionary("../src/properties/fpath.properties")
 
-vocabDics = loadVocabDic(["pos", "rel", "act"], "/Users/joelchen/PycharmProjects/NLP422-ProjectCorgi/src/vocabDic/")
+test_dataset = conect2db.getDatasetfromDB(
+    vocabDic_path=fpath['vocabDic_path'],
+    properties_path=fpath['properties_path']
+)
+
+vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
 word2idx = vocabDics["word"]
 pos2idx = vocabDics["pos"]
 rel2idx = vocabDics["rel"]
@@ -32,24 +38,24 @@ print("action space dictionary: \n", label2idx)
 
 options = options(
     word_vocab_size=len(word2idx),
-    word_emb_dims=0,
-    pos_vocab_size=len(pos2idx),
-    pos_emb_dims=30,
-    rel_vocab_size=len(rel2idx),
-    rel_emb_dims=30,
-    rp_vocab_size=20,
-    rp_emb_dims=0,
     label_dims=len(label2idx),
-    context_linear_dim=30,
-    use_bi_lstm=True,
-    lstm_hid_dims=60,
-    lstm_num_layers=1,
-    chain_hid_dims=60,
-    batch_size=5,
-    xavier=True,
-    dropout=0.1,
-    padding=0,
-    use_cuda=False
+    pos_vocab_size=len(pos2idx),
+    rel_vocab_size=len(rel2idx),
+    word_emb_dims=options_dic['word_emb_dims'],
+    pos_emb_dims=options_dic['pos_emb_dims'],
+    rel_emb_dims=options_dic['rel_emb_dims'],
+    rp_vocab_size=options_dic['rp_vocab_size'],
+    rp_emb_dims=options_dic['rp_emb_dims'],
+    context_linear_dim=options_dic['context_linear_dim'],
+    use_bi_lstm=options_dic['use_bi_lstm'],
+    lstm_hid_dims=options_dic['lstm_hid_dims'],
+    lstm_num_layers=options_dic['lstm_num_layers'],
+    chain_hid_dims=options_dic['chain_hid_dims'],
+    batch_size=options_dic['batch_size'],
+    xavier=options_dic['xavier'],
+    dropout=options_dic['dropout'],
+    padding=options_dic['padding'],
+    use_cuda=options_dic['use_cuda']
 )
 
 use_word = (options.word_emb_dims != 0)
@@ -59,7 +65,7 @@ use_rel = (options.rel_emb_dims != 0)
 train_data_list = []
 test_data_list = []
 
-for data_item in test_dataset[2:-1]:
+for data_item in test_dataset[0:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
@@ -118,7 +124,7 @@ l_list = []
 
 steps = 0
 
-for epoch in range(30):
+for epoch in range(50):
     
     for batch_index, batch_data in enumerate(train_data):
 
