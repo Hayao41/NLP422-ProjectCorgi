@@ -282,6 +282,11 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     indexedWords.sort(key=lambda indexedWord: indexedWord.sentence_index)
 
     # build semantic graph
-    graph = SemanticGraph(root_node, edgesOutgoing, edgesIncoming, indexedWords)
+    graph = SemanticGraph(
+        root=root_node,
+        edgesOutgoing=edgesOutgoing,
+        edgesIncoming=edgesIncoming,
+        indexedWords=indexedWords
+    )
 
     return graph

@@ -168,6 +168,7 @@ for batch_data in test_data:
 
     print(insts_label)
     print(listLabel)
+    print(batch_graph[0])
 
 plt.plot(e_list, l_list)
 plt.xlabel('Steps')

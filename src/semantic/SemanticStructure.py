@@ -17,12 +17,14 @@ class SemanticGraph(object):
     '''
 
     def __init__(self, 
+                sid='S#',
                 root=None,
                 edgesOutgoing=None,
                 edgesIncoming=None,
                 indexedWords=None
                 ):
         super(SemanticGraph, self).__init__()
+        self.sid = sid
         self.root = root
         self.edgesOutgoing = edgesOutgoing
         self.edgesIncoming = edgesIncoming
@@ -82,6 +84,7 @@ class SemanticGraph(object):
     def __str__(self):
 
         graphStr = ""
+        graphStr += self.sid + "\n"
         for word in self.indexedWords:
             graphStr += str(word) + "\n"
         return graphStr
