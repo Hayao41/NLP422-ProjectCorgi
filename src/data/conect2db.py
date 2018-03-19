@@ -55,6 +55,7 @@ def getDatasetfromDB(vocabDic_path, properties_path):
             cursor.execute(sentence_query)
             results = cursor.fetchall()
             for result in results:
+                print(result['sid'])
                 cursor.execute(annotation_query, (result['sid'],))
                 annotations = cursor.fetchall()
                 if len(annotations) == 0:
@@ -69,6 +70,7 @@ def getDatasetfromDB(vocabDic_path, properties_path):
                     pos2idx=pos2idx,
                     rel2idx=rel2idx
                 )
+                print(graph)
                 dataset.append(graph)
 
     except Exception as err:
