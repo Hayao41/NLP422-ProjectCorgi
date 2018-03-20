@@ -9,7 +9,7 @@ import utils.Utils as Utils
 from collections import namedtuple
 
 # split temp to [text], [pos], [index], [edge_type]
-PATTERN = r'-> (.*?)/(.*?)-(\d+) \((.*?)\)'
+PATTERN = r'->(.*?)/(.*?)-(\d+) \((.*?)\)'
 NUM_PATTERN = r'\d+'
 
 # data namedTuple for wrapping sequence and semantic graph
@@ -146,9 +146,9 @@ def lookUp(item2idx, item, use_item=True):
     return item_idx
 
 def reChecking(line, sid):
-    
-    if len(line) != 5:
-        raise Exception("[RE Error] {} can't be spitted by pattern!".format(sid))
+
+    if len(line) != 6:
+        raise Exception("[RE Error] {} can't be split by pattern!".format(sid))
 
 
 def buildSemanticGraph(DependencyTreeStr, listLabel=None, 
@@ -184,6 +184,9 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     
     listTemp = DependencyTreeStr.split("\n")[0:-1]
     listLines = []
+
+    if sid == "S#10066":
+        print("wait!")
 
     # split temp to [text], [pos], [index], [edge_type]
     for temp in listTemp:

@@ -137,7 +137,7 @@ l_list = []
 
 steps = 0
 
-for epoch in range(20):
+for epoch in range(50):
     
     for batch_index, batch_data in enumerate(train_data):
 

@@ -36,7 +36,6 @@ options = options(
     word_emb_dims=options_dic['word_emb_dims'],
     pos_emb_dims=options_dic['pos_emb_dims'],
     rel_emb_dims=options_dic['rel_emb_dims'],
-    rp_vocab_size=options_dic['rp_vocab_size'],
     rp_emb_dims=options_dic['rp_emb_dims'],
     context_linear_dim=options_dic['context_linear_dim'],
     use_bi_lstm=options_dic['use_bi_lstm'],
