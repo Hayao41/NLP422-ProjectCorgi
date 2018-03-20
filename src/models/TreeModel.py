@@ -35,6 +35,7 @@ class TreeStructureNetwork(nn.Module):
         ite_stack = []
 
         # push root node iterator into ite_stack
+        graph.root.pushed = True
         root_ite = siterator(graph.root, graph)
         ite_stack.append(root_ite)
 
@@ -108,21 +109,24 @@ class TreeStructureNetwork(nn.Module):
 class HierarchicalTreeLSTMs(TreeStructureNetwork):
     
     ''' 
-    Model implements HierarchicalTreeLSTMs(Yoav et al., 2016, https://arxiv.org/abs/1603.00375)\n
+    Model implements HierarchicalTreeLSTMs(Kiperwasser, Yoav., 2016, https://arxiv.org/abs/1603.00375)\n
     This class contains three lstm unit for supporting hierarchical lstms for encoding a given
     dependency parse tree.\n
-    @Attribute:
-    enc_linear: non-linear trans for combining left chain final state and right chain final state
-    l_lstm: LSTMs unit computing left children vector
-    r_lstm: LSTMs unit computing right children vector
+    @Attribute:\n
+    enc_linear: non-linear trans for combining left chain final state and right chain final state\n
+    l_lstm: LSTMs unit for computing left children vector\n
+    r_lstm: LSTMs unit for computing right children vector\n
     '''
     
     def __init__(self, options):
         super(HierarchicalTreeLSTMs, self).__init__(options)
-
-        self.chain_hid_dims = options.chain_hid_dims
+        
         self.lstm_hid_dims = options.lstm_hid_dims
         self.rel_emb_dims = options.rel_emb_dims
+
+        # chain initial state params
+        self.total_layers = options.chain_num_layers * options.chain_direction
+        self.single_pass_dims = options.chain_hid_dims // options.chain_direction
 
         # Encoding children concatenated vector linear layer
         #
@@ -154,8 +158,10 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         # @Dimension : lstm_hid_dims -> l_hid_dims
         self.l_lstm = nn.LSTM(
             options.lstm_hid_dims,
-            options.chain_hid_dims,
-            dropout=options.dropout
+            options.chain_hid_dims // options.chain_direction,
+            num_layers=options.chain_num_layers,
+            dropout=options.dropout,
+            bidirectional=options.use_bi_chain
         )
 
         # LSTMs unit computing right children vector
@@ -168,8 +174,10 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         # @Dimensions : lstm_hid_dims -> r_hid_dims
         self.r_lstm = nn.LSTM(
             options.lstm_hid_dims,
-            options.chain_hid_dims,
-            dropout=options.dropout
+            options.chain_hid_dims // options.chain_direction,
+            num_layers=options.chain_num_layers,
+            dropout=options.dropout,
+            bidirectional=options.use_bi_chain
         )
 
         if options.xavier:
@@ -263,13 +271,29 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
             if self.use_cuda:
                 return (
-                    Variable(torch.zeros(1, 1, self.chain_hid_dims)).cuda(),
-                    Variable(torch.zeros(1, 1, self.chain_hid_dims)).cuda()
+                    Variable(torch.zeros(
+                        self.total_layers, 
+                        1, 
+                        self.single_pass_dims)
+                    ).cuda(),
+                    Variable(torch.zeros(
+                        self.total_layers, 
+                        1, 
+                        self.single_pass_dims)
+                    ).cuda()
                 )
             else:
                 return (
-                    Variable(torch.zeros(1, 1, self.chain_hid_dims)),
-                    Variable(torch.zeros(1, 1, self.chain_hid_dims))
+                    Variable(torch.zeros(
+                        self.total_layers, 
+                        1, 
+                        self.single_pass_dims)
+                    ),
+                    Variable(torch.zeros(
+                        self.total_layers, 
+                        1, 
+                        self.single_pass_dims)
+                    )
                 )
         
         hidden_states = init_hidden()

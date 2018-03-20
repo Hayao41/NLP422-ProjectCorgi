@@ -37,20 +37,33 @@ print("arc relation dictionary: \n", rel2idx)
 print("action space dictionary: \n", label2idx)
 
 options = options(
+
+    # vocabunary size
     word_vocab_size=len(word2idx),
     label_dims=len(label2idx),
     pos_vocab_size=len(pos2idx),
     rel_vocab_size=len(rel2idx),
+
+    # embedding layer params
     word_emb_dims=options_dic['word_emb_dims'],
     pos_emb_dims=options_dic['pos_emb_dims'],
     rel_emb_dims=options_dic['rel_emb_dims'],
-    rp_vocab_size=options_dic['rp_vocab_size'],
     rp_emb_dims=options_dic['rp_emb_dims'],
+
+    # non linear trans
     context_linear_dim=options_dic['context_linear_dim'],
+
+    # context encoder
     use_bi_lstm=options_dic['use_bi_lstm'],
-    lstm_hid_dims=options_dic['lstm_hid_dims'],
     lstm_num_layers=options_dic['lstm_num_layers'],
+    lstm_hid_dims=options_dic['lstm_hid_dims'],
+    
+    # tree children chain
+    use_bi_chain=options_dic['use_bi_chain'],
+    chain_num_layers=options_dic['chain_num_layers'],
     chain_hid_dims=options_dic['chain_hid_dims'],
+
+    # optimization
     batch_size=options_dic['batch_size'],
     xavier=options_dic['xavier'],
     dropout=options_dic['dropout'],
@@ -124,7 +137,7 @@ l_list = []
 
 steps = 0
 
-for epoch in range(50):
+for epoch in range(20):
     
     for batch_index, batch_data in enumerate(train_data):
 

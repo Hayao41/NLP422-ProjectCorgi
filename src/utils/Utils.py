@@ -9,46 +9,78 @@ class options(object):
     hyperparameters
     '''
 
-    def __init__(self, 
-                pos_vocab_size=0,
-                pos_emb_dims=0,
-                rel_vocab_size=0,
-                rel_emb_dims=0,
-                rp_vocab_size=0,
-                rp_emb_dims=0,
-                word_vocab_size=0,
-                word_emb_dims=0,
-                label_dims=0,
-                context_linear_dim=0,
-                use_bi_lstm=True,
-                lstm_num_layers=1,
-                lstm_hid_dims=0,
-                chain_hid_dims=0,
-                xavier=True,
-                batch_size=1,
-                dropout=0.,
-                padding=0,
-                use_cuda=False
-                ):
+    def __init__(self,
+
+                 # vocab size
+                 word_vocab_size=0,
+                 pos_vocab_size=0,
+                 rel_vocab_size=0,
+                 rp_vocab_size=0,
+                 label_dims=0,
+
+                 # embedding layer params
+                 word_emb_dims=0,
+                 pos_emb_dims=0,
+                 rel_emb_dims=0,
+                 rp_emb_dims=0,
+
+                 # non linear trans
+                 context_linear_dim=0,
+
+                 # context encoder
+                 use_bi_lstm=True,
+                 lstm_num_layers=1,
+                 lstm_hid_dims=0,
+
+                 # tree children chain
+                 use_bi_chain=False,
+                 chain_num_layers=1,
+                 chain_hid_dims=0,
+
+                 # optimization
+                 xavier=True,
+                 batch_size=1,
+                 dropout=0.,
+                 padding=0,
+                 use_cuda=False
+                 ):
         super(options, self).__init__()
-        self.pos_vocab_size = pos_vocab_size
-        self.pos_emb_dims = pos_emb_dims
-        self.rel_vocab_size = rel_vocab_size
-        self.rel_emb_dims = rel_emb_dims
-        self.rp_vocab_size = rp_vocab_size
-        self.rp_emb_dims = rp_emb_dims
+
+        # ============ vocabubary size ============#
         self.word_vocab_size = word_vocab_size
-        self.word_emb_dims = word_emb_dims
+        self.pos_vocab_size = pos_vocab_size
+        self.rel_vocab_size = rel_vocab_size
+        self.rp_vocab_size = rp_vocab_size
         self.label_dims = label_dims
+
+        # ============ embeddding layer ============#
+        self.word_emb_dims = word_emb_dims
+        self.pos_emb_dims = pos_emb_dims
+        self.rel_emb_dims = rel_emb_dims
+        self.rp_emb_dims = rp_emb_dims
+
+        # ============ non linear trans ============#
         self.context_linear_dim = context_linear_dim
+
+        #========== context encoder(lstm) ==========#
         self.use_bi_lstm = use_bi_lstm
-        self.lstm_num_layers = lstm_num_layers
         if use_bi_lstm:
             self.lstm_direction = 2
         else:
             self.lstm_direction = 1
+        self.lstm_num_layers = lstm_num_layers
         self.lstm_hid_dims = lstm_hid_dims
+
+        # ======== tree children chain(lstm) =======#
+        self.use_bi_chain = use_bi_chain
+        if use_bi_chain:
+            self.chain_direction = 2
+        else:
+            self.chain_direction = 1
+        self.chain_num_layers = chain_num_layers
         self.chain_hid_dims = chain_hid_dims
+
+        # ============ optimization ============#
         self.xavier = xavier
         self.batch_size = batch_size
         self.dropout = dropout

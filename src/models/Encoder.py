@@ -24,12 +24,13 @@ class ContextEncoder(nn.Module):
         self.pos_emb_dims = options.pos_emb_dims
         self.context_linear_dim = options.context_linear_dim
         self.lstm_hid_dims = options.lstm_hid_dims
-        self.lstm_num_layers = options.lstm_num_layers
-        self.lstm_direction = options.lstm_direction
-        self.use_bi_lstm = options.use_bi_lstm
         self.use_cuda = options.use_cuda
         self.padding_idx = options.padding
         self.batch_size = 1   # default batch size 1 (inference stage)
+
+        # lstm initial state params
+        self.total_layers = options.lstm_num_layers * options.lstm_direction
+        self.single_pass_dims = self.lstm_hid_dims // options.lstm_direction
 
         assert (self.word_emb_dims is not 0) or (self.pos_emb_dims is not 0), "[Error] word dims and pos dims are all 0, no input for nn!"
         
@@ -151,28 +152,28 @@ class ContextEncoder(nn.Module):
             if self.use_cuda:
                 return (
                     Variable(torch.zeros(
-                        self.lstm_num_layers * self.lstm_direction, 
-                        self.batch_size, 
-                        self.lstm_hid_dims // self.lstm_direction)
+                        self.total_layers,
+                        self.batch_size,
+                        self.single_pass_dims)
                     ).cuda(),
                     Variable(torch.zeros(
-                        self.lstm_num_layers * self.lstm_direction, 
-                        self.batch_size, 
-                        self.lstm_hid_dims // self.lstm_direction)
+                         self.total_layers,
+                        self.batch_size,
+                        self.single_pass_dims)
                     ).cuda()
                 )
 
             else:
                 return (
                     Variable(torch.zeros(
-                        self.lstm_num_layers * self.lstm_direction, 
-                        self.batch_size, 
-                        self.lstm_hid_dims // self.lstm_direction)
+                         self.total_layers,
+                        self.batch_size,
+                        self.single_pass_dims)
                     ),
                     Variable(torch.zeros(
-                        self.lstm_num_layers * self.lstm_direction, 
-                        self.batch_size, 
-                        self.lstm_hid_dims // self.lstm_direction)
+                         self.total_layers,
+                        self.batch_size,
+                        self.single_pass_dims)
                     )
                 )
         
