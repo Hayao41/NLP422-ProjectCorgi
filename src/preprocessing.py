@@ -145,11 +145,17 @@ def lookUp(item2idx, item, use_item=True):
 
     return item_idx
 
+def reChecking(line, sid):
+    
+    if len(line) != 5:
+        raise Exception("[RE Error] {} can't be spitted by pattern!".format(sid))
+
 
 def buildSemanticGraph(DependencyTreeStr, listLabel=None, 
                        use_word=True, use_pos=True,
                        use_rel=True, word2idx=None, 
-                       pos2idx=None, rel2idx=None):
+                       pos2idx=None, rel2idx=None,
+                       sid="S#"):
     
     ''' 
     re-build semantic graph with <SemanticGraph> structure from CoreNLP's dependency tree fromat str\n
@@ -182,6 +188,7 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     # split temp to [text], [pos], [index], [edge_type]
     for temp in listTemp:
         line = re.split(PATTERN, temp)
+        reChecking(line, sid)
         if line[2].find("/") != -1:
             line[2] = line[2].split("/")[1]
         listLines.append(line)

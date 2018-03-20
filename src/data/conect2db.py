@@ -68,7 +68,8 @@ def getDatasetfromDB(vocabDic_path, properties_path):
                     listLabel=listLabel,
                     use_word=False,
                     pos2idx=pos2idx,
-                    rel2idx=rel2idx
+                    rel2idx=rel2idx,
+                    sid=result['sid']
                 )
                 graph.sid = result['sid']
                 print(graph)
