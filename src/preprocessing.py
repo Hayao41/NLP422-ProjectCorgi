@@ -9,7 +9,7 @@ import utils.Utils as Utils
 from collections import namedtuple
 
 # split temp to [text], [pos], [index], [edge_type]
-PATTERN = r'->(.*?)/(.*?)-(\d+) \((.*?)\)'
+PATTERN = r'->(.*?)/(.*?)-(\d+).*?\((.*?)\)'
 NUM_PATTERN = r'\d+'
 
 # data namedTuple for wrapping sequence and semantic graph

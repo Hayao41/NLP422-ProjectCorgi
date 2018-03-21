@@ -11,6 +11,7 @@ test_dataset = getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
 )
+print("loading successfully!")
 
 vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
 word2idx = vocabDics["word"]
