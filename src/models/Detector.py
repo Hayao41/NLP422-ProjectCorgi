@@ -53,7 +53,7 @@ class ClauseDetector(nn.Module):
             for idx in range(len(graph.indexedWords)):
                 graph.indexedWords[idx].context_vec = sequence[idx]
 
-    def makeOuputTuple(self, preds):
+    def makeOuputTuple(self, batch_graph, outputs):
         
         ''' 
         make output namedtuple cuz ResNN can't be batched accelerating(waiting for high performance solution)\n
@@ -62,7 +62,18 @@ class ClauseDetector(nn.Module):
         outputs : batch predictions tensor matrix
         preds : batch predictions list
         '''
-        outputs = torch.cat((preds), 0)
+
+        preds = []
+        start_offset = 0
+
+        for graph in batch_graph:
+            
+            end_offset = start_offset + len(graph.indexedWords)
+            pred = outputs[start_offset:end_offset]
+            preds.append(pred)
+            start_offset = end_offset 
+            
+            
         OutputTuple = namedtuple('OutputTuple', ['outputs', 'preds'])
         return OutputTuple(outputs=outputs, preds=preds)
 
@@ -83,11 +94,14 @@ class ClauseDetector(nn.Module):
         # tree structure information embedding(arc relation, relative position etc.)
         self.tree_embed(batch_graph)
 
-        preds = []
+        batch_context_vecs = []
 
         # tree encoding and classify
         for graph in batch_graph:
             self.tree_encoder(graph)
-            preds.append(self.clf(graph.getContextVecs()))
+            batch_context_vecs.append(graph.getContextVecs())
 
-        return self.makeOuputTuple(preds)
+        batch_tensor = torch.cat((batch_context_vecs), dim=0)
+        outputs = self.clf(batch_tensor)
+
+        return self.makeOuputTuple(batch_graph, outputs)
