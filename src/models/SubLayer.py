@@ -16,7 +16,8 @@ class MLP(nn.Module):
     def __init__(self, options):
         super(MLP, self).__init__()
         self.l1 = nn.Linear(options.lstm_hid_dims, options.lstm_hid_dims // 2)
-        self.l2 = nn.Linear(options.lstm_hid_dims // 2, options.label_dims)
+        self.l2 = nn.Linear(options.lstm_hid_dims // 2, options.lstm_hid_dims // 4)
+        self.l3 = nn.Linear(options.lstm_hid_dims // 4, options.label_dims)
         self.drop_out = nn.Dropout(options.dropout)
         self.use_cuda = options.use_cuda
 
@@ -37,8 +38,9 @@ class MLP(nn.Module):
 
     def forward(self, context_vecs):
 
-        pred = F.tanh(self.drop_out(self.l1(context_vecs)))
-        pred = F.log_softmax(self.l2(pred), dim=-1)
+        pred = F.relu6(self.drop_out(self.l1(context_vecs)))
+        pred = F.tanh(self.drop_out(self.l2(pred)))
+        pred = F.log_softmax(self.l3(pred), dim=-1)
         return pred
 
 
