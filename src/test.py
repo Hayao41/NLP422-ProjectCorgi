@@ -15,6 +15,8 @@ import data.conect2db as conect2db
 options_dic = readDictionary("../src/properties/options.properties")
 fpath = readDictionary("../src/properties/fpath.properties")
 
+
+
 test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
