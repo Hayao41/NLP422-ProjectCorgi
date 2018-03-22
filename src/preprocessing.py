@@ -185,9 +185,6 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     listTemp = DependencyTreeStr.split("\n")[0:-1]
     listLines = []
 
-    if sid == "S#10066":
-        print("wait!")
-
     # split temp to [text], [pos], [index], [edge_type]
     for temp in listTemp:
         line = re.split(PATTERN, temp)

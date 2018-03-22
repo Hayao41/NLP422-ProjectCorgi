@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 from data.DataLoader import MiniBatchLoader
 from preprocessing import *
 import data.conect2db as conect2db
+import time
 
 options_dic = readDictionary("../src/properties/options.properties")
 fpath = readDictionary("../src/properties/fpath.properties")
@@ -80,7 +81,7 @@ use_rel = (options.rel_emb_dims != 0)
 train_data_list = []
 test_data_list = []
 
-for data_item in test_dataset[0:-1]:
+for data_item in test_dataset[3:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
@@ -91,7 +92,7 @@ for data_item in test_dataset[:2]:
 train_data = MiniBatchLoader(
     Dataset=train_data_list,
     shuffle=True,
-    batch_size=4,
+    batch_size=options_dic['batch_size'],
     use_cuda=options.use_cuda,
     use_word=use_word,
     use_pos=use_pos,
@@ -139,9 +140,15 @@ l_list = []
 
 steps = 0
 
-for epoch in range(50):
+for epoch in range(30):
+
+    batch_begin = 0
+
+    print("Training on Epoch[{}]:".format(epoch))
     
     for batch_index, batch_data in enumerate(train_data):
+
+        start = time.time()
 
         e_list.append(steps)
 
@@ -158,6 +165,14 @@ for epoch in range(50):
         loss.backward()
 
         optimizer.step()
+
+        end = time.time()
+
+        print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTime: {:.5f} '.format(
+            epoch, len(batch_data[1]) + batch_begin, len(train_data.dataset),
+            (100. * ((batch_index + 1) / len(train_data))), loss.data[0], end - start))
+
+        batch_begin += len(batch_data[1])
 
 for batch_data in test_data:
 

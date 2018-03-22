@@ -308,7 +308,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
-        print("Training on {}".format(graph.sid))
+        # print("Training on {}".format(graph.sid))
 
         self.bottom_up(graph)
 
