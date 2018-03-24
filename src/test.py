@@ -1,20 +1,26 @@
 
-from utils.Utils import options
+import time
+import os
 import torch.nn as nn
+import torch.optim as optim
+import data.conect2db as conect2db
+from preprocessing import *
+from matplotlib import pyplot as plt
+from utils.Utils import options
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
 from models.SubLayer import MLP
 from models.Detector import ClauseDetector
 from models.SubLayer import TreeEmbedding
-import torch.optim as optim
-from matplotlib import pyplot as plt
 from data.DataLoader import MiniBatchLoader
-from preprocessing import *
-import data.conect2db as conect2db
-import time
+
 
 options_dic = readDictionary("../src/properties/options.properties")
 fpath = readDictionary("../src/properties/fpath.properties")
+
+if options_dic['use_cuda']:
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
 
 
@@ -22,6 +28,15 @@ test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
 )
+
+cycle_counter = 0
+for graph in test_dataset:
+    if graph.hasCycle:
+        cycle_counter += 1
+        print("graph {} has cycle".format(graph.sid))
+        test_dataset.remove(graph)
+
+print("There are {} graph have cycle in total!".format(cycle_counter))
 
 vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
 word2idx = vocabDics["word"]
@@ -140,7 +155,7 @@ l_list = []
 
 steps = 0
 
-for epoch in range(30):
+for epoch in range(options_dic['epoch']):
 
     batch_begin = 0
 

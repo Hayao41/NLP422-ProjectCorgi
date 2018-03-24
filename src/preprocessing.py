@@ -9,7 +9,7 @@ import utils.Utils as Utils
 from collections import namedtuple
 
 # split temp to [text], [pos], [index], [edge_type]
-PATTERN = r'->(.*?)/(.*?)-(\d+).*?\((.*?)\)'
+PATTERN = r'-> (.*?)/(.*?)-(\d+).*?\((.*?)\)'
 NUM_PATTERN = r'\d+'
 
 # data namedTuple for wrapping sequence and semantic graph
@@ -181,6 +181,7 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     indexedWords = {}
     edgesOutgoing = {}
     edgesIncoming = {}
+    hasCycle = False
     
     listTemp = DependencyTreeStr.split("\n")[0:-1]
     listLines = []
@@ -246,6 +247,7 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
 
         if index in indexedWords:
             current_node = indexedWords[index]
+            hasCycle = True
         else:
             current_node = SemanticGraphNode(
                     text=text,
@@ -293,7 +295,8 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
         root=root_node,
         edgesOutgoing=edgesOutgoing,
         edgesIncoming=edgesIncoming,
-        indexedWords=indexedWords
+        indexedWords=indexedWords,
+        hasCycle=hasCycle
     )
 
     return graph
