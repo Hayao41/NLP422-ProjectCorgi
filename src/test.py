@@ -1,20 +1,25 @@
 
-from utils.Utils import options
+import time
+import os
 import torch.nn as nn
+import torch.optim as optim
+import data.conect2db as conect2db
+from preprocessing import *
+from matplotlib import pyplot as plt
+from utils.Utils import options
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
 from models.SubLayer import MLP
 from models.Detector import ClauseDetector
 from models.SubLayer import TreeEmbedding
-import torch.optim as optim
-from matplotlib import pyplot as plt
 from data.DataLoader import MiniBatchLoader
-from preprocessing import *
-import data.conect2db as conect2db
-import time
+
 
 options_dic = readDictionary("../src/properties/options.properties")
 fpath = readDictionary("../src/properties/fpath.properties")
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
 
 
