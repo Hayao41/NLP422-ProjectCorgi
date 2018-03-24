@@ -13,12 +13,11 @@ import data.conect2db as conect2db
 import time
 
 
-
 if __name__ == "__main__":
 
     # load options from properties file
-    options_dic = readDictionary("../src/properties/options.properties")
-    fpath = readDictionary("../src/properties/fpath.properties")
+    options_dic = preprocessing.readDictionary("../src/properties/options.properties")
+    fpath = preprocessing.readDictionary("../src/properties/fpath.properties")
 
     # load annotated dataset from database
     annotated_dataset = conect2db.getDatasetfromDB(
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     )
 
     # get vocabunary
-    vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
+    vocabDics = preprocessing.loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
     word2idx = vocabDics["word"]
     pos2idx = vocabDics["pos"]
     rel2idx = vocabDics["rel"]
