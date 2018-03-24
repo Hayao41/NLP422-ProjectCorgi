@@ -19,8 +19,6 @@ class MLP(nn.Module):
         self.l2 = nn.Linear(options.lstm_hid_dims // 2, options.lstm_hid_dims // 4)
         self.l3 = nn.Linear(options.lstm_hid_dims // 4, options.label_dims)
         self.drop_out = nn.Dropout(options.dropout)
-        self.batch_norm1 = nn.BatchNorm1d(options.lstm_hid_dims // 2)
-        self.batch_norm2 = nn.BatchNorm1d(options.lstm_hid_dims // 4)
         self.use_cuda = options.use_cuda
 
         if options.xavier:
@@ -41,7 +39,7 @@ class MLP(nn.Module):
     def forward(self, context_vecs):
 
         h1_out = F.relu6(self.drop_out(self.l1(context_vecs)))
-        h2_out = F.tanh(self.batch_norm2(self.l2(h1_out)))
+        h2_out = F.tanh(self.drop_out(self.l2(h1_out)))
         logits = self.l3(h2_out)
         pred = F.log_softmax(logits, dim=-1)
         return pred
