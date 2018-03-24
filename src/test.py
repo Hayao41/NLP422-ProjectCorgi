@@ -22,7 +22,12 @@ if options_dic['use_cuda']:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
-test_dataset = conect2db.getDatasetfromDB(
+# test_dataset = conect2db.getDatasetfromDB(
+#     vocabDic_path=fpath['vocabDic_path'],
+#     properties_path=fpath['properties_path']
+# )
+
+test_dataset = conect2db.data_load_test(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
 )
