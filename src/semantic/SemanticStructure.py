@@ -21,7 +21,8 @@ class SemanticGraph(object):
                 root=None,
                 edgesOutgoing=None,
                 edgesIncoming=None,
-                indexedWords=None
+                indexedWords=None,
+                hasCycle=False
                 ):
         super(SemanticGraph, self).__init__()
         self.sid = sid
@@ -29,6 +30,7 @@ class SemanticGraph(object):
         self.edgesOutgoing = edgesOutgoing
         self.edgesIncoming = edgesIncoming
         self.indexedWords = indexedWords
+        self.hasCycle = hasCycle
 
     def getLabels(self):
         
