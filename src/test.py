@@ -22,24 +22,10 @@ if options_dic['use_cuda']:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
-# test_dataset = conect2db.getDatasetfromDB(
-#     vocabDic_path=fpath['vocabDic_path'],
-#     properties_path=fpath['properties_path']
-# )
-
-test_dataset = conect2db.data_load_test(
+test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
 )
-
-cycle_counter = 0
-for graph in test_dataset:
-    if graph.hasCycle:
-        cycle_counter += 1
-        print("graph {} has cycle".format(graph.sid))
-        test_dataset.remove(graph)
-
-print("There are {} graph have cycle in total!".format(cycle_counter))
 
 vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
 word2idx = vocabDics["word"]

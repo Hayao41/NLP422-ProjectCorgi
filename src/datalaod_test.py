@@ -11,12 +11,9 @@ test_dataset = getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
     properties_path=fpath['properties_path']
 )
+
+# test_dataset = data_load_test(
+#     vocabDic_path=fpath['vocabDic_path'],
+#     properties_path=fpath['properties_path']
+# )
 print("loading successfully!")
-
-cycle_counter = 0
-for graph in test_dataset:
-    if graph.hasCycle:
-        cycle_counter += 1
-        print("graph {} has cycle".format(graph.sid))
-
-print("There are {} graph have cycle in total!".format(cycle_counter))

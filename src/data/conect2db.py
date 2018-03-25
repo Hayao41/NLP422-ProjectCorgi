@@ -43,6 +43,7 @@ def getDatasetfromDB(vocabDic_path, properties_path):
     pos2idx = vocabDics["pos"]
     rel2idx = vocabDics["rel"]
     dataset = []
+    cycle_counter = 0
 
     try:
 
@@ -71,9 +72,15 @@ def getDatasetfromDB(vocabDic_path, properties_path):
                     rel2idx=rel2idx,
                     sid=result['sid']
                 )
-                graph.sid = result['sid']
-                print(graph)
-                dataset.append(graph)
+
+                if graph.hasCycle:
+                    cycle_counter += 1
+
+                else:
+                    graph.sid = result['sid']
+                    print(graph)
+                    dataset.append(graph)
+        print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
 
     except Exception as err:
         print(err)
@@ -104,6 +111,7 @@ def data_load_test(vocabDic_path, properties_path):
     pos2idx = vocabDics["pos"]
     rel2idx = vocabDics["rel"]
     dataset = []
+    cycle_counter = 0
 
     try:
 
@@ -115,10 +123,10 @@ def data_load_test(vocabDic_path, properties_path):
             annotation_query = "SELECT relation_root FROM annotation WHERE sid=%s"
             for sid in sids:
                 cursor.execute(sentence_query, (sid,))
-                results = cursor.fetchone()
+                results = cursor.fetchall()
                 for result in results:
-                    print("#============building semantic graph [{}]============#".format(result['sid']))
-                    cursor.execute(annotation_query, (result['sid'],))
+                    print("#============building semantic graph [{}]============#".format(sid))
+                    cursor.execute(annotation_query, (sid,))
                     annotations = cursor.fetchall()
                     if len(annotations) == 0:
                         annotations = [{'relation_root': 0}]
@@ -131,11 +139,18 @@ def data_load_test(vocabDic_path, properties_path):
                         use_word=False,
                         pos2idx=pos2idx,
                         rel2idx=rel2idx,
-                        sid=result['sid']
+                        sid=sid
                     )
-                    graph.sid = result['sid']
-                    print(graph)
-                    dataset.append(graph)
+
+                    if graph.hasCycle:
+                        cycle_counter += 1
+
+                    else:
+                        graph.sid = result['sid']
+                        print(graph)
+                        dataset.append(graph)
+
+        print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
 
     except Exception as err:
         print(err)
