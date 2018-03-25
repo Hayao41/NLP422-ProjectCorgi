@@ -27,6 +27,11 @@ test_dataset = conect2db.getDatasetfromDB(
     properties_path=fpath['properties_path']
 )
 
+# test_dataset = conect2db.data_load_test(
+#     vocabDic_path=fpath['vocabDic_path'],
+#     properties_path=fpath['properties_path']
+# )
+
 vocabDics = loadVocabDic(["pos", "rel", "act"], fpath['vocabDic_path'])
 word2idx = vocabDics["word"]
 pos2idx = vocabDics["pos"]
@@ -85,7 +90,7 @@ use_rel = (options.rel_emb_dims != 0)
 train_data_list = []
 test_data_list = []
 
-for data_item in test_dataset[3:-1]:
+for data_item in test_dataset:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 

@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
-
+import gc
 
 class TreeStructureNetwork(nn.Module):
     
@@ -194,7 +194,10 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans el(t) = RNNl(vi(t), enc(t.l1), enc(t.l2), ... , enc(t.lk))\n
         @Trans er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))\n
         '''
-        
+
+        if(iterator.node.text=="http:"):
+            print(iterator.node)
+
         # left chain last hidden state
         left_state = self.left_chain(iterator)[-1].view(1, -1)
 
@@ -297,6 +300,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                 )
         
         hidden_states = init_hidden()
+        # gc.collect()
 
         out, hidden_states = lstm(
             chain.view(-1, 1, self.lstm_hid_dims),

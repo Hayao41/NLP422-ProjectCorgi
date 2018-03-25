@@ -77,7 +77,6 @@ def getDatasetfromDB(vocabDic_path, properties_path):
                     cycle_counter += 1
 
                 else:
-                    graph.sid = result['sid']
                     print(graph)
                     dataset.append(graph)
         print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
@@ -99,13 +98,16 @@ def getDatasetfromDB(vocabDic_path, properties_path):
 def data_load_test(vocabDic_path, properties_path):
 
     sids = []
-    sids.append("S#12258")
-    sids.append("S#2361") 
-    sids.append("S#23776")
-    sids.append("S#32686")
-    sids.append("S#32943")
-    sids.append("S#6767")
+    records = []
+    # sids.append("S#12258")
+    # sids.append("S#2361")
+    # sids.append("S#23776")
+    # sids.append("S#32686")
+    # sids.append("S#32943")
+    # sids.append("S#6767")
     sids.append("S#9148")
+    sids.append("S#27009")
+    sids.append("S#13604")
 
     vocabDics = preprocessing.loadVocabDic(["pos", "rel"], vocabDic_path)
     pos2idx = vocabDics["pos"]
@@ -144,13 +146,14 @@ def data_load_test(vocabDic_path, properties_path):
 
                     if graph.hasCycle:
                         cycle_counter += 1
+                        records.append(sid)
 
                     else:
-                        graph.sid = result['sid']
                         print(graph)
                         dataset.append(graph)
 
         print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
+        print(records)
 
     except Exception as err:
         print(err)
@@ -158,5 +161,11 @@ def data_load_test(vocabDic_path, properties_path):
     except ConnectionError as connerr:
         print(connerr)
         print("[Error] build semantic graph from db failed!")
+
+    else:
+        return dataset
+
+    finally:
+        connection.close()
 
 

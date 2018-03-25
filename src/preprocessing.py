@@ -296,6 +296,7 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
         edgesOutgoing=edgesOutgoing,
         edgesIncoming=edgesIncoming,
         indexedWords=indexedWords,
+        sid=sid,
         hasCycle=hasCycle
     )
 
