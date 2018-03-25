@@ -5,6 +5,7 @@ from torch.autograd import Variable
 import numpy as np
 from utils import Constants
 from semantic.SemanticStructure import Sequence
+import gc
 
 
 def seq2tensor(indexwords_list, use_word=True, use_pos=True):
@@ -98,6 +99,8 @@ class MiniBatchLoader(object):
 
         self.has_graph = has_graph
 
+        self.list_batchs = []
+
         self._iter_counter = 0
 
         if self._need_shuffle:
@@ -112,6 +115,13 @@ class MiniBatchLoader(object):
 
     def __len__(self):
         return self._n_batchs
+
+    def garbage_collection(self):
+        
+        for batch in self.list_batchs:
+            del batch
+        self.list_batchs.clear()
+        gc.collect()
 
     def shuffle(self):
         random.shuffle(self.dataset)
@@ -172,13 +182,17 @@ class MiniBatchLoader(object):
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"
                 batch_graph = [data.graph for data in batch_data]
+                self.list_batchs.append((sequences, batch_graph, target_tensor))
                 return sequences, batch_graph, target_tensor
             else:
+                self.list_batchs.append((sequences, target_tensor))
                 return sequences, target_tensor
 
         else:
 
             self._iter_counter = 0
+
+            self.garbage_collection()
 
             if self._need_shuffle:
                 self.shuffle()
