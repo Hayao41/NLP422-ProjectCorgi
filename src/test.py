@@ -139,7 +139,7 @@ detector = ClauseDetector(
 crit = nn.NLLLoss(size_average=True)
 # optimizer = optim.SGD(detector.parameters(), lr=0.1, momentum=0.5)
 # optimizer = optim.Adagrad(detector.parameters(), lr=1e-2, lr_decay=0.1)
-optimizer = optim.Adam(detector.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9)
+optimizer = optim.Adam(detector.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1e-9, weight_decay=0.0001)
 
 if options.use_cuda:
     detector.switch2gpu()
@@ -183,6 +183,8 @@ for epoch in range(options_dic['epoch']):
             (100. * ((batch_index + 1) / len(train_data))), loss.data[0], end - start))
 
         batch_begin += len(batch_data[1])
+
+        gc.collect()
 
 for batch_data in test_data:
 

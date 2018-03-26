@@ -97,8 +97,8 @@ class ClauseDetector(nn.Module):
         batch_context_vecs = []
 
         # tree encoding and classify
+        self.tree_encoder.init_hidden()
         for graph in batch_graph:
-            self.tree_encoder.init_hidden()
             self.tree_encoder(graph)
             batch_context_vecs.append(graph.getContextVecs())
 
