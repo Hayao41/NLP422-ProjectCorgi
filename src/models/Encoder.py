@@ -72,8 +72,6 @@ class ContextEncoder(nn.Module):
             bidirectional=options.use_bi_lstm
         )
 
-        
-
         if options.xavier:
             self.xavier_normal()
     
@@ -157,12 +155,12 @@ class ContextEncoder(nn.Module):
                     Variable(torch.zeros(
                         self.total_layers,
                         self.batch_size,
-                        self.single_pass_dimsm), required_grad = False
+                        self.single_pass_dimsm)
                     ).cuda(),
                     Variable(torch.zeros(
                             self.total_layers,
                         self.batch_size,
-                        self.single_pass_dims), required_grad = False
+                        self.single_pass_dims)
                     ).cuda()
                 )
 
