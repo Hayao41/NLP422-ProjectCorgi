@@ -100,3 +100,13 @@ def make_dictionary(vocab_list, pad={}):
             idxs[element] = len(idxs)
 
     return idxs
+
+def repackage_hidden(h):
+    
+    if type(h) == Variable:
+        new_h = Variable(h.data)
+        new_h.zero_()
+        return new_h
+
+    else:
+        return tuple(repackage_hidden(v) for v in h)

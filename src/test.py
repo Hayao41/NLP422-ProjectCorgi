@@ -91,11 +91,11 @@ use_rel = (options.rel_emb_dims != 0)
 train_data_list = []
 test_data_list = []
 
-for data_item in test_dataset:
+for data_item in test_dataset[:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:2]:
+for data_item in test_dataset[:5]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
@@ -112,7 +112,7 @@ train_data = MiniBatchLoader(
 test_data = MiniBatchLoader(
     Dataset=test_data_list,
     shuffle=True,
-    batch_size=1,
+    batch_size=options_dic['batch_size'],
     use_cuda=options.use_cuda,
     use_word=use_word,
     use_pos=use_pos,
@@ -165,6 +165,8 @@ for epoch in range(options_dic['epoch']):
         steps += 1
 
         sequences, batch_graph, target_data = batch_data
+
+        detector.zero_grad()
 
         out = detector((sequences, batch_graph)).outputs
     

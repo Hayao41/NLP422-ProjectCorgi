@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+from utils.Utils import repackage_hidden
 
 
 class ContextEncoder(nn.Module):
@@ -26,7 +27,7 @@ class ContextEncoder(nn.Module):
         self.lstm_hid_dims = options.lstm_hid_dims
         self.use_cuda = options.use_cuda
         self.padding_idx = options.padding
-        self.batch_size = 1   # default batch size 1 (inference stage)
+        self.batch_size = options.batch_size  # default batch size 1 (inference stage)
 
         # lstm initial state params
         self.total_layers = options.lstm_num_layers * options.lstm_direction
@@ -71,6 +72,34 @@ class ContextEncoder(nn.Module):
             dropout=options.dropout,
             bidirectional=options.use_bi_lstm
         )
+
+        if self.use_cuda:
+            self.hidden_state = (
+                Variable(torch.zeros(
+                    self.total_layers,
+                    self.batch_size,
+                    self.single_pass_dims)
+                ).cuda(),
+                Variable(torch.zeros(
+                    self.total_layers,
+                    self.batch_size,
+                    self.single_pass_dims)
+                ).cuda()
+            )
+
+        else:
+            self.hidden_state = (
+                Variable(torch.zeros(
+                    self.total_layers,
+                    self.batch_size,
+                    self.single_pass_dims)
+                ),
+                Variable(torch.zeros(
+                    self.total_layers,
+                    self.batch_size,
+                    self.single_pass_dims)
+                )
+            )
 
         if options.xavier:
             self.xavier_normal()
@@ -146,48 +175,14 @@ class ContextEncoder(nn.Module):
         ht = htl con htr\n
         '''
 
-        def init_hidden():
-            '''
-            initialize two_branch_chain_lstm's hidden state and memory cell state\n
-            '''
-            if self.use_cuda:
-                return (
-                    Variable(torch.zeros(
-                        self.total_layers,
-                        self.batch_size,
-                        self.single_pass_dims)
-                    ).cuda(),
-                    Variable(torch.zeros(
-                            self.total_layers,
-                        self.batch_size,
-                        self.single_pass_dims)
-                    ).cuda()
-                )
-
-            else:
-                return (
-                    Variable(torch.zeros(
-                            self.total_layers,
-                        self.batch_size,
-                        self.single_pass_dims)
-                    ),
-                    Variable(torch.zeros(
-                            self.total_layers,
-                        self.batch_size,
-                        self.single_pass_dims)
-                    )
-                )
-
-        hidden_state = init_hidden()
-        
         # lstm contextual encoding
-        lstm_out, hidden_state = self.lstm(
+        lstm_out, self.hidden_state = self.lstm(
             input_vectors.view(
                 -1,  # batch sentence length
                 self.batch_size,  # batch_size
                 self.context_linear_dim  # input vector size
             ),
-            hidden_state
+            self.hidden_state
         )
 
         return lstm_out
@@ -202,13 +197,14 @@ class ContextEncoder(nn.Module):
 
     def forward(self, sequences):
         
-        # get batch data size
-        self.batch_size = len(sequences)
-        
         WordEmbeddings, PosEmbeddings = self.embedding(sequences)
 
         input_vectors = self.nonlinear_transformation(WordEmbeddings, PosEmbeddings)
 
-        out = self.lstm_transformation(input_vectors).transpose(0, 1)
+        self.hidden_state = repackage_hidden(self.hidden_state)
+
+        out = self.lstm_transformation(input_vectors).view(self.batch_size, 
+                                                            -1,
+                                                            self.lstm_hid_dims)
 
         return out

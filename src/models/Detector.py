@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 from collections import namedtuple
+from utils.Utils import repackage_hidden
 
 
 class ClauseDetector(nn.Module):
@@ -72,20 +73,18 @@ class ClauseDetector(nn.Module):
             pred = outputs[start_offset:end_offset]
             preds.append(pred)
             start_offset = end_offset 
-            
-            
+
         OutputTuple = namedtuple('OutputTuple', ['outputs', 'preds'])
         return OutputTuple(outputs=outputs, preds=preds)
 
     def forward(self, batch_data):
-        
-        self.zero_grad()
         
         batch_sequence, batch_graph = batch_data
 
         assert len(batch_sequence) == len(batch_graph), "[Error] sequences' batch size does not match graphs'!"
 
         # sequence context encoding
+        self.context_encoder.hidden_state = repackage_hidden(self.context_encoder.hidden_state)
         context_vecs = self.context_encoder(batch_sequence)
 
         # map sequence context vectors onto tree(resursive model is hard to batch accelerating)
@@ -97,7 +96,6 @@ class ClauseDetector(nn.Module):
         batch_context_vecs = []
 
         # tree encoding and classify
-        self.tree_encoder.init_hidden()
         for graph in batch_graph:
             self.tree_encoder(graph)
             batch_context_vecs.append(graph.getContextVecs())

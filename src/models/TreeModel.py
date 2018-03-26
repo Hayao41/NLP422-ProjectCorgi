@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
-import gc
+from utils.Utils import repackage_hidden
 
 class TreeStructureNetwork(nn.Module):
     
@@ -180,7 +180,33 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             bidirectional=options.use_bi_chain
         )
 
-        self.hidden_states = None
+        # initialize two_branch_chain_lstm's hidden state and memory cell state
+        if self.use_cuda:
+            self.hidden_states = (
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ).cuda(),
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ).cuda()
+            )
+        else:
+            self.hidden_states = (
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ),
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                )
+            )
 
         if options.xavier:
             self.init_weights
@@ -269,44 +295,14 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans e(t) = RNN(vi(t), enc(t.c1), enc(t.c2), ... , enc(t.ck)) 
         '''
 
+        self.hidden_states = repackage_hidden(self.hidden_states)
+
         out, self.hidden_states = lstm(
             chain.view(-1, 1, self.lstm_hid_dims),
             self.hidden_states
         )
         
         return out
-
-    def init_hidden(self):
-        '''
-        initialize two_branch_chain_lstm's hidden state and memory cell state\n
-        '''
-
-        if self.use_cuda:
-            self.hidden_states = (
-                Variable(torch.zeros(
-                    self.total_layers, 
-                    1, 
-                    self.single_pass_dims)
-                ).cuda(),
-                Variable(torch.zeros(
-                    self.total_layers, 
-                    1, 
-                    self.single_pass_dims)
-                ).cuda()
-            )
-        else:
-            self.hidden_states = (
-                Variable(torch.zeros(
-                    self.total_layers, 
-                    1, 
-                    self.single_pass_dims)
-                ),
-                Variable(torch.zeros(
-                    self.total_layers, 
-                    1, 
-                    self.single_pass_dims)
-                )
-            )
 
     def forward(self, graph):
 
