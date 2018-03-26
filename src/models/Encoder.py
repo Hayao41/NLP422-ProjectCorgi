@@ -155,7 +155,7 @@ class ContextEncoder(nn.Module):
                     Variable(torch.zeros(
                         self.total_layers,
                         self.batch_size,
-                        self.single_pass_dimsm)
+                        self.single_pass_dims)
                     ).cuda(),
                     Variable(torch.zeros(
                             self.total_layers,
