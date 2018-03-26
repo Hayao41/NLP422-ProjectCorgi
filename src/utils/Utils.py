@@ -106,7 +106,10 @@ def repackage_hidden(h):
     if type(h) == Variable:
         new_h = Variable(h.data)
         new_h.zero_()
+        del h
         return new_h
 
     else:
-        return tuple(repackage_hidden(v) for v in h)
+        new_tuple = tuple(repackage_hidden(v) for v in h)
+        del h
+        return new_tuple

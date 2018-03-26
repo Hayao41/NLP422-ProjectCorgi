@@ -1,6 +1,7 @@
 
 import time
 import os
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import data.conect2db as conect2db
@@ -22,6 +23,8 @@ fpath = readDictionary("../src/properties/fpath.properties")
 if options_dic['use_cuda']:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
+
+torch.backends.cudnn.enabled = False
 
 test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
@@ -95,7 +98,7 @@ for data_item in test_dataset[:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:5]:
+for data_item in test_dataset[:30000]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
@@ -185,6 +188,10 @@ for epoch in range(options_dic['epoch']):
             (100. * ((batch_index + 1) / len(train_data))), loss.data[0], end - start))
 
         batch_begin += len(batch_data[1])
+
+        sequences.empty_cache()
+        del target_data
+        del batch_data
 
         gc.collect()
 

@@ -99,8 +99,6 @@ class MiniBatchLoader(object):
 
         self.has_graph = has_graph
 
-        self.list_batches = []
-
         self._iter_counter = 0
 
         if self._need_shuffle:
@@ -116,12 +114,6 @@ class MiniBatchLoader(object):
     def __len__(self):
         return self._n_batchs
 
-    def garbage_collection(self):
-
-        del self.list_batches
-        self.list_batches = []
-        gc.collect()
-
     def shuffle(self):
         random.shuffle(self.dataset)
 
@@ -133,6 +125,8 @@ class MiniBatchLoader(object):
         ''' 
         Iterate dataset by batch_size data block.
         '''
+
+        torch.cuda.empty_cache()
 
         if self._iter_counter < self._n_batchs:
             
@@ -149,8 +143,7 @@ class MiniBatchLoader(object):
             else:
                 self._iter_counter += 1
 
-            
-            
+
             # start index
             # batch_idx * batch_size
             # e.g. batch0 = 0 * batch_size -> (batch_size - 1), 
@@ -193,17 +186,13 @@ class MiniBatchLoader(object):
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"
                 batch_graph = [data.graph for data in batch_data]
-                self.list_batches.append((sequences, batch_graph, target_tensor))
                 return sequences, batch_graph, target_tensor
             else:
-                self.list_batches.append((sequences, target_tensor))
                 return sequences, target_tensor
 
         else:
 
             self._iter_counter = 0
-
-            self.garbage_collection()
 
             if self._need_shuffle:
                 self.shuffle()

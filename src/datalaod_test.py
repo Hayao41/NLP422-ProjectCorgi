@@ -1,7 +1,8 @@
 from preprocessing import *
 from data.conect2db import *
-from utils.Utils import options
-from data.DataLoader import MiniBatchLoader
+import torch
+
+# print(torch.backends.cudnn.version())
 
 options_dic = readDictionary("../src/properties/options.properties")
 fpath = readDictionary("../src/properties/fpath.properties")

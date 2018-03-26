@@ -52,7 +52,7 @@ class ClauseDetector(nn.Module):
             sequence = context_vecs[inst]
             graph = batch_graph[inst]
             for idx in range(len(graph.indexedWords)):
-                graph.indexedWords[idx].context_vec = sequence[idx]
+                graph.indexedWords[idx].context_vec = sequence[idx].view(1, -1)
 
     def makeOuputTuple(self, batch_graph, outputs):
         

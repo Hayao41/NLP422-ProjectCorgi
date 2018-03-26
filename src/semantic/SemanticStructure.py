@@ -301,17 +301,20 @@ class Sequence(object):
     batch_size: mini batch size, for supporting mini batch, sequences can be stacked to a batched 2d tensor
     '''
     
-    def __init__(self, words_tensor=None, pos_tensor=None, batch_size=1):
+    def __init__(self, words_tensor=None, pos_tensor=None, batch_size=1, use_cuda=False):
         
         super(Sequence, self).__init__()
         self.words_tensor = words_tensor
         self.pos_tensor = pos_tensor
         self.batch_size = batch_size
+        self.use_cuda = use_cuda
 
     def __len__(self):
         return self.batch_size
 
     def switch2gpu(self):
+
+        self.use_cuda = True
         
         if self.words_tensor is not None:
             self.words_tensor = self.words_tensor.cuda()
@@ -319,8 +322,17 @@ class Sequence(object):
             self.pos_tensor = self.pos_tensor.cuda()
 
     def switch2cpu(self):
+
+        self.use_cuda = False
         
         if self.words_tensor is not None:
             self.words_tensor = self.words_tensor.cpu()
         if self.pos_tensor is not None:
             self.pos_tensor = self.pos_tensor.cpu()
+
+    def empty_cache(self):
+
+        if self.words_tensor is not None:
+            del self.words_tensor
+        if self.pos_tensor is not None:
+            del self.pos_tensor
