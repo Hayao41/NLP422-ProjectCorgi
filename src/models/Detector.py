@@ -84,7 +84,6 @@ class ClauseDetector(nn.Module):
         assert len(batch_sequence) == len(batch_graph), "[Error] sequences' batch size does not match graphs'!"
 
         # sequence context encoding
-        self.context_encoder.hidden_state = repackage_hidden(self.context_encoder.hidden_state)
         context_vecs = self.context_encoder(batch_sequence)
 
         # map sequence context vectors onto tree(resursive model is hard to batch accelerating)

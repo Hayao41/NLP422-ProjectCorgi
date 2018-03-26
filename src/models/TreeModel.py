@@ -182,7 +182,20 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         # initialize two_branch_chain_lstm's hidden state and memory cell state
         if self.use_cuda:
-            self.hidden_states = (
+            self.l_hidden_states = (
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ).cuda(),
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ).cuda()
+            )
+
+            self.r_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -195,7 +208,20 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                 ).cuda()
             )
         else:
-            self.hidden_states = (
+            self.l_hidden_states = (
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                ),
+                Variable(torch.zeros(
+                    self.total_layers, 
+                    1, 
+                    self.single_pass_dims)
+                )
+            )
+
+            self.r_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -260,7 +286,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         left_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.left_hiddens())
         left_chain = torch.cat((left_hiddens), 0)
 
-        return self.chain_transform(left_chain, self.l_lstm)
+        return self.chain_transform(left_chain, self.l_lstm, self.l_hidden_states)
 
     def right_chain(self, iterator):
         
@@ -271,7 +297,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         right_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.right_hiddens())
         right_chain = torch.cat((right_hiddens), 0)
 
-        return self.chain_transform(right_chain, self.r_lstm)
+        return self.chain_transform(right_chain, self.r_lstm, self.r_hidden_states)
 
     def combination(self, left_state, right_state, incom_rel=None):
         
@@ -288,18 +314,16 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         hidden_vector = F.tanh(out)
         return hidden_vector
 
-    def chain_transform(self, chain, lstm):
+    def chain_transform(self, chain, lstm, hidden_states):
         
         ''' 
         children chain transformation\n
         @Trans e(t) = RNN(vi(t), enc(t.c1), enc(t.c2), ... , enc(t.ck)) 
         '''
 
-        self.hidden_states = repackage_hidden(self.hidden_states)
-
-        out, self.hidden_states = lstm(
+        out, hidden_states = lstm(
             chain.view(-1, 1, self.lstm_hid_dims),
-            self.hidden_states
+            hidden_states
         )
         
         return out
@@ -309,6 +333,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
         print("Training on {}".format(graph.sid))
+        self.l_hidden_states = repackage_hidden(self.l_hidden_states)
+        self.r_hidden_states = repackage_hidden(self.r_hidden_states)
 
         self.bottom_up(graph)
 

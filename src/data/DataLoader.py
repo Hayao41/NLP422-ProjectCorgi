@@ -137,7 +137,19 @@ class MiniBatchLoader(object):
         if self._iter_counter < self._n_batchs:
             
             batch_index = self._iter_counter
-            self._iter_counter += 1
+
+            # checking last batch's batch size if it is small
+            # than option's discard it
+            if self._iter_counter == self._n_batchs - 2:
+                last_batch_size = len(self.dataset) - (self.batch_size * (batch_index + 1))
+                if last_batch_size < self.batch_size:
+                    self._iter_counter += 2
+                else:
+                    self._iter_counter += 1
+            else:
+                self._iter_counter += 1
+
+            
             
             # start index
             # batch_idx * batch_size
