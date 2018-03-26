@@ -72,6 +72,8 @@ class ContextEncoder(nn.Module):
             bidirectional=options.use_bi_lstm
         )
 
+        
+
         if options.xavier:
             self.xavier_normal()
     
@@ -147,36 +149,37 @@ class ContextEncoder(nn.Module):
         '''
 
         def init_hidden():
-            ''' initialize hidden and memory cell state of lstm at the first time step'''
-
+            '''
+            initialize two_branch_chain_lstm's hidden state and memory cell state\n
+            '''
             if self.use_cuda:
                 return (
                     Variable(torch.zeros(
                         self.total_layers,
                         self.batch_size,
-                        self.single_pass_dims)
+                        self.single_pass_dimsm), required_grad = False
                     ).cuda(),
                     Variable(torch.zeros(
-                         self.total_layers,
+                            self.total_layers,
                         self.batch_size,
-                        self.single_pass_dims)
+                        self.single_pass_dims), required_grad = False
                     ).cuda()
                 )
 
             else:
                 return (
                     Variable(torch.zeros(
-                         self.total_layers,
+                            self.total_layers,
                         self.batch_size,
                         self.single_pass_dims)
                     ),
                     Variable(torch.zeros(
-                         self.total_layers,
+                            self.total_layers,
                         self.batch_size,
                         self.single_pass_dims)
                     )
                 )
-        
+
         hidden_state = init_hidden()
         
         # lstm contextual encoding
@@ -208,8 +211,6 @@ class ContextEncoder(nn.Module):
 
         input_vectors = self.nonlinear_transformation(WordEmbeddings, PosEmbeddings)
 
-        out = self.lstm_transformation(input_vectors).view(self.batch_size, 
-                                                            -1,
-                                                            self.lstm_hid_dims)
+        out = self.lstm_transformation(input_vectors).transpose(0, 1)
 
         return out

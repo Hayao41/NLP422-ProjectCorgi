@@ -8,7 +8,7 @@ from semantic.SemanticStructure import Sequence
 import gc
 
 
-def seq2tensor(indexwords_list, use_word=True, use_pos=True):
+def seq2tensor(list_indexwords, use_word=True, use_pos=True):
     
     ''' Trans words and pos sequence to 1D tensor and wrapped by Variable '''
 
@@ -24,7 +24,7 @@ def seq2tensor(indexwords_list, use_word=True, use_pos=True):
         return padded_data
     
     if use_word:
-        words_list = [[word.word_idx for word in words] for words in indexwords_list]
+        words_list = [[word.word_idx for word in words] for words in list_indexwords]
         max_len = max(len(inst) for inst in words_list)
         word_data = padding2longest(words_list, max_len)
         # wrapped by torch variable
@@ -33,7 +33,7 @@ def seq2tensor(indexwords_list, use_word=True, use_pos=True):
         words_tensor = None
 
     if use_pos:    
-        pos_list = [[word.pos_idx for word in words] for words in indexwords_list]
+        pos_list = [[word.pos_idx for word in words] for words in list_indexwords]
         max_len = max(len(inst) for inst in pos_list)
         pos_data = padding2longest(pos_list, max_len)
         pos_tensor = Variable(torch.from_numpy(pos_data))
@@ -43,11 +43,11 @@ def seq2tensor(indexwords_list, use_word=True, use_pos=True):
     return words_tensor, pos_tensor
 
 
-def target2tensor(indexwords_list):
+def target2tensor(list_indexwords):
     
     ''' Trans label to 1D tensor then wrapped by Variable '''
 
-    target_list = [Variable(torch.LongTensor([word.label for word in words])) for words in indexwords_list]
+    target_list = [Variable(torch.LongTensor([word.label for word in words])) for words in list_indexwords]
 
     # cat all laebls as a big batch
     target_tensor = torch.cat((target_list), -1)
