@@ -1,11 +1,13 @@
 
+import time
 import torch
 import random
-from torch.autograd import Variable
 import numpy as np
 from utils import Constants
+from torch.autograd import Variable
 from semantic.SemanticStructure import Sequence
-import gc
+
+random.seed(time.time())
 
 
 def seq2tensor(list_indexwords, use_word=True, use_pos=True):

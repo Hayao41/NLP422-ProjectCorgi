@@ -1,12 +1,13 @@
 ''' pre-processing for semantic graph structure data from data file or database'''
 
 import re
+import numpy as np
+import utils.Utils as Utils
+from utils import Constants
+from collections import namedtuple
 from semantic.SemanticStructure import SemanticGraphNode
 from semantic.SemanticStructure import SemanticGraphEdge
 from semantic.SemanticStructure import SemanticGraph
-from utils import Constants
-import utils.Utils as Utils
-from collections import namedtuple
 
 # split temp to [text], [pos], [index], [edge_type]
 PATTERN = r'-> (.*?)/(.*?)-(\d+).*?\((.*?)\)'
@@ -46,7 +47,7 @@ def readDictionary(dic_path, mode='r', encoding='utf-8'):
 def loadVocabDic(vocabTypes, dic_path):
     
     ''' 
-    load builded vocabulary dictionary form 'src/vocabDic/*Dic.txt' file\n
+    load built vocabulary dictionary form 'src/vocabDic/*Dic.txt' file\n
     @Param:
     vocabTypes: vocabulary type list which you want to load from file, 
     4 types(word, pos, rel, act) at most
@@ -158,9 +159,9 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
                        sid="S#"):
     
     ''' 
-    re-build semantic graph with <SemanticGraph> structure from CoreNLP's dependency tree fromat str\n
+    re-build semantic graph with <SemanticGraph> structure from CoreNLP's dependency tree format str\n
     @Parameter\n
-    CoreNLP's dependency tree fromat str(fromat:VALUE_TAG_INDEX)\n
+    CoreNLP's dependency tree format str(fromat:VALUE_TAG_INDEX)\n
     >>> -> root/VV-2 (root)\n
     >>>   -> leaf/NR-1 (nsubj)\n
     >>>   -> inner/VV-3 (conj)\n
@@ -301,3 +302,24 @@ def buildSemanticGraph(DependencyTreeStr, listLabel=None,
     )
 
     return graph
+
+
+def splitDataSet(train=0.7, test=0.2, 
+                develop=0.1, dataset=None):
+    
+    """ split dataset to training set, test set, dev set and wrapped by Datatuple for model"""
+
+    assert dataset, "Input dataset is none type or empty!"
+
+    dataset_len = len(dataset)
+    train_offset = int(np.floor(train * dataset_len))
+    test_offset = train_offset + int(np.ceil(test * dataset_len))
+    develop_offset = test_offset + int(np.floor(develop * dataset_len))
+
+    assert (train_offset + test_offset + develop_offset) > 1, "sum of training set, test set and dev set is bigger than 1!"
+
+    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
+    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[train_offset:test_offset]]
+    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[test_offset:develop_offset]]
+
+    return training_set, test_set, develop_set

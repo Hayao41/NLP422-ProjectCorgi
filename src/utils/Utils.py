@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
+
 class options(object):
         
     ''' 
@@ -11,39 +12,47 @@ class options(object):
 
     def __init__(self,
 
-                 # vocab size
-                 word_vocab_size=0,
-                 pos_vocab_size=0,
-                 rel_vocab_size=0,
-                 rp_vocab_size=0,
-                 label_dims=0,
+                # vocab size
+                word_vocab_size=0,
+                pos_vocab_size=0,
+                rel_vocab_size=0,
+                rp_vocab_size=0,
+                label_dims=0,
 
-                 # embedding layer params
-                 word_emb_dims=0,
-                 pos_emb_dims=0,
-                 rel_emb_dims=0,
-                 rp_emb_dims=0,
+                # embedding layer params
+                word_emb_dims=0,
+                pos_emb_dims=0,
+                rel_emb_dims=0,
+                rp_emb_dims=0,
 
-                 # non linear trans
-                 context_linear_dim=0,
+                # non linear trans
+                context_linear_dim=0,
 
-                 # context encoder
-                 use_bi_lstm=True,
-                 lstm_num_layers=1,
-                 lstm_hid_dims=0,
+                # context encoder
+                use_bi_lstm=True,
+                lstm_num_layers=1,
+                lstm_hid_dims=0,
 
-                 # tree children chain
-                 use_bi_chain=False,
-                 chain_num_layers=1,
-                 chain_hid_dims=0,
+                # tree children chain
+                use_bi_chain=False,
+                chain_num_layers=1,
+                chain_hid_dims=0,
 
-                 # optimization
-                 xavier=True,
-                 batch_size=1,
-                 dropout=0.,
-                 padding=0,
-                 use_cuda=False
-                 ):
+                # optimization
+                xavier=True,
+                batch_size=1,
+                dropout=0.,
+                padding=0,
+                use_cuda=False,
+                cuda_device="1",
+                optim="Adam",
+                lr=0.0001,
+                lr_decay=0.1,
+                weight_decay=0.0001,
+                momentum=0.5,
+                betas=(0.9, 0.98),
+                eps=1e-9
+                ):
         super(options, self).__init__()
 
         # ============ vocabubary size ============#
@@ -86,6 +95,14 @@ class options(object):
         self.dropout = dropout
         self.padding = padding
         self.use_cuda = use_cuda
+        self.optim=optim
+        self.lr=lr
+        self.lr_decay = lr_decay
+        self.weight_decay=weight_decay
+        self.momentum=momentum
+        self.betas=betas
+        self.eps=eps
+
 
 def make_dictionary(vocab_list, pad={}):
     
@@ -100,6 +117,7 @@ def make_dictionary(vocab_list, pad={}):
             idxs[element] = len(idxs)
 
     return idxs
+
 
 def repackage_hidden(h):
     
