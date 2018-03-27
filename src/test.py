@@ -24,7 +24,7 @@ if options_dic['use_cuda']:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
-torch.backends.cudnn.enabled = False
+torch.backends.cudnn.enable = False
 
 test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
@@ -191,6 +191,8 @@ for epoch in range(options_dic['epoch']):
 
         sequences.empty_cache()
         del target_data
+        del sequences
+        del batch_graph
         del batch_data
 
         gc.collect()
