@@ -201,7 +201,7 @@ class ContextEncoder(nn.Module):
 
         input_vectors = self.nonlinear_transformation(WordEmbeddings, PosEmbeddings)
 
-        self.hidden_state = repackage_hidden(self.hidden_state)
+        self.hidden_state = repackage_hidden(h=self.hidden_state, use_cuda=self.use_cuda)
 
         out = self.lstm_transformation(input_vectors).view(self.batch_size, 
                                                             -1,

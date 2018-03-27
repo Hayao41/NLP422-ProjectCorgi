@@ -335,8 +335,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
         print("Training on {}".format(graph.sid))
-        # self.l_hidden_states = repackage_hidden(self.l_hidden_states)
-        # self.r_hidden_states = repackage_hidden(self.r_hidden_states)
+        self.l_hidden_states = repackage_hidden(h=self.l_hidden_states, use_cuda=self.use_cuda)
+        self.r_hidden_states = repackage_hidden(h=self.r_hidden_states, use_cuda=self.use_cuda)
 
         self.bottom_up(graph)
 

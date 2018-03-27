@@ -119,15 +119,19 @@ def make_dictionary(vocab_list, pad={}):
     return idxs
 
 
-def repackage_hidden(h):
+def repackage_hidden(h, use_cuda):
     
     if type(h) == Variable:
-        new_h = Variable(h.data)
+        if use_cuda:
+            new_h = Variable(h.data).cuda()
+        else:
+            new_h = Variable(h.data)
+            
         new_h.zero_()
         del h
         return new_h
 
     else:
-        new_tuple = tuple(repackage_hidden(v) for v in h)
+        new_tuple = tuple(repackage_hidden(v, use_cuda) for v in h)
         del h
         return new_tuple

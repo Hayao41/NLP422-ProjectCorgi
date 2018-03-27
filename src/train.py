@@ -67,6 +67,49 @@ def buildModel(options):
 
     return detector, crit, optimizer
 
+def epoch_train(training_batches, model, crit, optimizer):
+    
+    for batch_index, batch_data in enumerate(training_batches):
+        
+        start_batch = time.time()
+
+        sequences, batch_graph, target_data = batch_data
+
+        model.zero_grad()
+        optimizer.zero_grad()
+
+        out = model((sequences, batch_graph)).outputs
+
+        loss = crit(out, target_data)
+
+        loss.backward()
+
+        optimizer.step()
+
+        sequences.empty_cache()
+        del target_data
+        del sequences
+        del batch_graph
+        del batch_data 
+        
+        end_batch = time.time()
+
+
+def train(training_batches, test_batches, model, crit, optimizer, epoches):
+    
+    for epoch in range(epoches):
+        
+        start_epoch = time.time()
+
+        print("Training on Epoch[{}]:".format(epoch))
+        epoch_train()
+
+        epoch_test()
+
+        end_epoch = time.time()
+    
+
+
 
 if __name__ == "__main__":
 
@@ -179,5 +222,7 @@ if __name__ == "__main__":
         has_graph=True
     )
 
-    # get model, loss_func and optim
+    # build model, loss_func and optim
     model, crit, optimizer = buildModel(options)
+
+

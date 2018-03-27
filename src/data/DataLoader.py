@@ -1,4 +1,5 @@
 
+import gc
 import time
 import torch
 import random
@@ -128,7 +129,8 @@ class MiniBatchLoader(object):
         Iterate dataset by batch_size data block.
         '''
 
-        torch.cuda.empty_cache()
+        if self.use_cuda:
+            torch.cuda.empty_cache()
 
         if self._iter_counter < self._n_batchs:
             
@@ -184,6 +186,8 @@ class MiniBatchLoader(object):
             if self.use_cuda:
                 sequences.switch2gpu()
                 target_tensor = target_tensor.cuda()
+
+            gc.collect()
 
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"
