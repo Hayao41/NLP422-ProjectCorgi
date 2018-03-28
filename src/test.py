@@ -100,7 +100,7 @@ for data_item in test_dataset[:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:3]:
+for data_item in test_dataset[:50]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
@@ -128,7 +128,6 @@ test_data = MiniBatchLoader(
 #===================  Train testing   ===================#
 # detector module 
 context_encoder = ContextEncoder(options=options)
-train_context_hidden = context_encoder.init_hidden(options.train_batch_size)
 tree_model = HierarchicalTreeLSTMs(options=options)
 tree_embed = TreeEmbedding(options=options)
 mlp = MLP(options=options)
@@ -156,6 +155,7 @@ l_list = []
 steps = 0
 
 detector.train()
+train_context_hidden = context_encoder.init_hidden(options.train_batch_size)
 for epoch in range(options_dic['epoch']):
 
     batch_begin = 0
