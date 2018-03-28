@@ -18,12 +18,12 @@ from models.SubLayer import TreeEmbedding
 from data.DataLoader import MiniBatchLoader
 
 random.seed(time.time())
-torch.manual_seed(time.time())
+torch.manual_seed(1024)
 
 
 def buildModel(options):
     
-     # detector module 
+    # detector module
     context_encoder = ContextEncoder(options)
     tree_model = HierarchicalTreeLSTMs(options)
     tree_embed = TreeEmbedding(options)
@@ -68,7 +68,10 @@ def buildModel(options):
 
     return detector, crit, optimizer
 
+
 def epoch_train(training_batches, model, crit, optimizer, epoch):
+
+    total_loss = 0.
     
     for batch_index, batch_data in enumerate(training_batches):
         
@@ -86,6 +89,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
         loss.backward()
 
         loss_data = loss.cpu().data[0]
+
+        total_loss += loss_data
 
         optimizer.step()
 
@@ -106,6 +111,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
 
         gc.collect()
 
+    return total_loss / (batch_index + 1)
+
 
 def train(training_batches, test_batches, model, crit, optimizer, epoches):
     
@@ -113,12 +120,15 @@ def train(training_batches, test_batches, model, crit, optimizer, epoches):
         
         start_epoch = time.time()
 
-        print("Training on Epoch[{}]:".format(epoch))
-        epoch_train(training_batches, model, crit, optimizer, epoch)
+        print("\nTraining on Epoch[{}]:".format(epoch))
+        mean_loss = epoch_train(training_batches, model, crit, optimizer, epoch)
 
         # epoch_test()
 
         end_epoch = time.time()
+
+        # print("Ending on Epoch[{}] Batch mean loss[{:.6f}]\n".format(epoch, mean_loss))
+
 
 
 if __name__ == "__main__":
@@ -179,6 +189,7 @@ if __name__ == "__main__":
 
         # optimization
         batch_size=options_dic['batch_size'],
+        epoch=options_dic['epoch'],
         xavier=options_dic['xavier'],
         dropout=options_dic['dropout'],
         padding=options_dic['padding'],
@@ -206,8 +217,13 @@ if __name__ == "__main__":
                         )
     random.shuffle(annotated_dataset)
 
+    # training_set, test_set, _ = preprocessing.splitDataSet(
+    #                                 train=0.6, test=0.4, develop=0.0,
+    #                                 dataset=annotated_dataset
+    #                             )
+
     training_set, test_set, _ = preprocessing.splitDataSet(
-                                    train=0.7, test=0.3, develop=0.0, 
+                                    train=1, test=0.5, develop=0.0,
                                     dataset=annotated_dataset
                                 )
 
@@ -234,5 +250,14 @@ if __name__ == "__main__":
 
     # build model, loss_func and optim
     model, crit, optimizer = buildModel(options)
+
+    train(
+        training_batches,
+        test_batches,
+        model,
+        crit,
+        optimizer,
+        options.epoch
+    )
 
 

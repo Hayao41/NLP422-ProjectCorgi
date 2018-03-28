@@ -323,3 +323,22 @@ def splitDataSet(train=0.7, test=0.2,
     develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[test_offset:develop_offset]]
 
     return training_set, test_set, develop_set
+
+
+def splitDataSet(train=0.7, test=0.2, 
+                develop=0.1, dataset=None):
+    
+    """ split dataset to training set, test set, dev set and wrapped by Datatuple for model"""
+
+    assert dataset, "Input dataset is none type or empty!"
+
+    dataset_len = len(dataset)
+    train_offset = int(np.floor(train * dataset_len))
+    test_offset = int(np.floor(test * dataset_len))
+    develop_offset = int(np.floor(develop * dataset_len))
+
+    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
+    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:test_offset]]
+    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:develop_offset]]
+
+    return training_set, test_set, develop_set

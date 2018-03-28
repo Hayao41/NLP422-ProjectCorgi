@@ -41,6 +41,7 @@ class options(object):
                 # optimization
                 xavier=True,
                 batch_size=1,
+                epoch=30,
                 dropout=0.,
                 padding=0,
                 use_cuda=False,
@@ -92,6 +93,7 @@ class options(object):
         # ============ optimization ============#
         self.xavier = xavier
         self.batch_size = batch_size
+        self.epoch = epoch
         self.dropout = dropout
         self.padding = padding
         self.use_cuda = use_cuda
