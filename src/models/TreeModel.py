@@ -250,7 +250,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         '''
 
         pass
-
+        #
         # if(iterator.node.text=="http:"):
         #     print(iterator.node)
         #
@@ -334,7 +334,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
-        print("Training on {}".format(graph.sid))
+        # print("Training on {}".format(graph.sid))
         # self.l_hidden_states = repackage_hidden(h=self.l_hidden_states, use_cuda=self.use_cuda)
         # self.r_hidden_states = repackage_hidden(h=self.r_hidden_states, use_cuda=self.use_cuda)
 
