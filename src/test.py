@@ -156,6 +156,8 @@ l_list = []
 steps = 0
 
 detector.train()
+context_encoder.init_hidden(options.train_batch_size)
+tree_model.init_hidden()
 for epoch in range(options_dic['epoch']):
 
     batch_begin = 0
@@ -174,9 +176,9 @@ for epoch in range(options_dic['epoch']):
 
         detector.zero_grad()
 
-        train_context_hidden = repackage_hidden(train_context_hidden, options.use_cuda)
+        context_encoder.repackage_hidden()
         
-        output, train_context_hidden = detector((sequences, batch_graph), train_context_hidden)
+        output = detector((sequences, batch_graph))
 
         out = output.outputs
         
@@ -198,26 +200,19 @@ for epoch in range(options_dic['epoch']):
 
         batch_begin += len(batch_data[1])
 
-        sequences.empty_cache()
-        del target_data
-        del sequences
-        del batch_graph
-        del batch_data
-        del loss
-        del output
-
         gc.collect()
 
 
 detector.eval()
-eval_context_hidden = context_encoder.init_hidden(options.eval_batch_size)
+context_encoder.init_hidden(options.eval_batch_size)
+tree_model.init_hidden()
 for batch_data in test_data:
 
     sequences, batch_graph, target_data = batch_data
     
-    output, eval_context_hidden = detector((sequences, batch_graph), eval_context_hidden)
+    output = detector((sequences, batch_graph))
 
-    eval_context_hidden = repackage_hidden(eval_context_hidden, options.use_cuda)
+    context_encoder.repackage_hidden()
 
     test_out = output.preds
 
