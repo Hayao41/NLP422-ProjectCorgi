@@ -187,8 +187,6 @@ class MiniBatchLoader(object):
                 sequences.switch2gpu()
                 target_tensor = target_tensor.cuda()
 
-            gc.collect()
-
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"
                 batch_graph = [data.graph for data in batch_data]

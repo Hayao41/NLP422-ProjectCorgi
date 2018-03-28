@@ -24,7 +24,7 @@ if options_dic['use_cuda']:
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = options_dic['cuda_device']
 
-torch.backends.cudnn.enable = False
+torch.backends.cudnn.enabled = False
 
 test_dataset = conect2db.getDatasetfromDB(
     vocabDic_path=fpath['vocabDic_path'],
@@ -98,7 +98,7 @@ for data_item in test_dataset[:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:30000]:
+for data_item in test_dataset[:300]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
@@ -146,7 +146,6 @@ optimizer = optim.Adam(detector.parameters(), lr=0.001, betas=(0.9, 0.98), eps=1
 
 if options.use_cuda:
     detector.switch2gpu()
-    crit = crit.cuda()
 
 e_list = []
 l_list = []
@@ -175,9 +174,11 @@ for epoch in range(options_dic['epoch']):
     
         loss = crit(out, target_data)
 
-        l_list.append(loss.cpu().data[0])
-
         loss.backward()
+
+        loss_data = loss.cpu().data[0]
+
+        l_list.append(loss_data)
 
         optimizer.step()
 
@@ -185,7 +186,7 @@ for epoch in range(options_dic['epoch']):
 
         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTime: {:.5f} '.format(
             epoch, len(batch_data[1]) + batch_begin, len(train_data.dataset),
-            (100. * ((batch_index + 1) / len(train_data))), loss.data[0], end - start))
+            (100. * ((batch_index + 1) / len(train_data))), loss_data, end - start))
 
         batch_begin += len(batch_data[1])
 
@@ -194,6 +195,7 @@ for epoch in range(options_dic['epoch']):
         del sequences
         del batch_graph
         del batch_data
+        del loss
 
         gc.collect()
 

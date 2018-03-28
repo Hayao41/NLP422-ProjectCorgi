@@ -126,7 +126,8 @@ def repackage_hidden(h, use_cuda):
             new_h = Variable(h.data).cuda()
         else:
             new_h = Variable(h.data)
-            
+
+        # new_h = Variable(h.data)
         new_h.zero_()
         del h
         return new_h
