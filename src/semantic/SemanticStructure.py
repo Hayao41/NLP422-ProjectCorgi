@@ -296,9 +296,9 @@ class Sequence(object):
     ''' 
     sequential data structure for sentence, containing words index sequence tenor and pos index sequence tensor\n
     @Attribute\n
-    words_tensor: word index sequence 1d tensor(wrapped by Variable, if batch_size > 1 it should be 2d)
-    pos_tensor: pos index sequence 1d tensor(wrapped by Variable, if batch_size > 1 it should be 2d)
-    batch_size: mini batch size, for supporting mini batch, sequences can be stacked to a batched 2d tensor
+    words_tensor: word index sequence 1d tensor(wrapped by Variable, if train_batch_size > 1 it should be 2d)
+    pos_tensor: pos index sequence 1d tensor(wrapped by Variable, if train_batch_size > 1 it should be 2d)
+    train_batch_size: mini batch size, for supporting mini batch, sequences can be stacked to a batched 2d tensor
     '''
     
     def __init__(self, words_tensor=None, pos_tensor=None, batch_size=1, use_cuda=False):

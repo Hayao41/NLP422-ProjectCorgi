@@ -77,14 +77,14 @@ class ClauseDetector(nn.Module):
         OutputTuple = namedtuple('OutputTuple', ['outputs', 'preds'])
         return OutputTuple(outputs=outputs, preds=preds)
 
-    def forward(self, batch_data):
+    def forward(self, batch_data, context_hidden):
         
         batch_sequence, batch_graph = batch_data
 
         assert len(batch_sequence) == len(batch_graph), "[Error] sequences' batch size does not match graphs'!"
 
         # sequence context encoding
-        context_vecs = self.context_encoder(batch_sequence)
+        context_vecs, context_hidden = self.context_encoder(batch_sequence, context_hidden)
 
         # map sequence context vectors onto tree(resursive model is hard to batch accelerating)
         self.mapSequence2Graph(context_vecs, batch_graph)
@@ -96,10 +96,10 @@ class ClauseDetector(nn.Module):
 
         # tree encoding and classify
         for graph in batch_graph:
-            self.tree_encoder(graph)
+            # self.tree_encoder(graph)
             batch_context_vecs.append(graph.getContextVecs())
 
         batch_tensor = torch.cat((batch_context_vecs), dim=0)
         outputs = self.clf(batch_tensor)
 
-        return self.makeOuputTuple(batch_graph, outputs)
+        return self.makeOuputTuple(batch_graph, outputs), context_hidden

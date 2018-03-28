@@ -8,6 +8,7 @@ import data.conect2db as conect2db
 from preprocessing import *
 from matplotlib import pyplot as plt
 from utils.Utils import options
+from utils.Utils import repackage_hidden
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
 from models.SubLayer import MLP
@@ -80,7 +81,8 @@ options = options(
     chain_hid_dims=options_dic['chain_hid_dims'],
 
     # optimization
-    batch_size=options_dic['batch_size'],
+    train_batch_size=options_dic['train_batch_size'],
+    eval_batch_size=options_dic['eval_batch_size'],
     xavier=options_dic['xavier'],
     dropout=options_dic['dropout'],
     padding=options_dic['padding'],
@@ -98,14 +100,14 @@ for data_item in test_dataset[:-1]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     train_data_list.append(data_tuple)
 
-for data_item in test_dataset[:300]:
+for data_item in test_dataset[:3]:
     data_tuple = DataTuple(indexedWords=data_item.indexedWords, graph=data_item)
     test_data_list.append(data_tuple)
 
 train_data = MiniBatchLoader(
     Dataset=train_data_list,
     shuffle=True,
-    batch_size=options_dic['batch_size'],
+    batch_size=options_dic['train_batch_size'],
     use_cuda=options.use_cuda,
     use_word=use_word,
     use_pos=use_pos,
@@ -115,7 +117,7 @@ train_data = MiniBatchLoader(
 test_data = MiniBatchLoader(
     Dataset=test_data_list,
     shuffle=True,
-    batch_size=options_dic['batch_size'],
+    batch_size=options_dic['eval_batch_size'],
     use_cuda=options.use_cuda,
     use_word=use_word,
     use_pos=use_pos,
@@ -126,6 +128,7 @@ test_data = MiniBatchLoader(
 #===================  Train testing   ===================#
 # detector module 
 context_encoder = ContextEncoder(options=options)
+train_context_hidden = context_encoder.init_hidden(options.train_batch_size)
 tree_model = HierarchicalTreeLSTMs(options=options)
 tree_embed = TreeEmbedding(options=options)
 mlp = MLP(options=options)
@@ -152,6 +155,7 @@ l_list = []
 
 steps = 0
 
+detector.train()
 for epoch in range(options_dic['epoch']):
 
     batch_begin = 0
@@ -170,8 +174,12 @@ for epoch in range(options_dic['epoch']):
 
         detector.zero_grad()
 
-        out = detector((sequences, batch_graph)).outputs
-    
+        train_context_hidden = repackage_hidden(train_context_hidden, options.use_cuda)
+        
+        output, train_context_hidden = detector((sequences, batch_graph), train_context_hidden)
+
+        out = output.outputs
+        
         loss = crit(out, target_data)
 
         loss.backward()
@@ -196,14 +204,22 @@ for epoch in range(options_dic['epoch']):
         del batch_graph
         del batch_data
         del loss
+        del output
 
         gc.collect()
 
+
+detector.eval()
+eval_context_hidden = context_encoder.init_hidden(options.eval_batch_size)
 for batch_data in test_data:
 
     sequences, batch_graph, target_data = batch_data
     
-    test_out = detector((sequences, batch_graph)).preds
+    output, eval_context_hidden = detector((sequences, batch_graph), eval_context_hidden)
+
+    eval_context_hidden = repackage_hidden(eval_context_hidden, options.use_cuda)
+
+    test_out = output.preds
 
     listLabel = []
 

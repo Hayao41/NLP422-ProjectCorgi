@@ -188,7 +188,7 @@ if __name__ == "__main__":
         chain_hid_dims=options_dic['chain_hid_dims'],
 
         # optimization
-        batch_size=options_dic['batch_size'],
+        train_batch_size=options_dic['train_batch_size'],
         epoch=options_dic['epoch'],
         xavier=options_dic['xavier'],
         dropout=options_dic['dropout'],
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     training_batches = MiniBatchLoader(
         Dataset=training_set,
         shuffle=True,
-        batch_size=options.batch_size,
+        batch_size=options.train_batch_size,
         use_cuda=options.use_cuda,
         use_word=use_word,
         use_pos=use_pos,
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     test_batches = MiniBatchLoader(
         Dataset=test_set,
         shuffle=True,
-        batch_size=options.batch_size,
+        batch_size=options.train_batch_size,
         use_cuda=options.use_cuda,
         use_word=use_word,
         use_pos=use_pos,

@@ -126,7 +126,7 @@ class MiniBatchLoader(object):
     def next(self):
         
         ''' 
-        Iterate dataset by batch_size data block.
+        Iterate dataset by train_batch_size data block.
         '''
 
         if self.use_cuda:
@@ -149,13 +149,13 @@ class MiniBatchLoader(object):
 
 
             # start index
-            # batch_idx * batch_size
-            # e.g. batch0 = 0 * batch_size -> (batch_size - 1), 
-            # batch1 = 1 * batch_size -> ((2 * batch_size) - 1)
+            # batch_idx * train_batch_size
+            # e.g. batch0 = 0 * train_batch_size -> (train_batch_size - 1),
+            # batch1 = 1 * train_batch_size -> ((2 * train_batch_size) - 1)
             start_index = batch_index * self.batch_size
 
             # end index
-            # if the last batch's size is smaller than batch_size
+            # if the last batch's size is smaller than train_batch_size
             # clip the remain insts from dataset 
             if batch_index != (self._n_batchs - 1):
                 end_index = (batch_index + 1) * self.batch_size

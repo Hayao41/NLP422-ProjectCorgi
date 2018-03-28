@@ -27,7 +27,7 @@ class ContextEncoder(nn.Module):
         self.lstm_hid_dims = options.lstm_hid_dims
         self.use_cuda = options.use_cuda
         self.padding_idx = options.padding
-        self.batch_size = options.batch_size  # default batch size 1 (inference stage)
+        self.batch_size = 1  # default batch size 1 (inference stage)
 
         # lstm initial state params
         self.total_layers = options.lstm_num_layers * options.lstm_direction
@@ -72,34 +72,6 @@ class ContextEncoder(nn.Module):
             dropout=options.dropout,
             bidirectional=options.use_bi_lstm
         )
-
-        if self.use_cuda:
-            self.hidden_state = (
-                Variable(torch.zeros(
-                    self.total_layers,
-                    self.batch_size,
-                    self.single_pass_dims)
-                ).cuda(),
-                Variable(torch.zeros(
-                    self.total_layers,
-                    self.batch_size,
-                    self.single_pass_dims)
-                ).cuda()
-            )
-
-        else:
-            self.hidden_state = (
-                Variable(torch.zeros(
-                    self.total_layers,
-                    self.batch_size,
-                    self.single_pass_dims)
-                ),
-                Variable(torch.zeros(
-                    self.total_layers,
-                    self.batch_size,
-                    self.single_pass_dims)
-                )
-            )
 
         if options.xavier:
             self.xavier_normal()
@@ -163,7 +135,7 @@ class ContextEncoder(nn.Module):
 
         return input_vectors
 
-    def lstm_transformation(self, input_vectors):
+    def lstm_transformation(self, input_vectors, hidden_state):
         
         ''' 
         lstm transformation to get context vector \n
@@ -176,16 +148,49 @@ class ContextEncoder(nn.Module):
         '''
 
         # lstm contextual encoding
-        lstm_out, self.hidden_state = self.lstm(
+        lstm_out, hidden_state = self.lstm(
             input_vectors.view(
                 -1,  # batch sentence length
-                self.batch_size,  # batch_size
+                self.batch_size,  # train_batch_size
                 self.context_linear_dim  # input vector size
             ),
-            self.hidden_state
+            hidden_state
         )
 
-        return lstm_out
+        return lstm_out, hidden_state
+
+    def init_hidden(self, batch_size):
+        
+        ''' init two_branch_chain_lstm's hidden state and memory cell state '''
+        
+        if self.use_cuda:
+            hidden_state = (
+                Variable(torch.zeros(
+                    self.total_layers,
+                    batch_size,
+                    self.single_pass_dims)
+                ).cuda(),
+                Variable(torch.zeros(
+                    self.total_layers,
+                    batch_size,
+                    self.single_pass_dims)
+                ).cuda()
+            )
+
+        else:
+            hidden_state = (
+                Variable(torch.zeros(
+                    self.total_layers,
+                    batch_size,
+                    self.single_pass_dims)
+                ),
+                Variable(torch.zeros(
+                    self.total_layers,
+                    batch_size,
+                    self.single_pass_dims)
+                )
+            )
+        return hidden_state
 
     def switch2cpu(self):
         self.use_cuda = False
@@ -195,16 +200,19 @@ class ContextEncoder(nn.Module):
         self.use_cuda = True
         self.cuda()
 
-    def forward(self, sequences):
+    def forward(self, sequences, hidden_state):
+
+        self.batch_size = len(sequences)
         
         WordEmbeddings, PosEmbeddings = self.embedding(sequences)
 
         input_vectors = self.nonlinear_transformation(WordEmbeddings, PosEmbeddings)
 
-        self.hidden_state = repackage_hidden(h=self.hidden_state, use_cuda=self.use_cuda)
+        out, hidden = self.lstm_transformation(
+            input_vectors, 
+            hidden_state
+        )
 
-        out = self.lstm_transformation(input_vectors).view(self.batch_size, 
-                                                            -1,
-                                                            self.lstm_hid_dims)
+        out = out.view(self.batch_size, -1, self.lstm_hid_dims)
 
-        return out
+        return out, hidden
