@@ -8,16 +8,17 @@ import preprocessing
 import torch.nn as nn
 import torch.optim as optim
 import data.conect2db as conect2db
-from matplotlib import pyplot as plt
 from utils.Utils import options
+from matplotlib import pyplot as plt
+from models.SubLayer import MLP
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
-from models.SubLayer import MLP
 from models.Detector import ClauseDetector
 from models.SubLayer import TreeEmbedding
 from data.DataLoader import MiniBatchLoader
 
 random.seed(time.time())
+torch.manual_seed(time.time())
 
 
 def buildModel(options):
@@ -67,7 +68,7 @@ def buildModel(options):
 
     return detector, crit, optimizer
 
-def epoch_train(training_batches, model, crit, optimizer):
+def epoch_train(training_batches, model, crit, optimizer, epoch):
     
     for batch_index, batch_data in enumerate(training_batches):
         
@@ -84,15 +85,26 @@ def epoch_train(training_batches, model, crit, optimizer):
 
         loss.backward()
 
+        loss_data = loss.cpu().data[0]
+
         optimizer.step()
+
+        end_batch = time.time()
+
+        print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTime: {:.5f} '.format(
+                epoch, (batch_index + 1) * training_batches.batch_size, len(training_batches.dataset),
+                (100. * ((batch_index + 1) / len(training_batches))), loss_data, end_batch - start_batch
+            )
+        )
 
         sequences.empty_cache()
         del target_data
         del sequences
         del batch_graph
         del batch_data 
-        
-        end_batch = time.time()
+        del loss
+
+        gc.collect()
 
 
 def train(training_batches, test_batches, model, crit, optimizer, epoches):
@@ -102,13 +114,11 @@ def train(training_batches, test_batches, model, crit, optimizer, epoches):
         start_epoch = time.time()
 
         print("Training on Epoch[{}]:".format(epoch))
-        epoch_train()
+        epoch_train(training_batches, model, crit, optimizer, epoch)
 
-        epoch_test()
+        # epoch_test()
 
         end_epoch = time.time()
-    
-
 
 
 if __name__ == "__main__":
