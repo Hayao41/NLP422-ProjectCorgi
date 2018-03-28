@@ -329,10 +329,3 @@ class Sequence(object):
             self.words_tensor = self.words_tensor.cpu()
         if self.pos_tensor is not None:
             self.pos_tensor = self.pos_tensor.cpu()
-
-    def empty_cache(self):
-
-        if self.words_tensor is not None:
-            del self.words_tensor
-        if self.pos_tensor is not None:
-            del self.pos_tensor

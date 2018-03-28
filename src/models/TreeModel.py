@@ -179,6 +179,9 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
             dropout=options.dropout,
             bidirectional=options.use_bi_chain
         )
+
+        self.l_hidden_states = None
+        self.r_hidden_states = None
         
         if options.xavier:
             self.init_weights
@@ -234,7 +237,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         left_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.left_hiddens())
         left_chain = torch.cat((left_hiddens), 0)
 
-        return self.chain_transform(left_chain, self.l_lstm, self.l_hidden_states)
+        left_hiddens, self.l_hidden_states = self.chain_transform(left_chain, self.l_lstm, self.l_hidden_states)
+        return left_hiddens
 
     def right_chain(self, iterator):
         
@@ -245,7 +249,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         right_hiddens = [iterator.node.context_vec.view(1, -1)] + list(iterator.right_hiddens())
         right_chain = torch.cat((right_hiddens), 0)
 
-        return self.chain_transform(right_chain, self.r_lstm, self.r_hidden_states)
+        right_hiddens, self.r_hidden_states = self.chain_transform(right_chain, self.r_lstm, self.r_hidden_states)
+        return right_hiddens
 
     def combination(self, left_state, right_state, incom_rel=None):
         
@@ -269,18 +274,18 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans e(t) = RNN(vi(t), enc(t.c1), enc(t.c2), ... , enc(t.ck)) 
         '''
 
-        out, hidden_states = lstm(
+        out, new_hidden_states = lstm(
             chain.view(-1, 1, self.lstm_hid_dims),
             hidden_states
         )
         
-        return out
+        return out, new_hidden_states
 
     def init_hidden(self):
         
         # initialize two_branch_chain_lstm's hidden state and memory cell state
         if self.use_cuda:
-            l_hidden_states = (
+            self.l_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -293,7 +298,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                 ).cuda()
             )
 
-            r_hidden_states = (
+            self.r_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -306,7 +311,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                 ).cuda()
             )
         else:
-            l_hidden_states = (
+            self.l_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -319,7 +324,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                 )
             )
 
-            r_hidden_states = (
+            self.r_hidden_states = (
                 Variable(torch.zeros(
                     self.total_layers, 
                     1, 
@@ -331,14 +336,18 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                     self.single_pass_dims)
                 )
             )
-        return l_hidden_states, r_hidden_states
+    
+    def repackage_hidden(self):
+        
+        self.l_hidden_states = repackage_hidden(self.l_hidden_states)
+        self.r_hidden_states = repackage_hidden(self.r_hidden_states)
 
     def forward(self, graph):
 
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
         # print("Training on {}".format(graph.sid))
-        
+
         self.bottom_up(graph)
 
 
