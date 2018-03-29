@@ -96,8 +96,7 @@ class ClauseDetector(nn.Module):
 
         # tree encoding and classify
         for graph in batch_graph:
-            # self.tree_encoder.repackage_hidden()
-            # self.tree_encoder(graph)
+            self.tree_encoder(graph)
             batch_context_vecs.append(graph.getContextVecs())
 
         batch_tensor = torch.cat((batch_context_vecs), dim=0)

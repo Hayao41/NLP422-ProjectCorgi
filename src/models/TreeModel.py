@@ -274,6 +274,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans e(t) = RNN(vi(t), enc(t.c1), enc(t.c2), ... , enc(t.ck)) 
         '''
 
+        hidden_states = repackage_hidden(hidden_states)
+
         out, new_hidden_states = lstm(
             chain.view(-1, 1, self.lstm_hid_dims),
             hidden_states
@@ -347,6 +349,8 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
         # print("Training on {}".format(graph.sid))
+
+        # self.repackage_hidden()
 
         self.bottom_up(graph)
 
