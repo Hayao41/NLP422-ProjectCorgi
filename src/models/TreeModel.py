@@ -198,25 +198,25 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         @Trans er(t) = RNNr(vi(t), enc(t.r1), enc(t.r2), ... , enc(t.rk))\n
         '''
 
-        pass
+        # pass
 
-        # # left chain last hidden state
-        # left_state = self.left_chain(iterator)[-1].view(1, -1)
-        #
-        # # right chain last hidden state
-        # right_state = self.right_chain(iterator)[-1].view(1, -1)
-        #
-        # # incom-relation embedding
-        # if self.rel_emb_dims is not 0:
-        #     incom_rel = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-        # else:
-        #     incom_rel = None
-        #
-        # # concatenate non-linear trans
-        # hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
-        #
-        # # set context vector(as memory to next recursive stage)
-        # iterator.node.context_vec = hidden_vector
+        # left chain last hidden state
+        left_state = self.left_chain(iterator)[-1].view(1, -1)
+
+        # right chain last hidden state
+        right_state = self.right_chain(iterator)[-1].view(1, -1)
+
+        # incom-relation embedding
+        if self.rel_emb_dims is not 0:
+            incom_rel = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
+        else:
+            incom_rel = None
+
+        # concatenate non-linear trans
+        hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
+
+        # set context vector(as memory to next recursive stage)
+        iterator.node.context_vec = hidden_vector
 
     def tp_transform(self, iterator):
         
@@ -335,21 +335,12 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
                     self.single_pass_dims)
                 )
             )
-    
-    def repackage_hidden(self):
-        
-        self.l_hidden_states = repackage_hidden(self.l_hidden_states)
-        self.r_hidden_states = repackage_hidden(self.r_hidden_states)
 
     def forward(self, graph):
 
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
         print("Training on {}".format(graph.sid))
-
-        # self.repackage_hidden()
-
-        # self.repackage_hidden()
 
         self.bottom_up(graph)
 

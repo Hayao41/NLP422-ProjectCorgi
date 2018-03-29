@@ -127,7 +127,7 @@ def repackage_hidden(h):
     
     if type(h) == Variable:
         new_h = Variable(h.data)
-        # new_h.zero_()
+        new_h.zero_()
         return new_h
 
     else:
