@@ -109,7 +109,7 @@ class TreeStructureNetwork(nn.Module):
 class HierarchicalTreeLSTMs(TreeStructureNetwork):
     
     ''' 
-    Model implements HierarchicalTreeLSTMs(Kiperwasser, Yoav., 2016, https://arxiv.org/abs/1603.00375)\n
+    Model implemented HierarchicalTreeLSTMs(Kiperwasser, Yoav., 2016, https://arxiv.org/abs/1603.00375)\n
     This class contains three lstm unit for supporting hierarchical lstms for encoding a given
     dependency parse tree.\n
     @Attribute:\n
