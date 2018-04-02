@@ -214,11 +214,11 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         else:
             incom_rel = None
 
-        # # concatenate non-linear trans
-        # hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
-        #
-        # # set context vector(as memory to next recursive stage)
-        # iterator.node.context_vec = hidden_vector
+        # concatenate non-linear trans
+        hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
+
+        # set context vector(as memory to next recursive stage)
+        iterator.node.context_vec = hidden_vector
 
     def tp_transform(self, iterator):
         
@@ -413,8 +413,8 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         normed_trans = self.layer_norm(transed_vec)
 
         # set back onto tree node
-        del iterator.node.context_vec
-        iterator.node.context_vec = transed_vec
+        # del iterator.node.context_vec
+        # iterator.node.context_vec = normed_trans
         
     def atten_trans(self, iterator):
         
@@ -428,7 +428,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         atten_context = atten_context.view(-1, self.context_vec_dims)
         weights = weights.view(1, -1)
 
-        # context tranformation
+        # context transformation
         transed_source = self.transformation_source(source_vec)
         transed_context = self.transformation_context(atten_context)
         transed_vec = F.relu6(transed_source + transed_context + self.bias)
@@ -441,8 +441,8 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         normed_vec = self.layer_norm(transed_vec)
         
         # set back onto tree node
-        del iterator.node.context_vec
-        iterator.node.context_vec = normed_vec
+        # del iterator.node.context_vec
+        # iterator.node.context_vec = normed_vec
 
     def tp_transform(self, iterator):
         pass
