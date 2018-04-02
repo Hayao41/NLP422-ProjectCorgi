@@ -147,7 +147,6 @@ class MiniBatchLoader(object):
             else:
                 self._iter_counter += 1
 
-
             # start index
             # batch_idx * train_batch_size
             # e.g. batch0 = 0 * train_batch_size -> (train_batch_size - 1),
