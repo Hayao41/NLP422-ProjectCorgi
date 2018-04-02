@@ -1,14 +1,18 @@
 
 import os
+import gc
 import time
 import torch
 import random
+import objgraph
+import linecache
+import tracemalloc
 import preprocessing
 import torch.nn as nn
 import torch.optim as optim
 import data.conect2db as conect2db
-from utils.Utils import options
 from matplotlib import pyplot as plt
+from utils.Utils import options
 from models.SubLayer import MLP
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
@@ -19,6 +23,32 @@ from data.DataLoader import MiniBatchLoader
 
 random.seed(time.time())
 torch.manual_seed(1024)
+
+
+def display_top(snapshot, key_type='lineno', limit=10):
+    snapshot = snapshot.filter_traces((
+        tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+        tracemalloc.Filter(False, "<unknown>"),
+    ))
+    top_stats = snapshot.statistics(key_type)
+
+    print("Top %s lines" % limit)
+    for index, stat in enumerate(top_stats[:limit], 1):
+        frame = stat.traceback[0]
+        # replace "/path/to/module/file.py" with "module/file.py"
+        filename = os.sep.join(frame.filename.split(os.sep)[-2:])
+        print("#%s: %s:%s: %.1f KiB"
+              % (index, filename, frame.lineno, stat.size / 1024))
+        line = linecache.getline(frame.filename, frame.lineno).strip()
+        if line:
+            print('    %s' % line)
+
+    other = top_stats[limit:]
+    if other:
+        size = sum(stat.size for stat in other)
+        print("%s other: %.1f KiB" % (len(other), size / 1024))
+    total = sum(stat.size for stat in top_stats)
+    print("Total allocated size: %.1f KiB" % (total / 1024))
 
 
 def buildModel(options):
@@ -74,9 +104,9 @@ def buildModel(options):
 def epoch_train(training_batches, model, crit, optimizer, epoch):
 
     total_loss = 0.
-    
+
     for batch_index, batch_data in enumerate(training_batches):
-        
+
         start_batch = time.time()
 
         sequences, batch_graph, target_data = batch_data
@@ -86,7 +116,7 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
 
         model.context_encoder.repackage_hidden()
 
-        out = model((sequences, batch_graph)).outputs
+        out, _ = model((sequences, batch_graph))
 
         loss = crit(out, target_data)
 
@@ -99,6 +129,11 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
         optimizer.step()
 
         end_batch = time.time()
+
+        for graph in batch_graph:
+            graph.clean_up()
+
+        del batch_data, sequences, batch_graph, target_data, out, loss
 
         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTime: {:.5f} '.format(
                 epoch, (batch_index + 1) * training_batches.batch_size, len(training_batches.dataset),
@@ -248,6 +283,8 @@ if __name__ == "__main__":
 
     # build model, loss_func and optim
     model, crit, optimizer = buildModel(options)
+
+
 
     train(
         training_batches,

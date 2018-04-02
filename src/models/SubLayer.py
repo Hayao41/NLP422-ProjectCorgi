@@ -135,6 +135,7 @@ class TreeEmbedding(nn.Module):
                 position_embeddingdings = self.position_embedding(position_idx)
                 graph.setNodePositionEmbeddings(position_embeddingdings)
 
+
 class LayerNormalization(nn.Module):
     ''' Layer normalization module '''
 

@@ -79,6 +79,11 @@ class SemanticGraph(object):
         vec_list = [word.context_vec for word in self.indexedWords]
         context_vecs = torch.cat((vec_list), 0)
         return context_vecs
+
+    def clean_up(self):
+
+        for word in self.indexedWords:
+            del word.context_vec
     
     def __len__(self):
         return len(self.indexedWords)
