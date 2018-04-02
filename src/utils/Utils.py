@@ -38,6 +38,9 @@ class options(object):
                  chain_num_layers=1,
                  chain_hid_dims=0,
 
+                 # attention
+                 atten_type="general",
+
                  # optimization
                  xavier=True,
                  train_batch_size=1,
@@ -57,23 +60,23 @@ class options(object):
                  ):
         super(options, self).__init__()
 
-        # ============ vocabubary size ============#
+        # ============ vocabubary size ============ #
         self.word_vocab_size = word_vocab_size
         self.pos_vocab_size = pos_vocab_size
         self.rel_vocab_size = rel_vocab_size
         self.rp_vocab_size = rp_vocab_size
         self.label_dims = label_dims
 
-        # ============ embeddding layer ============#
+        # ============ embeddding layer ============ #
         self.word_emb_dims = word_emb_dims
         self.pos_emb_dims = pos_emb_dims
         self.rel_emb_dims = rel_emb_dims
         self.rp_emb_dims = rp_emb_dims
 
-        # ============ non linear trans ============#
+        # ============ non linear trans ============ #
         self.context_linear_dim = context_linear_dim
 
-        #========== context encoder(lstm) ==========#
+        # ========== context encoder(lstm) ========== #
         self.use_bi_lstm = use_bi_lstm
         if use_bi_lstm:
             self.lstm_direction = 2
@@ -82,7 +85,7 @@ class options(object):
         self.lstm_num_layers = lstm_num_layers
         self.lstm_hid_dims = lstm_hid_dims
 
-        # ======== tree children chain(lstm) =======#
+        # ======== tree children chain(lstm) ======= #
         self.use_bi_chain = use_bi_chain
         if use_bi_chain:
             self.chain_direction = 2
@@ -91,7 +94,10 @@ class options(object):
         self.chain_num_layers = chain_num_layers
         self.chain_hid_dims = chain_hid_dims
 
-        # ============ optimization ============#
+        # ============== attention ============== #
+        self.atten_type = atten_type
+
+        # ============ optimization ============ #
         self.xavier = xavier
         self.train_batch_size = train_batch_size
         self.eval_batch_size = eval_batch_size

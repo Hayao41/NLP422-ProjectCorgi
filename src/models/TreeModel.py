@@ -353,7 +353,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         super(DynamicRecursiveNetwork, self).__init__(options)
         self.context_vec_dims = options.lstm_hid_dims
         self.rel_emb_dims = options.rel_emb_dims
-        # self.coupling_type = options.coupling_type
+        self.atten_type = options.atten_type
 
         self.transformation_source = nn.Linear(
             self.context_vec_dims,
@@ -375,8 +375,8 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
 
         self.attention = attention.Attention(
-            dimensions=self.context_vec_dims
-            # attention_type=self.coupling_type
+            dimensions=self.context_vec_dims,
+            attention_type=self.atten_type
         )
 
         self.dropout = nn.Dropout(options.dropout)
@@ -403,18 +403,18 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         source_vec = iterator.node.context_vec
 
         # context transformation
-        transed_source = F.relu6(self.transformation_source(source_vec))
+        transed_source = F.relu6(self.transformation_source(source_vec) + self.bias)
         normed_source = self.layer_norm(transed_source + source_vec)
         
         # relation transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-        cat_sou_rel_vec = torch.cat((normed_source, incom_rel_vec), dim=-1)
-        transed_vec = F.relu6(self.transformation_relation(cat_sou_rel_vec))
-        normed_trans = self.layer_norm(transed_vec)
+        enhanced = torch.cat((normed_source, incom_rel_vec), dim=-1)
+        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+        normed_enhanced = self.layer_norm(transed_enhanceed)
 
         # set back onto tree node
-        # del iterator.node.context_vec
-        # iterator.node.context_vec = normed_trans
+        del iterator.node.context_vec
+        iterator.node.context_vec = normed_enhanced
         
     def atten_trans(self, iterator):
         
@@ -423,26 +423,26 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         # attention computation
         children_hiddens = list(iterator.children_hiddens())
         children_context = torch.cat((children_hiddens), dim=0).view(1, -1, self.context_vec_dims)
-        querry = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
-        atten_context, weights = self.attention(querry, children_context)
+        query = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
+        atten_context, weights = self.attention(query, children_context)
         atten_context = atten_context.view(-1, self.context_vec_dims)
-        weights = weights.view(1, -1)
+        iterator.setAttentionProbs(weights.view(-1))
 
         # context transformation
         transed_source = self.transformation_source(source_vec)
         transed_context = self.transformation_context(atten_context)
-        transed_vec = F.relu6(transed_source + transed_context + self.bias)
-        normed_vec = self.layer_norm(transed_vec + source_vec + atten_context)
+        vanilla = F.relu6(transed_source + transed_context + self.bias)
+        normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
 
         # relation transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-        cat_norm_rel_vec = torch.cat((normed_vec, incom_rel_vec), dim=-1)
-        transed_vec = F.relu6(self.transformation_relation(cat_norm_rel_vec))
-        normed_vec = self.layer_norm(transed_vec)
+        enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
+        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+        normed_enhanced = self.layer_norm(transed_enhanceed)
         
         # set back onto tree node
-        # del iterator.node.context_vec
-        # iterator.node.context_vec = normed_vec
+        del iterator.node.context_vec
+        iterator.node.context_vec = normed_enhanced
 
     def tp_transform(self, iterator):
         pass

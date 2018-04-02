@@ -225,6 +225,11 @@ class SemanticGraphIterator(object):
                 rel_vec=edge.rel_vec
             )
 
+    def setAttentionProbs(self, weights):
+        
+        for index, edge in enumerate(self.getOutgoingEdges()):
+            edge.target.atten_prob = weights[index].data[0]
+
     def children_hiddens(self):
         
         ''' get current node's children hidden states '''
