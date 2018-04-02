@@ -135,6 +135,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
 
         del batch_data, sequences, batch_graph, target_data, out, loss
 
+        gc.collect()
+
         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tTime: {:.5f} '.format(
                 epoch, (batch_index + 1) * training_batches.batch_size, len(training_batches.dataset),
                 (100. * ((batch_index + 1) / len(training_batches))), loss_data, end_batch - start_batch
