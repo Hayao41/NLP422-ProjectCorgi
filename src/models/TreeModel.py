@@ -8,6 +8,7 @@ from utils.Utils import repackage_hidden
 from torchnlp.nn import attention
 from SubLayer import LayerNormalization
 
+
 class TreeStructureNetwork(nn.Module):
     
     ''' 
@@ -394,7 +395,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     def bu_transform(self, iterator):
         
         if iterator.isLeaf():
-            self.leaf_trans(iterator)    
+            self.leaf_trans(iterator)
         else:
             self.atten_trans(iterator)
 
@@ -426,7 +427,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         query = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
         atten_context, weights = self.attention(query, children_context)
         atten_context = atten_context.view(-1, self.context_vec_dims)
-        iterator.setAttentionProbs(weights.view(-1))
+        # iterator.setAttentionProbs(weights.view(-1))
 
         # context transformation
         transed_source = self.transformation_source(source_vec)
