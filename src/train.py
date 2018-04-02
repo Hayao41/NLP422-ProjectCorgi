@@ -1,6 +1,5 @@
 
 import os
-import gc
 import time
 import torch
 import random
@@ -13,6 +12,7 @@ from matplotlib import pyplot as plt
 from models.SubLayer import MLP
 from models.Encoder import ContextEncoder
 from models.TreeModel import HierarchicalTreeLSTMs
+from models.TreeModel import DynamicRecursiveNetwork
 from models.Detector import ClauseDetector
 from models.SubLayer import TreeEmbedding
 from data.DataLoader import MiniBatchLoader
@@ -25,9 +25,11 @@ def buildModel(options):
     
     # detector module
     context_encoder = ContextEncoder(options)
-    tree_model = HierarchicalTreeLSTMs(options)
+    tree_model = DynamicRecursiveNetwork(options)
     tree_embed = TreeEmbedding(options)
     mlp = MLP(options)
+
+    context_encoder.init_hidden(options.train_batch_size)
 
     # clause detector
     detector = ClauseDetector(
@@ -41,7 +43,7 @@ def buildModel(options):
     crit = nn.NLLLoss(size_average=True)
 
     # get optimizer
-    if options == "SGD":
+    if options.optim == "SGD":
         optimizer = optim.SGD(
             detector.parameters(), 
             lr=options.lr, 
@@ -82,6 +84,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
         model.zero_grad()
         optimizer.zero_grad()
 
+        model.context_encoder.repackage_hidden()
+
         out = model((sequences, batch_graph)).outputs
 
         loss = crit(out, target_data)
@@ -101,15 +105,6 @@ def epoch_train(training_batches, model, crit, optimizer, epoch):
                 (100. * ((batch_index + 1) / len(training_batches))), loss_data, end_batch - start_batch
             )
         )
-
-        sequences.empty_cache()
-        del target_data
-        del sequences
-        del batch_graph
-        del batch_data 
-        del loss
-
-        gc.collect()
 
     return total_loss / (batch_index + 1)
 
@@ -181,11 +176,14 @@ if __name__ == "__main__":
         use_bi_lstm=options_dic['use_bi_lstm'],
         lstm_num_layers=options_dic['lstm_num_layers'],
         lstm_hid_dims=options_dic['lstm_hid_dims'],
-        
+
         # tree children chain
         use_bi_chain=options_dic['use_bi_chain'],
         chain_num_layers=options_dic['chain_num_layers'],
         chain_hid_dims=options_dic['chain_hid_dims'],
+
+        # attention
+        atten_type=options_dic['atten_type'],
 
         # optimization
         train_batch_size=options_dic['train_batch_size'],
@@ -223,7 +221,7 @@ if __name__ == "__main__":
     #                             )
 
     training_set, test_set, _ = preprocessing.splitDataSet(
-                                    train=1, test=0.5, develop=0.0,
+                                    train=1, test=0.3, develop=0.0,
                                     dataset=annotated_dataset
                                 )
 
@@ -241,7 +239,7 @@ if __name__ == "__main__":
     test_batches = MiniBatchLoader(
         Dataset=test_set,
         shuffle=True,
-        batch_size=options.train_batch_size,
+        batch_size=options.eval_batch_size,
         use_cuda=options.use_cuda,
         use_word=use_word,
         use_pos=use_pos,
