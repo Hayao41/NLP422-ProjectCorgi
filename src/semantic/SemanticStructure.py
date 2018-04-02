@@ -133,10 +133,16 @@ class SemanticGraphNode(object):
         else:
             label = "NO_ACTION"
 
-        return "Text:[{text}], POS:[{pos}], Index:[{index}], Label:[{label}]".format(
+        if self.isLeaf:
+            leaf = "True"
+        else:
+            leaf = "False"
+
+        return "Text:[{text}], POS:[{pos}], Index:[{index}], Leaf[{leaf}], Label:[{label}]".format(
             text=self.text,
             pos=self.pos,
             index=self.sentence_index,
+            leaf=leaf,
             label=label
         )
 
@@ -218,6 +224,14 @@ class SemanticGraphIterator(object):
                 rel_idx=edge.rel_idx,
                 rel_vec=edge.rel_vec
             )
+
+    def children_hiddens(self):
+        
+        ''' get current node's children hidden states '''
+        
+        for edge in self.getOutgoingEdges():
+            target = edge.target
+            yield target.context_vec
 
     def left_hiddens(self):
         

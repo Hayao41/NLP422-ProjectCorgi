@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 from utils.Utils import repackage_hidden
+from torchnlp.nn import attention
+from SubLayer import LayerNormalization
 
 class TreeStructureNetwork(nn.Module):
     
@@ -212,11 +214,11 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
         else:
             incom_rel = None
 
-        # concatenate non-linear trans
-        hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
-
-        # set context vector(as memory to next recursive stage)
-        iterator.node.context_vec = hidden_vector
+        # # concatenate non-linear trans
+        # hidden_vector = self.combination(left_state, right_state, incom_rel=incom_rel)
+        #
+        # # set context vector(as memory to next recursive stage)
+        # iterator.node.context_vec = hidden_vector
 
     def tp_transform(self, iterator):
         
@@ -347,16 +349,102 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):
     
-    def __init__(self, options, att_layer, dy_rout):
+    def __init__(self, options):
         super(DynamicRecursiveNetwork, self).__init__(options)
-        self.att_layer = att_layer
-        self.dy_rout = dy_rout
+        self.context_vec_dims = options.lstm_hid_dims
+        self.rel_emb_dims = options.rel_emb_dims
+        # self.coupling_type = options.coupling_type
+
+        self.transformation_source = nn.Linear(
+            self.context_vec_dims,
+            self.context_vec_dims,
+            bias=False
+        )
+
+        self.transformation_context = nn.Linear(
+            self.context_vec_dims,
+            self.context_vec_dims,
+            bias=False
+        )
+
+        self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
+
+
+        self.transformation_relation = nn.Linear(
+            self.context_vec_dims + self.rel_emb_dims,
+            self.context_vec_dims
+        )
+
+        self.attention = attention.Attention(
+            dimensions=self.context_vec_dims
+            # attention_type=self.coupling_type
+        )
+
+        self.dropout = nn.Dropout(options.dropout)
+
+        self.layer_norm = LayerNormalization(self.context_vec_dims)
+
+        if options.xavier:
+            self.xavier_normal()
+
+    def xavier_normal(self):
+        nn.init.xavier_normal(self.transformation_source.weight)
+        nn.init.xavier_normal(self.transformation_context.weight)
+        nn.init.xavier_normal(self.transformation_relation.weight)
 
     def bu_transform(self, iterator):
-        self.att_layer()
+        
+        if iterator.isLeaf():
+            self.leaf_trans(iterator)    
+        else:
+            self.atten_trans(iterator)
+
+    def leaf_trans(self, iterator):
+        
+        source_vec = iterator.node.context_vec
+
+        # context transformation
+        transed_source = F.relu6(self.transformation_source(source_vec))
+        normed_source = self.layer_norm(transed_source + source_vec)
+        
+        # relation transformation
+        incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
+        cat_sou_rel_vec = torch.cat((normed_source, incom_rel_vec), dim=-1)
+        transed_vec = F.relu6(self.transformation_relation(cat_sou_rel_vec))
+        normed_trans = self.layer_norm(transed_vec)
+
+        # set back onto tree node
+        iterator.node.context_vec = transed_vec
+        
+    def atten_trans(self, iterator):
+        
+        source_vec = iterator.node.context_vec
+        
+        # attention computation
+        children_hiddens = list(iterator.children_hiddens())
+        children_context = torch.cat((children_hiddens), dim=0).view(1, -1, self.context_vec_dims)
+        querry = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
+        atten_context, weights = self.attention(querry, children_context)
+        atten_context = atten_context.view(-1, self.context_vec_dims)
+        weights = weights.view(1, -1)
+
+        # context tranformation
+        transed_source = self.transformation_source(source_vec)
+        transed_context = self.transformation_context(atten_context)
+        transed_vec = F.relu6(transed_source + transed_context + self.bias)
+        normed_vec = self.layer_norm(transed_vec + source_vec + atten_context)
+
+        # relation transformation
+        incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
+        cat_norm_rel_vec = torch.cat((normed_vec, incom_rel_vec), dim=-1)
+        transed_vec = F.relu6(self.transformation_relation(cat_norm_rel_vec))
+        normed_vec = self.layer_norm(transed_vec)
+        
+        # set back onto tree node
+        iterator.node.context_vec = normed_vec
 
     def tp_transform(self, iterator):
-        self.dy_rout()
+        pass
 
     def forward(self, graph):
         
@@ -364,4 +452,4 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
 
         self.bottom_up(graph)
 
-        self.top_down(graph)
+        # self.top_down(graph)
