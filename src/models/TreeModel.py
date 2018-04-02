@@ -393,6 +393,8 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         nn.init.xavier_normal(self.transformation_relation.weight)
 
     def bu_transform(self, iterator):
+
+        # pass
         
         if iterator.isLeaf():
             self.leaf_trans(iterator)
