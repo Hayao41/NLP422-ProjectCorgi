@@ -367,13 +367,12 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
             bias=False
         )
 
-        self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
-
-
         self.transformation_relation = nn.Linear(
             self.context_vec_dims + self.rel_emb_dims,
             self.context_vec_dims
         )
+
+        self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
 
         self.attention = attention.Attention(
             dimensions=self.context_vec_dims
@@ -414,6 +413,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         normed_trans = self.layer_norm(transed_vec)
 
         # set back onto tree node
+        del iterator.node.context_vec
         iterator.node.context_vec = transed_vec
         
     def atten_trans(self, iterator):
@@ -441,6 +441,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         normed_vec = self.layer_norm(transed_vec)
         
         # set back onto tree node
+        del iterator.node.context_vec
         iterator.node.context_vec = normed_vec
 
     def tp_transform(self, iterator):
