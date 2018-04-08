@@ -81,9 +81,15 @@ class SemanticGraph(object):
         return context_vecs
 
     def clean_up(self):
+        
+        ''' 
+        clean up encoded vector of node from semantic graph. if you do not clean up, 
+        it may cause meomory leak during training stage becuz it, Variable object, contains 
+        full computation graph
+        '''
 
         for word in self.indexedWords:
-            del word.context_vec
+            word.context_vec = None
     
     def __len__(self):
         return len(self.indexedWords)
@@ -110,6 +116,7 @@ class SemanticGraphNode(object):
                 rp_vec=None,
                 context_vec=None,
                 atten_prob=0.,
+                dy_prob=0.,
                 label=0,
                 isLeaf=False
     ):
@@ -128,6 +135,7 @@ class SemanticGraphNode(object):
         self.context_vec = context_vec
         self.label = label
         self.atten_prob = atten_prob
+        self.dy_prob = dy_prob
         self.isLeaf = isLeaf
 
     def __str__(self):

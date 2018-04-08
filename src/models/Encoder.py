@@ -8,7 +8,10 @@ from utils.Utils import repackage_hidden
 class ContextEncoder(nn.Module):
     
     ''' 
-    Sentence context rnn encoder(use lstm)\n
+    Sentence context rnn encoder(use lstm) before run it you 
+    should call init_hidden() method to initialize lstm's hidden states. 
+    During training or evaluating, you should call repackage_hidden() to repack 
+    the last times hidden states to seprate it from last history\n
     @Attrubute\n
     word_embeddings: sentence word embedding(optional)\n
     pos_embeddings: sentence pos tag embedding(optional)\n
@@ -194,6 +197,7 @@ class ContextEncoder(nn.Module):
             )
 
     def repackage_hidden(self):
+        """Wraps hidden states in new Variables, to detach them from their history."""
         self.hidden_state = repackage_hidden(self.hidden_state)
 
     def switch2cpu(self):

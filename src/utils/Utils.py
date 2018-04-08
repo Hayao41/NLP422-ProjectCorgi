@@ -33,10 +33,17 @@ class options(object):
                  lstm_num_layers=1,
                  lstm_hid_dims=0,
 
+
                  # tree children chain
                  use_bi_chain=False,
                  chain_num_layers=1,
                  chain_hid_dims=0,
+
+                 # tree encoder type
+                 #@Type DRN : Dynamic recursvie neural nets
+                 #@Type HTLstms : Hierarchical Tree LSTMs
+                 use_tree=True,
+                 tree_type="DRN",
 
                  # attention
                  atten_type="general",
@@ -56,9 +63,18 @@ class options(object):
                  weight_decay=0.0001,
                  momentum=0.5,
                  betas=(0.9, 0.98),
-                 eps=1e-9
-                 ):
+                 eps=1e-9,
+                 loss_reduce=True,
+                 down_sample_prop=10,
+
+                 # data set prop
+                 train_prop=0.7,
+                 test_prop=0.3,
+                 dev_prop=0.0
+                ):
         super(options, self).__init__()
+
+        assert down_sample_prop == -1 or down_sample_prop > 0, "down_sample_prop should be bigger than 0 or equals to -1(no scaling)"
 
         # ============ vocabubary size ============ #
         self.word_vocab_size = word_vocab_size
@@ -94,6 +110,10 @@ class options(object):
         self.chain_num_layers = chain_num_layers
         self.chain_hid_dims = chain_hid_dims
 
+        # ============ tree encoder type =========== #
+        self.use_tree = use_tree
+        self.tree_type=tree_type
+
         # ============== attention ============== #
         self.atten_type = atten_type
 
@@ -112,6 +132,13 @@ class options(object):
         self.momentum = momentum
         self.betas = betas
         self.eps = eps
+        self.loss_reduce = loss_reduce
+        self.down_sample_prop = down_sample_prop
+
+        # =========== data set prop =========== #
+        self.train_prop = train_prop
+        self.test_prop = test_prop
+        self.dev_prop = dev_prop
 
 
 def make_dictionary(vocab_list, pad={}):
@@ -130,6 +157,8 @@ def make_dictionary(vocab_list, pad={}):
 
 
 def repackage_hidden(h):
+    
+    """Wraps hidden states in new Variables, to detach them from their history."""
     
     if type(h) == Variable:
         new_h = Variable(h.data)

@@ -325,8 +325,31 @@ def splitDataSet(train=0.7, test=0.2,
     return training_set, test_set, develop_set
 
 
-def splitDataSet(train=0.7, test=0.2, 
-                develop=0.1, dataset=None):
+def splitDataSet(train=7, test=2, 
+                develop=1, dataset=None):
+    
+    """ split dataset to training set, test set, dev set and wrapped by Datatuple for model"""
+
+    total_prop = (train + test + develop) / 10
+
+    assert dataset, "Input dataset is none type or empty!"
+
+    assert total_prop == 1., "dataset split prob does not correct, sum of (train, test, dev) should equal to 1!"
+
+    dataset_len = len(dataset)
+    train_offset = int(np.floor(train / 10 * dataset_len))
+    test_offset = train_offset + int(np.ceil(test / 10 * dataset_len))
+    develop_offset = test_offset + int(np.floor(develop / 10 * dataset_len))
+
+    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
+    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[train_offset:test_offset]]
+    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[test_offset:develop_offset]]
+
+    return training_set, test_set, develop_set
+
+
+def splitTestDataSet(train=0.7, test=0.2, 
+                    develop=0.1, dataset=None):
     
     """ split dataset to training set, test set, dev set and wrapped by Datatuple for model"""
 

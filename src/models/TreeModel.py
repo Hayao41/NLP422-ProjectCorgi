@@ -6,7 +6,7 @@ from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 from utils.Utils import repackage_hidden
 from torchnlp.nn import attention
-from SubLayer import LayerNormalization
+from Module import LayerNormalization
 
 
 class TreeStructureNetwork(nn.Module):
@@ -343,7 +343,7 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
         assert graph is not None, "[Error] Tree model's input graph is None type!"
 
-        print("Training on {}".format(graph.sid))
+        # print("Training on {}".format(graph.sid))
 
         self.bottom_up(graph)
 
@@ -429,7 +429,7 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         query = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
         atten_context, weights = self.attention(query, children_context)
         atten_context = atten_context.view(-1, self.context_vec_dims)
-        # iterator.setAttentionProbs(weights.view(-1))
+        iterator.setAttentionProbs(weights.view(-1))
 
         # context transformation
         transed_source = self.transformation_source(source_vec)

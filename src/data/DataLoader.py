@@ -53,9 +53,9 @@ def target2tensor(list_indexwords):
     target_list = [Variable(torch.LongTensor([word.label for word in words])) for words in list_indexwords]
 
     # cat all laebls as a big batch
-    target_tensor = torch.cat((target_list), -1)
+    target_batch_tensor = torch.cat((target_list), -1)
 
-    return target_tensor
+    return target_batch_tensor, target_list
 
 
 class MiniBatchLoader(object):
@@ -67,10 +67,10 @@ class MiniBatchLoader(object):
     Dataset: Trianing data tuple list, it should contains training data tuple e.g, 
     Namedtuple or class with attributes(indexedWords, graph) and graph is optional\n
     @Iterable\n
-    returns tuple(sequences, batch_graph, target_tensor)\n
+    returns tuple(sequences, batch_graph, target_data)\n
     sequences : batch sentence order 2D tensor
     batch_graph : batch semantic graphs(SemanticGraph structure optional)
-    target_tensor : training target data tensor
+    target_data : training target data tuple(batch_target_tensor, target_list)
     '''
 
     def __init__(self, Dataset=None, shuffle=False, 
@@ -180,18 +180,18 @@ class MiniBatchLoader(object):
             )
 
             # make target tensor
-            target_tensor = target2tensor(indexwords_list)
+            target_data = target2tensor(indexwords_list)
 
             if self.use_cuda:
                 sequences.switch2gpu()
-                target_tensor = target_tensor.cuda()
+                target_data = target_data[0].cuda()
 
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"
                 batch_graph = [data.graph for data in batch_data]
-                return sequences, batch_graph, target_tensor
+                return sequences, batch_graph, target_data
             else:
-                return sequences, target_tensor
+                return sequences, target_data
 
         else:
 

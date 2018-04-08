@@ -22,6 +22,7 @@ class ClauseDetector(nn.Module):
         self.tree_embed = tree_embed
         self.tree_encoder = tree_encoder
         self.clf = classifier
+        self.use_tree = options.use_tree
 
     def switch2gpu(self):
         self.use_cuda = True
@@ -96,8 +97,10 @@ class ClauseDetector(nn.Module):
 
         # tree encoding and classify
         for graph in batch_graph:
-            self.tree_encoder(graph)
+            if self.use_tree:
+                self.tree_encoder(graph)
             batch_context_vecs.append(graph.getContextVecs())
+            graph.clean_up()
 
         batch_tensor = torch.cat((batch_context_vecs), dim=0)
         outputs = self.clf(batch_tensor)
