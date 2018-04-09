@@ -4,8 +4,6 @@ import gc
 import time
 import torch
 import random
-import linecache
-import tracemalloc
 import preprocessing
 import torch.nn as nn
 import torch.optim as optim
@@ -180,7 +178,7 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
         # call back to compute gradient
         loss.backward()
 
-        # update model's paprameter
+        # update model's parameters
         optimizer.step()
 
         loss_data = loss.cpu().data[0]
@@ -245,6 +243,13 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
         FP += batch_FP
         TN += batch_TN
         FN += batch_FN
+
+        [graph.clean_up() for graph in batch_graph]
+
+        del batch_data, sequences, batch_graph
+        del target_data, outputs, preds, loss
+
+        gc.collect()
 
     # compute metrics
     if TP + FP != 0:
