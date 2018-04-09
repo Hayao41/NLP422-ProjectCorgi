@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from torchnlp.nn import Attention
 
 
 class MLP(nn.Module):
@@ -223,13 +224,12 @@ class Attention(nn.Module):
     def get_contexts(self, query, context):
 
         batch_size, output_len, dimensions = query.size()
-        query_len = context.size(1)
 
-        attention_weights = self.get_weights(query, context)
+        weights = self.get_weights(query, context)
           
         # (batch_size, output_len, query_len) * (batch_size, query_len, dimensions) ->
         # (batch_size, output_len, dimensions)
-        mix = torch.bmm(attention_weights, context)
+        mix = torch.bmm(weights, context)
 
         # concat -> (batch_size * output_len, 2*dimensions)
         combined = torch.cat((mix, query), dim=2)
@@ -240,7 +240,7 @@ class Attention(nn.Module):
         output = self.linear_out(combined).view(batch_size, output_len, dimensions)
         output = self.tanh(output)
 
-        return output
+        return output, weights
 
     def forward(self, query, context, weights=True, outputs=True):
         
@@ -264,16 +264,10 @@ class Attention(nn.Module):
 
         assert weights or outputs, "weights and outputs should not be False at the same time!"
 
-        attention_weights = self.get_weights(query, context)
-
         if weights and not outputs:
-            return attention_weights
-        elif weights and outputs:
-            attention_contexts = self.get_contexts(query, context)
-            return (attention_contexts, attention_weights)
+            return self.get_weights(query, context)
         else:
-            attention_contexts = self.get_contexts(attention_weights, context)
-            return attention_contexts
+            return self.get_contexts(query, context)
 
 
 class Attentive(nn.Module):
