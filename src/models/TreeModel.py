@@ -5,8 +5,8 @@ import torch.nn.functional as F
 from semantic.SemanticStructure import SemanticGraphIterator as siterator
 from queue import Queue
 from utils.Utils import repackage_hidden
-from torchnlp.nn import attention
-from Module import LayerNormalization
+from Module import AttentionModule
+from Module import DynamicRoutingModule
 
 
 class TreeStructureNetwork(nn.Module):
@@ -352,103 +352,14 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     
     def __init__(self, options):
         super(DynamicRecursiveNetwork, self).__init__(options)
-        self.context_vec_dims = options.lstm_hid_dims
-        self.rel_emb_dims = options.rel_emb_dims
-        self.atten_type = options.atten_type
-
-        self.transformation_source = nn.Linear(
-            self.context_vec_dims,
-            self.context_vec_dims,
-            bias=False
-        )
-
-        self.transformation_context = nn.Linear(
-            self.context_vec_dims,
-            self.context_vec_dims,
-            bias=False
-        )
-
-        self.transformation_relation = nn.Linear(
-            self.context_vec_dims + self.rel_emb_dims,
-            self.context_vec_dims
-        )
-
-        self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
-
-        self.attention = attention.Attention(
-            dimensions=self.context_vec_dims,
-            attention_type=self.atten_type
-        )
-
-        self.dropout = nn.Dropout(options.dropout)
-
-        self.layer_norm = LayerNormalization(self.context_vec_dims)
-
-        if options.xavier:
-            self.xavier_normal()
-
-    def xavier_normal(self):
-        nn.init.xavier_normal(self.transformation_source.weight)
-        nn.init.xavier_normal(self.transformation_context.weight)
-        nn.init.xavier_normal(self.transformation_relation.weight)
+        self.attention_module = AttentionModule(options)
+        self.routing_module = DynamicRoutingModule(options)
 
     def bu_transform(self, iterator):
-
-        # pass
-        
-        if iterator.isLeaf():
-            self.leaf_trans(iterator)
-        else:
-            self.atten_trans(iterator)
-
-    def leaf_trans(self, iterator):
-        
-        source_vec = iterator.node.context_vec
-
-        # context transformation
-        transed_source = F.relu6(self.transformation_source(source_vec) + self.bias)
-        normed_source = self.layer_norm(transed_source + source_vec)
-        
-        # relation transformation
-        incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-        enhanced = torch.cat((normed_source, incom_rel_vec), dim=-1)
-        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
-        normed_enhanced = self.layer_norm(transed_enhanceed)
-
-        # set back onto tree node
-        del iterator.node.context_vec
-        iterator.node.context_vec = normed_enhanced
-        
-    def atten_trans(self, iterator):
-        
-        source_vec = iterator.node.context_vec
-        
-        # attention computation
-        children_hiddens = list(iterator.children_hiddens())
-        children_context = torch.cat((children_hiddens), dim=0).view(1, -1, self.context_vec_dims)
-        query = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
-        atten_context, weights = self.attention(query, children_context)
-        atten_context = atten_context.view(-1, self.context_vec_dims)
-        iterator.setAttentionProbs(weights.view(-1))
-
-        # context transformation
-        transed_source = self.transformation_source(source_vec)
-        transed_context = self.transformation_context(atten_context)
-        vanilla = F.relu6(transed_source + transed_context + self.bias)
-        normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
-
-        # relation transformation
-        incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
-        enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
-        normed_enhanced = self.layer_norm(transed_enhanceed)
-        
-        # set back onto tree node
-        del iterator.node.context_vec
-        iterator.node.context_vec = normed_enhanced
+        self.attention_module(iterator)
 
     def tp_transform(self, iterator):
-        pass
+        self.routing_module(iterator)
 
     def forward(self, graph):
         
@@ -456,4 +367,4 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
 
         self.bottom_up(graph)
 
-        # self.top_down(graph)
+        self.top_down(graph)

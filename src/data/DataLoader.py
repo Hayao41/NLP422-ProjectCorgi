@@ -46,11 +46,13 @@ def seq2tensor(list_indexwords, use_word=True, use_pos=True):
     return words_tensor, pos_tensor
 
 
-def target2tensor(list_indexwords):
+def target2tensor(list_indexwords, use_cuda=False):
     
     ''' Trans label to 1D tensor then wrapped by Variable '''
-
-    target_list = [Variable(torch.LongTensor([word.label for word in words])) for words in list_indexwords]
+    if use_cuda:
+        target_list = [Variable(torch.LongTensor([word.label for word in words])).cuda() for words in list_indexwords]
+    else:
+        target_list = [Variable(torch.LongTensor([word.label for word in words])) for words in list_indexwords]
 
     # cat all laebls as a big batch
     target_batch_tensor = torch.cat((target_list), -1)
@@ -180,11 +182,10 @@ class MiniBatchLoader(object):
             )
 
             # make target tensor
-            target_data = target2tensor(indexwords_list)
+            target_data = target2tensor(indexwords_list, self.use_cuda)
 
             if self.use_cuda:
                 sequences.switch2gpu()
-                target_data = target_data[0].cuda()
 
             if self.has_graph:
                 assert hasattr(batch_data[0], "graph"), "[Error] Dataset item has no attribute 'graph'"

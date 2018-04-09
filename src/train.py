@@ -80,10 +80,13 @@ def build_model(options):
 
 
 def get_cost(output, target_data, crit, options):
+    
+    """ compute model's output and target's loss """
         
     counts = []
     losses = []
 
+    # count neg and pos sample in one instance sentence
     for target in target_data[1]:
         neg_count = 0
         pos_count = 0
@@ -95,7 +98,8 @@ def get_cost(output, target_data, crit, options):
         counts.append((neg_count, pos_count))
 
     for target_index, count in enumerate(counts):
-
+        
+        # get target data list
         target = target_data[1][target_index]
     
         # get the negative sample loss scale factor(inner sentence)
@@ -114,6 +118,7 @@ def get_cost(output, target_data, crit, options):
         # get sentence losses
         inst_losses = crit(output[target_index], target)
 
+        # scale down neg sample loss
         for inst_index, loss in enumerate(inst_losses):
 
             # scale down negative sample loss by factor
@@ -129,6 +134,8 @@ def get_cost(output, target_data, crit, options):
 
 
 def get_performance(outputs, targets):
+    
+    """ compute model metrics """
 
     _, preds = torch.max(outputs, -1)
     
@@ -180,6 +187,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
 
         end_batch = time.time()
 
+        [graph.clean_up() for graph in batch_graph]
+
         del batch_data, sequences, batch_graph
         del target_data, outputs, preds, loss
 
@@ -193,6 +202,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
 
 
 def epoch_test(test_batches, model, crit, optimizer, epoch, options):
+    
+    """ eval stage at one epoch's end """
     
     # switch model to eval mode
     model.eval()
@@ -253,6 +264,8 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
 
 
 def train(training_batches, test_batches, model, crit, optimizer, options):
+    
+    """ start training """
 
     if options.tree_type == "HTLstms":
         model.tree_encoder.init_hidden()
@@ -412,19 +425,19 @@ if __name__ == "__main__":
 
     random.shuffle(annotated_dataset)
 
-    training_set, test_set, _ = preprocessing.splitDataSet(
-                                    train=options.train_prop,
-                                    test=options.test_prop,
-                                    develop=options.dev_prop,
-                                    dataset=annotated_dataset
-                                )
+    # training_set, test_set, _ = preprocessing.splitDataSet(
+    #                                 train=options.train_prop,
+    #                                 test=options.test_prop,
+    #                                 develop=options.dev_prop,
+    #                                 dataset=annotated_dataset
+    #                             )
 
-    # training_set, test_set, _ = preprocessing.splitTestDataSet(
-    #     train=options.train_prop,
-    #     test=options.test_prop,
-    #     develop=options.dev_prop,
-    #     dataset=annotated_dataset
-    # )
+    training_set, test_set, _ = preprocessing.splitTestDataSet(
+        train=options.train_prop,
+        test=options.test_prop,
+        develop=options.dev_prop,
+        dataset=annotated_dataset
+    )
 
     # prepare mini batch loader
     training_batches = MiniBatchLoader(
