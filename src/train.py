@@ -325,6 +325,17 @@ def test_method(idx2label, model, test_batches, options):
         print(batch_graph[0])
 
 
+def saveTestID(test_set):
+    
+    """ save test set's pid into file for angeli's testing"""
+
+    with open("../src/test_set_ID.txt", "w", encoding="utf-8") as tid:
+        tid.write("test set data base pid\n")
+        for inst in test_set:
+            tid.write(inst.graph.sid)
+            tid.write("\n")
+
+
 if __name__ == "__main__":
 
     # load options from properties file
@@ -387,6 +398,7 @@ if __name__ == "__main__":
         # @Type HTLstms : Hierarchical Tree LSTMs
         use_tree=options_dic['use_tree'],
         tree_type=options_dic['tree_type'],
+        direction=options_dic['direction'],
 
         # attention
         atten_type=options_dic['atten_type'],
@@ -444,6 +456,8 @@ if __name__ == "__main__":
         dataset=annotated_dataset
     )
 
+    saveTestID(test_set)
+
     # prepare mini batch loader
     training_batches = MiniBatchLoader(
         Dataset=training_set,
@@ -472,4 +486,3 @@ if __name__ == "__main__":
     train(training_batches, test_batches, model, crit, optimizer, options)
 
     test_method(idx2label, model, test_batches, options)
-

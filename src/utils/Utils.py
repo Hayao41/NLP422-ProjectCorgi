@@ -44,6 +44,7 @@ class options(object):
                  #@Type HTLstms : Hierarchical Tree LSTMs
                  use_tree=True,
                  tree_type="DRN",
+                 direction="B2T",
 
                  # attention
                  atten_type="general",
@@ -112,7 +113,8 @@ class options(object):
 
         # ============ tree encoder type =========== #
         self.use_tree = use_tree
-        self.tree_type=tree_type
+        self.tree_type = tree_type
+        self.direction = direction
 
         # ============== attention ============== #
         self.atten_type = atten_type

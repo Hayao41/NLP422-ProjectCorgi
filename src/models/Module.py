@@ -362,7 +362,7 @@ class AttentionModule(Attentive):
         vanilla = F.relu6(transed_source + transed_context + self.bias)
         normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
 
-        # relation transformation
+        # relation(enhanced) transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
         transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
@@ -388,16 +388,43 @@ class DynamicRoutingModule(Attentive):
 
     def routing(self, iterator):
         
-        children_hiddens = list(iterator.children_hiddens())
+        children = list(iterator.children())
 
-        if children_hiddens:
+        # if has no children it is leaf node, arrived at routing end
+        if children:
+            
+            # compute coupling coefficient like attention
+            children_hiddens = list(iterator.children_hiddens())
             source_vec = iterator.node.context_vec
             children_context = torch.cat((children_hiddens), dim=0).view(1, -1, self.context_vec_dims)
             query = iterator.node.context_vec.view(1, -1, self.context_vec_dims)
-            atten_context, weights = self.attention(query, children_context)
-            atten_context = atten_context.view(-1, self.context_vec_dims)
+            weights = self.attention(query, children_context, outputs=False)
             weights = weights.view(-1)
             iterator.setCouplingProbs(weights)
+
+            # information routing on parse tree, feed source's info 
+            # to it's child scaled down by coupling coefficient
+            for index, child in enumerate(children):
+                
+                # route source's info to child then transform child's state
+                # to capture higher level info
+                coefficient = weights[index]
+                child_vec = child.node.context_vec
+                scaled_source = source_vec * coefficient
+                transed_child = self.transformation_source(child_vec)
+                transed_source = self.transformation_context(scaled_source)
+                vanilla = F.relu6(transed_child + transed_source + self.bias)
+                normed_vanilla = self.layer_norm(vanilla + child_vec + scaled_source)
+
+                # relation(enhanced) transformation
+                incom_rel_vec = list(child.queryIncomRelation())[0].rel_vec.view(1, -1)
+                enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
+                transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+                normed_enhanced = self.layer_norm(transed_enhanceed)
+                
+                # set back onto tree node
+                del child.node.context_vec
+                child.node.context_vec = normed_enhanced
 
     def forward(self, iterator):
         

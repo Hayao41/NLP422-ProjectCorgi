@@ -354,6 +354,13 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         super(DynamicRecursiveNetwork, self).__init__(options)
         self.attention_module = AttentionModule(options)
         self.routing_module = DynamicRoutingModule(options)
+        self.direction = options.direction
+        self.trans = {
+            "B2T": self.b2t,
+            "T2B": self.t2b,
+            "T": self.just_t,
+            "B": self.just_b
+        }
 
     def bu_transform(self, iterator):
         self.attention_module(iterator)
@@ -361,10 +368,21 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
     def tp_transform(self, iterator):
         self.routing_module(iterator)
 
+    def t2b(self, graph):
+        self.top_down(graph)
+        self.bottom_up(graph)
+
+    def b2t(self, graph):
+        self.bottom_up(graph)
+        self.top_down(graph)
+
+    def just_t(self, graph):
+        self.top_down(graph)
+
+    def just_b(self, graph):
+        self.bottom_up(graph)
+
     def forward(self, graph):
         
         assert graph is not None, "[Error] Tree model's input graph is None type!"
-
-        self.bottom_up(graph)
-
-        self.top_down(graph)
+        self.trans[self.direction](graph)
