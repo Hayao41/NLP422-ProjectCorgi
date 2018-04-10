@@ -39,8 +39,8 @@ class MLP(nn.Module):
 
     def forward(self, context_vecs):
 
-        h1_out = F.relu6(self.drop_out(self.l1(context_vecs)))
-        h2_out = F.tanh(self.drop_out(self.l2(h1_out)))
+        h1_out = F.relu(self.drop_out(self.l1(context_vecs)))
+        h2_out = F.relu(self.drop_out(self.l2(h1_out)))
         logits = self.l3(h2_out)
         pred = F.log_softmax(logits, dim=-1)
         return pred
@@ -320,13 +320,13 @@ class Attentive(nn.Module):
         source_vec = iterator.node.context_vec
 
         # context transformation
-        transed_source = F.relu6(self.transformation_source(source_vec) + self.bias)
+        transed_source = F.relu(self.transformation_source(source_vec) + self.bias)
         normed_source = self.layer_norm(transed_source + source_vec)
         
         # relation transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_source, incom_rel_vec), dim=-1)
-        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+        transed_enhanceed = F.relu(self.transformation_relation(enhanced))
         normed_enhanced = self.layer_norm(transed_enhanceed)
 
         # set back onto tree node
@@ -359,13 +359,13 @@ class AttentionModule(Attentive):
         # context transformation
         transed_source = self.transformation_source(source_vec)
         transed_context = self.transformation_context(atten_context)
-        vanilla = F.relu6(transed_source + transed_context + self.bias)
+        vanilla = F.relu(transed_source + transed_context + self.bias)
         normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
 
         # relation(enhanced) transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-        transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+        transed_enhanceed = F.relu(self.transformation_relation(enhanced))
         normed_enhanced = self.layer_norm(transed_enhanceed)
         
         # set back onto tree node
@@ -413,13 +413,13 @@ class DynamicRoutingModule(Attentive):
                 scaled_source = source_vec * coefficient
                 transed_child = self.transformation_source(child_vec)
                 transed_source = self.transformation_context(scaled_source)
-                vanilla = F.relu6(transed_child + transed_source + self.bias)
+                vanilla = F.relu(transed_child + transed_source + self.bias)
                 normed_vanilla = self.layer_norm(vanilla + child_vec + scaled_source)
 
                 # relation(enhanced) transformation
                 incom_rel_vec = list(child.queryIncomRelation())[0].rel_vec.view(1, -1)
                 enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-                transed_enhanceed = F.relu6(self.transformation_relation(enhanced))
+                transed_enhanceed = F.relu(self.transformation_relation(enhanced))
                 normed_enhanced = self.layer_norm(transed_enhanceed)
                 
                 # set back onto tree node

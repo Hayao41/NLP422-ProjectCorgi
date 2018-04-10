@@ -8,7 +8,6 @@ import preprocessing
 import torch.nn as nn
 import torch.optim as optim
 import data.conect2db as conect2db
-from matplotlib import pyplot as plt
 from utils.Utils import options
 from models.Module import MLP
 from models.Module import TreeEmbedding
@@ -148,6 +147,8 @@ def get_performance(outputs, targets):
 def epoch_train(training_batches, model, crit, optimizer, epoch, options):
     
     ''' train stage in one epoch '''
+
+    step_losses = []
     
     # switch to train mode
     model.train()
@@ -183,6 +184,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
 
         loss_data = loss.cpu().data[0]
 
+        step_losses.append(loss_data)
+
         end_batch = time.time()
 
         [graph.clean_up() for graph in batch_graph]
@@ -197,6 +200,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
                 (100. * ((batch_index + 1) / len(training_batches))), loss_data, end_batch - start_batch
             )
         )
+
+    return step_losses
 
 
 def epoch_test(test_batches, model, crit, optimizer, epoch, options):
@@ -267,10 +272,68 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
         (acc * 100), (test_loss / (batch_index + 1)), (p * 100), (r * 100), (F1 * 100)
     ))
 
+    return acc, p, r, F1
+
+
+def saveModel(model, metrics, options):
+
+    acc, p, r, F1, valid_acc, epoch, local_time = metrics
+
+    model_state = model.state_dict()
+    tree_type = options.tree_type
+    model_path = options.model_path + options.save_mode + "/"
+    use_tree = options.use_tree
+    tree_dir = options.direction
+    checkpoint = {
+        'model': model_state,
+        'settings': options,
+        'epoch': epoch
+    }
+
+    if options.save_mode == "all":
+        if use_tree:
+            if tree_type == "DRN":
+                model_path += tree_type + "_" + tree_dir + "/" + local_time
+                model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+            else:
+                model_path += tree_type + "/" + local_time
+                model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+        else:
+            model_path += "pure_rnn" + "/" + local_time
+            model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+
+        torch.save(checkpoint, model_name)
+
+    elif options.save_mode == "best":
+        if use_tree:
+            if tree_type == "DRN":
+                model_path += tree_type + "_" + tree_dir + "/" + local_time
+                model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
+            else:
+                model_path += tree_type + "/" + local_time
+                model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
+        else:
+            model_path += "pure_rnn" + "/" + local_time
+            model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
+
+        if acc >= max(valid_acc):
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+
+            torch.save(checkpoint, model_name)
+            print('    - [Info] The checkpoint file has been updated.')
+
 
 def train(training_batches, test_batches, model, crit, optimizer, options):
     
     """ start training """
+
+    local_time = time.strftime("%Y-%m-%d", time.localtime())
+    step_losses = []
+    valid_acc = []
 
     if options.tree_type == "HTLstms":
         model.tree_encoder.init_hidden()
@@ -280,49 +343,27 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
         start_epoch = time.time()
 
         print("\nTraining on Epoch[{}]:".format(epoch))
-        epoch_train(training_batches, model, crit, optimizer, epoch, options)
-
-        epoch_test(test_batches, model, crit, optimizer, epoch, options)
+        step_losses += epoch_train(training_batches, model, crit, optimizer, epoch, options)
 
         end_epoch = time.time()
 
+        time_epoch = end_epoch - start_epoch
 
-def test_method(idx2label, model, test_batches, options):
-    
-    model.eval()
-    model.context_encoder.init_hidden(options.eval_batch_size)
-    if options.tree_type != "DRN":
-        model.tree_encoder.init_hidden()
-        
-    for batch_data in test_batches:
+        print("Epoch[{epoch}] time cost [{cost_s:.3f} Sec/{cost_m:.2f} Min/{cost_h:.2f} Hou]".format(
+            epoch=epoch,
+            cost_s=time_epoch,
+            cost_m=(time_epoch / 60),
+            cost_h=((time_epoch / 60) / 60)
+            
+        ))
 
-        sequences, batch_graph, target_data = batch_data
-        
-        output = model((sequences, batch_graph))
+        if epoch % 5 == 0:
+            acc, p, r, F1 = epoch_test(test_batches, model, crit, optimizer, epoch, options)
 
-        model.context_encoder.repackage_hidden()
+            valid_acc += [acc]
 
-        test_out = output.preds
-
-        listLabel = []
-
-        for word in batch_graph[0].indexedWords:
-            listLabel.append(idx2label[word.label])
-
-        print(test_out)
-
-        insts_label = []
-
-        for inst in test_out:
-            inst_label = []
-            for word in inst.cpu():
-                word = word.data.numpy().tolist()
-                inst_label.append(idx2label[word.index(max(word))])
-            insts_label.append(inst_label)
-
-        print(insts_label)
-        print(listLabel)
-        print(batch_graph[0])
+            if options.save_model:
+                saveModel(model, (acc, p, r, F1, valid_acc, epoch, local_time), options)
 
 
 def saveTestID(test_set):
@@ -421,6 +462,9 @@ if __name__ == "__main__":
         eps=options_dic['eps'],
         loss_reduce=options_dic['loss_reduce'],
         down_sample_prop=options_dic['down_sample_prop'],
+        save_model=options_dic['save_model'],
+        save_mode=options_dic['save_mode'],
+        model_path=fpath['model_path'],
 
         # data set prop
         train_prop = options_dic['train_prop'],
@@ -435,26 +479,33 @@ if __name__ == "__main__":
     use_rp = (options.rp_emb_dims != 0)
 
     # load annotated dataset from database then shuffle it
-    annotated_dataset = conect2db.getDatasetfromDB(
-                            vocabDic_path=fpath['vocabDic_path'],
-                            properties_path=fpath['properties_path']
-                        )
+    if options_dic['test_mode']:
+        annotated_dataset = conect2db.data_load_test(
+                                    vocabDic_path=fpath['vocabDic_path'],
+                                    properties_path=fpath['properties_path']
+                                )
+    else:
+        annotated_dataset = conect2db.getDatasetfromDB(
+                                vocabDic_path=fpath['vocabDic_path'],
+                                properties_path=fpath['properties_path']
+                            )
 
     random.shuffle(annotated_dataset)
 
-    # training_set, test_set, _ = preprocessing.splitDataSet(
-    #                                 train=options.train_prop,
-    #                                 test=options.test_prop,
-    #                                 develop=options.dev_prop,
-    #                                 dataset=annotated_dataset
-    #                             )
-
-    training_set, test_set, _ = preprocessing.splitTestDataSet(
-        train=options.train_prop,
-        test=options.test_prop,
-        develop=options.dev_prop,
-        dataset=annotated_dataset
-    )
+    if options_dic['test_prob']:
+        training_set, test_set, _ = preprocessing.splitTestDataSet(
+            train=options.train_prop,
+            test=options.test_prop,
+            develop=options.dev_prop,
+            dataset=annotated_dataset
+        )
+    else:
+        training_set, test_set, _ = preprocessing.splitDataSet(
+            train=options.train_prop,
+            test=options.test_prop,
+            develop=options.dev_prop,
+            dataset=annotated_dataset
+        )
 
     saveTestID(test_set)
 
@@ -484,5 +535,3 @@ if __name__ == "__main__":
 
     # start training stage
     train(training_batches, test_batches, model, crit, optimizer, options)
-
-    test_method(idx2label, model, test_batches, options)

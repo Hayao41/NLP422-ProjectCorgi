@@ -67,6 +67,9 @@ class options(object):
                  eps=1e-9,
                  loss_reduce=True,
                  down_sample_prop=10,
+                 save_model=True,
+                 save_mode="all",
+                 model_path="../src/model_state/",
 
                  # data set prop
                  train_prop=0.7,
@@ -136,6 +139,9 @@ class options(object):
         self.eps = eps
         self.loss_reduce = loss_reduce
         self.down_sample_prop = down_sample_prop
+        self.save_model = save_model
+        self.save_mode = save_mode
+        self.model_path = model_path
 
         # =========== data set prop =========== #
         self.train_prop = train_prop
