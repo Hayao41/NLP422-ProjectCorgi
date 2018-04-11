@@ -112,7 +112,7 @@ class TreeStructureNetwork(nn.Module):
 class HierarchicalTreeLSTMs(TreeStructureNetwork):
     
     ''' 
-    Model implements HierarchicalTreeLSTMs(Kiperwasser, Yoav., 2016, https://arxiv.org/abs/1603.00375)\n
+    Model implementing HierarchicalTreeLSTMs(Kiperwasser, Yoav., 2016, https://arxiv.org/abs/1603.00375)\n
     This class contains three lstm unit for supporting hierarchical lstms for encoding a given
     dependency parse tree.\n
     @Attribute:\n
@@ -350,10 +350,26 @@ class HierarchicalTreeLSTMs(TreeStructureNetwork):
 
 class DynamicRecursiveNetwork(TreeStructureNetwork):
     
+    """ 
+    Model implementing dynamic recursive neural nets consits with two important module , 
+    attention, dynamic routing module. This model can encode any branching tree
+    structure data with two directions(top down, bottom up, all are optional) to capture 
+    input tree's core structure info\n
+    @Module:
+        * AttentionModule : encdoe structure from bottom to up with attention mechanism recursively\n
+        * DynamicRoutingModule : encdoe structure from top to down with dynamic routing(attention like) mechanism recursively 
+    """
+    
     def __init__(self, options):
         super(DynamicRecursiveNetwork, self).__init__(options)
+
+        # attention based bottom up trans module
         self.attention_module = AttentionModule(options)
+
+        # dynamic routing based top down trans module
         self.routing_module = DynamicRoutingModule(options)
+
+        # 4 type directions trans
         self.direction = options.direction
         self.trans = {
             "B2T": self.b2t,
@@ -363,26 +379,45 @@ class DynamicRecursiveNetwork(TreeStructureNetwork):
         }
 
     def bu_transform(self, iterator):
+        """ 
+        bottom_up tranformation with Attention to capture semantic 
+        graph structure information on dependency context 
+        """
         self.attention_module(iterator)
 
     def tp_transform(self, iterator):
+        
+        """ 
+        top_down tranformation with Dynamic Routing to flow higher node's(parente node) 
+        information to lower node(children node)
+        """
+        
         self.routing_module(iterator)
 
     def t2b(self, graph):
+        """ Transformation with direction top down then bottom up """
+
         self.top_down(graph)
         self.bottom_up(graph)
 
     def b2t(self, graph):
+        """ Transformation with direction bottom up then top down"""
+
         self.bottom_up(graph)
         self.top_down(graph)
 
     def just_t(self, graph):
+        """ Transformation with direction just top down"""
+
         self.top_down(graph)
 
     def just_b(self, graph):
+        """ Transformation with direction just bottom up"""
+
         self.bottom_up(graph)
 
     def forward(self, graph):
         
         assert graph is not None, "[Error] Tree model's input graph is None type!"
+
         self.trans[self.direction](graph)

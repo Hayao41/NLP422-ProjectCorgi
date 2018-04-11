@@ -272,25 +272,43 @@ class Attention(nn.Module):
 
 class Attentive(nn.Module):
     
+    """ Attention based recursvie transformation base class """
+    
     def __init__(self, options):
         super(Attentive, self).__init__()
 
+        # hyperparamters
         self.context_vec_dims = options.lstm_hid_dims
         self.rel_emb_dims = options.rel_emb_dims
         self.atten_type = options.atten_type
 
+        # source end trnas
+        #
+        # @Trans : t_s = Ws
+        #
+        # @Dimension : lstm_hid_dims -> lstm_hid_dims
         self.transformation_source = nn.Linear(
             self.context_vec_dims,
             self.context_vec_dims,
             bias=False
         )
 
+        # target end trans
+        #
+        # @Trans t_t = Wt
+        #
+        # @Dimension : lstm_hid_dims -> lstm_hid_dims
         self.transformation_context = nn.Linear(
             self.context_vec_dims,
             self.context_vec_dims,
             bias=False
         )
 
+        # enhanced trans with arc relation for giving more semantic info
+        #
+        # @Trans : e = W(g(t_s + t_t) con rel) + b
+        #
+        # @Dimension : lstm_hid_dims + rel_emb_dims -> lstm_hid_dims
         self.transformation_relation = nn.Linear(
             self.context_vec_dims + self.rel_emb_dims,
             self.context_vec_dims
@@ -298,6 +316,7 @@ class Attentive(nn.Module):
 
         self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
 
+        # attention module
         self.attention = Attention(
             dimensions=self.context_vec_dims,
             attention_type=self.atten_type
@@ -316,6 +335,11 @@ class Attentive(nn.Module):
         nn.init.xavier_normal(self.transformation_relation.weight)
 
     def dependent_trans(self, iterator):
+        
+        """ 
+        context free transformation for node which is root node on routing 
+        or leaf node on attention, cuz it has no context info 
+        """
         
         source_vec = iterator.node.context_vec
 
@@ -340,10 +364,29 @@ class Attentive(nn.Module):
 
 class AttentionModule(Attentive):
     
+    """ 
+    Recursive transformation module based on attention mechanism\n
+    Args:
+         iterator: <SemanticGraphIterator> iterator to traverse on semantic graph at
+            current node which give context info for transformation
+    """
+    
     def __init__(self, options):
         super(AttentionModule, self).__init__(options)
 
     def atten_trans(self, iterator):
+        
+        """ 
+        Attention based bottom up recursvie transformation at dependency 
+        context on semantic graph\n
+        @Dependency Context :\n
+            Source : Parent node (p)\n
+            Traget : Children node (c)\n
+        @Trans :\n
+            hi' = g(W(t_hi con rel) + b)\n
+            t_hi = g(Whi + Wc + b)\n
+            c = attention(hi, Child(hi))
+        """
         
         source_vec = iterator.node.context_vec
         
@@ -357,12 +400,20 @@ class AttentionModule(Attentive):
         iterator.setAttentionProbs(weights)
 
         # context transformation
+        #
+        # @Trans: vanilla = g(Ws + Wt + b)
+        #
+        # @Norm: normed_vanilla = layer_norm(vanilla + s + t)(residual connection)
         transed_source = self.transformation_source(source_vec)
         transed_context = self.transformation_context(atten_context)
         vanilla = F.relu(transed_source + transed_context + self.bias)
         normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
 
         # relation(enhanced) transformation
+        #
+        # @Trans: enhanced = g(W(normed_vanilla con rel) + b)
+        #
+        # @Norm: normed_enhanced = layer_norm(enhanced)
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
         transed_enhanceed = F.relu(self.transformation_relation(enhanced))
@@ -382,11 +433,32 @@ class AttentionModule(Attentive):
 
 class DynamicRoutingModule(Attentive):
     
+    """ 
+    Recursive transformation module based on dynamic routing mechanism\n 
+    Args:
+         iterator: <SemanticGraphIterator> iterator to traverse on semantic graph at
+            current node which give context info for transformation
+    """
+    
     def __init__(self, options):
         
         super(DynamicRoutingModule, self).__init__(options)
 
     def routing(self, iterator):
+        
+        """ 
+        attention like routing for flowing info from higher node to lower 
+        node on semantic graph\n
+        @Dependency Context :\n
+            Source : Parent node (p)\n
+            Traget : Children node (c)\n
+        @Trans :\n
+            hi' = g(W(t_hi con rel) + b)\n
+            t_hi = g(Whi + Wc + b)\n
+            c = routing(hi, parent(hi))
+              = coefficient * parent(hi) 
+            coefficient = attention(parent(hi), (bro, current))     
+        """
         
         children = list(iterator.children())
 
@@ -402,7 +474,7 @@ class DynamicRoutingModule(Attentive):
             weights = weights.view(-1)
             iterator.setCouplingProbs(weights)
 
-            # information routing on parse tree, feed source's info 
+            # information routing on parse tree, feed parent's info 
             # to it's child scaled down by coupling coefficient
             for index, child in enumerate(children):
                 
@@ -410,13 +482,25 @@ class DynamicRoutingModule(Attentive):
                 # to capture higher level info
                 coefficient = weights[index]
                 child_vec = child.node.context_vec
+
+                # scale down source info by coupling coefficient
                 scaled_source = source_vec * coefficient
-                transed_child = self.transformation_source(child_vec)
-                transed_source = self.transformation_context(scaled_source)
+
+                # context transformation
+                #
+                # @Trans: vanilla = g(Ws + Wt + b)
+                #
+                # @Norm: normed_vanilla = layer_norm(vanilla + s + t)(residual connection)
+                transed_child = self.transformation_context(child_vec)
+                transed_source = self.transformation_source(scaled_source)
                 vanilla = F.relu(transed_child + transed_source + self.bias)
                 normed_vanilla = self.layer_norm(vanilla + child_vec + scaled_source)
 
                 # relation(enhanced) transformation
+                #
+                # @Trans: enhanced = g(W(normed_vanilla con rel) + b)
+                #
+                # @Norm: normed_enhanced = layer_norm(enhanced)
                 incom_rel_vec = list(child.queryIncomRelation())[0].rel_vec.view(1, -1)
                 enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
                 transed_enhanceed = F.relu(self.transformation_relation(enhanced))

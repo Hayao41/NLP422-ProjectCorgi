@@ -36,7 +36,8 @@ class ContextEncoder(nn.Module):
         self.total_layers = options.lstm_num_layers * options.lstm_direction
         self.single_pass_dims = self.lstm_hid_dims // options.lstm_direction
 
-        assert (self.word_emb_dims is not 0) or (self.pos_emb_dims is not 0), "[Error] word dims and pos dims are all 0, no input for nn!"
+        assert (self.word_emb_dims is not 0) or (self.pos_emb_dims is not 0), "[Error] word dims and pos dims " \
+                                                                              "are all 0, no input for nn!"
         
         if options.word_emb_dims is not 0:
             # Sequences words embedding
@@ -103,14 +104,16 @@ class ContextEncoder(nn.Module):
         if self.word_emb_dims is not 0:
             
             words_shape_size = len(sequences.words_tensor.data.shape)
-            assert 0 < words_shape_size < 3, 'out of shape range, expected less than 3 and bigger than 0 but got {}'.format(words_shape_size)
+            assert 0 < words_shape_size < 3, 'out of shape range, expected less than 3 and bigger' \
+                                             ' than 0 but got {}'.format(words_shape_size)
 
             WordEmbeddings = self.word_embeddings(sequences.words_tensor)
 
         if self.pos_emb_dims is not 0:
             
             pos_shape_size = len(sequences.pos_tensor.data.shape)
-            assert 0 < pos_shape_size < 3, 'out of shape range, expected less than 3 and bigger than 0 but got {}'.format(pos_shape_size)
+            assert 0 < pos_shape_size < 3, 'out of shape range, expected less than 3 and bigger ' \
+                                           'than 0 but got {}'.format(pos_shape_size)
 
             PosEmbeddings = self.pos_embeddings(sequences.pos_tensor)
 

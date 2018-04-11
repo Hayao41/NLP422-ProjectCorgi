@@ -5,10 +5,12 @@ import time
 import torch
 import random
 import preprocessing
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 import data.conect2db as conect2db
 from utils.Utils import options
+from matplotlib import pyplot as plt
 from models.Module import MLP
 from models.Module import TreeEmbedding
 from data.DataLoader import MiniBatchLoader
@@ -23,7 +25,7 @@ torch.manual_seed(1024)
 
 def build_model(options):
     
-    ''' build model, loss function, optimizer determined by options '''
+    ''' build model, loss function, optimizer controled by options '''
     
     # detector module
     context_encoder = ContextEncoder(options)
@@ -78,8 +80,8 @@ def build_model(options):
 
 def get_cost(output, target_data, crit, options):
     
-    """ compute model's output and target's loss """
-        
+    """ compute model's mini batch mean loss, scaled by down sample factor"""
+
     counts = []
     losses = []
 
@@ -132,21 +134,21 @@ def get_cost(output, target_data, crit, options):
 
 def get_performance(outputs, targets):
     
-    """ compute model metrics """
+    """ compute model's metrics """
 
     _, preds = torch.max(outputs, -1)
     
-    TP = ((preds.data == 1) & (targets.data == 1)).cpu().sum()
-    TN = ((preds.data == 0) & (targets.data == 0)).cpu().sum()
-    FN = ((preds.data == 0) & (targets.data == 1)).cpu().sum()
-    FP = ((preds.data == 1) & (targets.data == 0)).cpu().sum()
+    TP = ((preds.cpu().data == 1) & (targets.cpu().data == 1)).cpu().sum()
+    TN = ((preds.cpu().data == 0) & (targets.cpu().data == 0)).cpu().sum()
+    FN = ((preds.cpu().data == 0) & (targets.cpu().data == 1)).cpu().sum()
+    FP = ((preds.cpu().data == 1) & (targets.cpu().data == 0)).cpu().sum()
 
     return TP, TN, FN, FP
 
 
 def epoch_train(training_batches, model, crit, optimizer, epoch, options):
     
-    ''' train stage in one epoch '''
+    ''' train stage at one epoch '''
 
     step_losses = []
     
@@ -249,6 +251,7 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
         TN += batch_TN
         FN += batch_FN
 
+        # clean up trees
         [graph.clean_up() for graph in batch_graph]
 
         del batch_data, sequences, batch_graph
@@ -272,10 +275,12 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
         (acc * 100), (test_loss / (batch_index + 1)), (p * 100), (r * 100), (F1 * 100)
     ))
 
-    return acc, p, r, F1
+    return acc, p, r, F1, test_loss
 
 
 def saveModel(model, metrics, options):
+    
+    """ save model state into file for using or evaluating """
 
     acc, p, r, F1, valid_acc, epoch, local_time = metrics
 
@@ -294,13 +299,13 @@ def saveModel(model, metrics, options):
         if use_tree:
             if tree_type == "DRN":
                 model_path += tree_type + "_" + tree_dir + "/" + local_time
-                model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+                model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
             else:
                 model_path += tree_type + "/" + local_time
-                model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+                model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
         else:
             model_path += "pure_rnn" + "/" + local_time
-            model_name = model_path + '/accu_{accu:3.3f}_epoch_at{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+            model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
 
         if not os.path.exists(model_path):
             os.makedirs(model_path)
@@ -327,6 +332,136 @@ def saveModel(model, metrics, options):
             print('    - [Info] The checkpoint file has been updated.')
 
 
+def saveMetrics(metrics, step_losses, local_time, options):
+    
+    """ save model eval metrics into file """
+    
+    tree_type = options.tree_type
+    tree_dir = options.direction
+    log_path = options.log_path
+
+    if options.use_tree:
+        if tree_type == "DRN":
+            log_path += tree_type + "_" + tree_dir + "/" + local_time
+        else:
+            log_path += tree_type + "/" + local_time
+    else:
+        log_path += "pure_rnn" + "/" + local_time
+
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+
+    metric_log_file = log_path + "/" + "metrics.log"
+    loss_log_file = log_path + "/" + "step_loss.log"
+
+    print("    - [Info] Saving metrics into file " + metric_log_file)
+    print("    - [Info] Saving step losses into file " + loss_log_file)
+    
+    with open(metric_log_file, mode="w", encoding="utf-8") as me_log,\
+            open(loss_log_file, mode="w", encoding="utf-8") as loss_log:
+
+        loss_log.write("training step losses\n")
+        [loss_log.write("{:.6f}".format(loss) + "\n") for loss in step_losses]
+
+        me_log.write("epoch, test_loss, acc, p, r, F1\n")
+        for metric in metrics:
+            acc, p, r, F1, test_loss, epoch = metric
+            log = "{epoch}, {loss:.6f}, {acc:3.3f}, {p:3.3f}, {r:3.3f}, {F1:3.3f}".format(
+                epoch=epoch,
+                loss=test_loss,
+                acc=acc*100,
+                p=p*100,
+                r=r*100,
+                F1=F1*100
+            )
+            me_log.write(log + "\n")
+
+
+def saveTestID(test_set):
+    
+    """ save test set's pid into file for angeli's testing"""
+
+    with open("../src/test_set_ID.txt", "w", encoding="utf-8") as tid:
+        tid.write("test set data base pid\n")
+        [tid.write(inst.graph.sid + "\n") for inst in test_set]
+
+
+def plotMetrics(metrics, step_losses, local_time, options):
+
+    tree_type = options.tree_type
+    tree_dir = options.direction
+    pic_path = options.pic_path
+
+    if options.use_tree:
+        if tree_type == "DRN":
+            pic_path += tree_type + "_" + tree_dir + "/" + local_time + "/"
+        else:
+            pic_path += tree_type + "/" + local_time + "/"
+    else:
+        pic_path += "pure_rnn" + "/" + local_time + "/"
+
+    if not os.path.exists(pic_path):
+        os.makedirs(pic_path)
+
+    metrics = np.array(metrics)
+    acc = metrics[:, 0]
+    test_loss = metrics[:, 4]
+    epoch = metrics[:, 5].astype(np.int32)
+    steps = np.arange(0, len(step_losses), 1)
+
+    plot_pic(
+        title="Training Step Loss",
+        x_content=steps,
+        y_content=step_losses,
+        xlabel="Step",
+        ylabel="Loss",
+        xlim=(0, steps[-1]),
+        path=pic_path + "train_loss.svg"
+    )
+
+    plot_pic(
+        title="Testing Epoch Loss",
+        x_content=epoch,
+        y_content=test_loss,
+        xlabel="Epoch",
+        ylabel="Loss",
+        xlim=(0, epoch[-1]),
+        path=pic_path + "test_loss.svg"
+    )
+
+    plot_pic(
+        title="Testing Accuracy",
+        x_content=epoch,
+        y_content=acc,
+        xlabel="Epoch",
+        ylabel="Accuracy",
+        xlim=(0, epoch[-1]),
+        path=pic_path + "test_acc.svg"
+    )
+
+
+def plot_pic(title, x_content, y_content, xlabel, ylabel, xlim, path):
+
+    print("    - [Info] Plotting metrics into picture " + path)
+
+    plt.rcParams['font.sans-serif'] = ['Arial']
+    plt.rcParams['axes.unicode_minus'] = True
+
+    plt.figure(figsize=(10, 5))
+    plt.grid(linestyle="--")
+    plt.xlim(xlim)
+    ax = plt.gca()
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    plt.title(title, fontsize=14, fontweight='bold')
+    plt.plot(x_content, y_content)
+    plt.xlabel(xlabel, fontsize=13, fontweight='bold')
+    plt.ylabel(ylabel, fontsize=13, fontweight='bold')
+    plt.savefig(path, format='svg')
+    plt.clf()
+    
+
 def train(training_batches, test_batches, model, crit, optimizer, options):
     
     """ start training """
@@ -334,6 +469,7 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
     local_time = time.strftime("%Y-%m-%d", time.localtime())
     step_losses = []
     valid_acc = []
+    metrics = []
 
     if options.tree_type == "HTLstms":
         model.tree_encoder.init_hidden()
@@ -343,6 +479,7 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
         start_epoch = time.time()
 
         print("\nTraining on Epoch[{}]:".format(epoch))
+        # epoch trianing
         step_losses += epoch_train(training_batches, model, crit, optimizer, epoch, options)
 
         end_epoch = time.time()
@@ -357,24 +494,22 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
             
         ))
 
-        if epoch % 5 == 0:
-            acc, p, r, F1 = epoch_test(test_batches, model, crit, optimizer, epoch, options)
+        if epoch % 1 == 0 or epoch == (options.epoch - 1):
+            # trianing stage eval
+            acc, p, r, F1, test_loss = epoch_test(test_batches, model, crit, optimizer, epoch, options)
+
+            metrics.append([acc, p, r, F1, test_loss, epoch])
 
             valid_acc += [acc]
 
             if options.save_model:
                 saveModel(model, (acc, p, r, F1, valid_acc, epoch, local_time), options)
 
+    saveMetrics(metrics, step_losses, local_time, options)
 
-def saveTestID(test_set):
-    
-    """ save test set's pid into file for angeli's testing"""
+    plotMetrics(metrics, step_losses, local_time, options)
 
-    with open("../src/test_set_ID.txt", "w", encoding="utf-8") as tid:
-        tid.write("test set data base pid\n")
-        for inst in test_set:
-            tid.write(inst.graph.sid)
-            tid.write("\n")
+    print("    - [Info] Training stage end")
 
 
 if __name__ == "__main__":
@@ -465,11 +600,13 @@ if __name__ == "__main__":
         save_model=options_dic['save_model'],
         save_mode=options_dic['save_mode'],
         model_path=fpath['model_path'],
+        log_path=fpath['log_path'],
+        pic_path=fpath['pic_path'],
 
         # data set prop
-        train_prop = options_dic['train_prop'],
-        test_prop = options_dic['test_prop'],
-        dev_prop = options_dic['dev_prop']
+        train_prop=options_dic['train_prop'],
+        test_prop=options_dic['test_prop'],
+        dev_prop=options_dic['dev_prop']
     )
 
     # set whether use item

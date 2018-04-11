@@ -87,10 +87,10 @@ class SemanticGraph(object):
         it may cause memory leak during training stage becuz it, Variable object, contains
         full computation graph
         '''
-
+        
         for word in self.indexedWords:
             del word.context_vec
-    
+
     def __len__(self):
         return len(self.indexedWords)
 

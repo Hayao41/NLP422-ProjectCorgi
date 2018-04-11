@@ -70,6 +70,8 @@ class options(object):
                  save_model=True,
                  save_mode="all",
                  model_path="../src/model_state/",
+                 log_path="../src/log/",
+                 pic_path="../src/visual/",
 
                  # data set prop
                  train_prop=0.7,
@@ -142,6 +144,8 @@ class options(object):
         self.save_model = save_model
         self.save_mode = save_mode
         self.model_path = model_path
+        self.log_path = log_path
+        self.pic_path = pic_path
 
         # =========== data set prop =========== #
         self.train_prop = train_prop
