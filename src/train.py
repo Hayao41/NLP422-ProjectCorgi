@@ -25,7 +25,7 @@ torch.manual_seed(1024)
 
 def build_model(options):
     
-    ''' build model, loss function, optimizer controled by options '''
+    ''' build model, loss function, optimizer controlled by options '''
     
     # detector module
     context_encoder = ContextEncoder(options)
