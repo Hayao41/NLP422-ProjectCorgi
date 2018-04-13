@@ -87,6 +87,7 @@ def get_cost(output, target_data, crit, options):
 
     counts = []
     losses = []
+    sample_mode = options.sample_mode
 
     # count neg and pos sample in one instance sentence
     for target in target_data[1]:
@@ -100,22 +101,24 @@ def get_cost(output, target_data, crit, options):
         counts.append((neg_count, pos_count))
 
     for target_index, count in enumerate(counts):
+
+        neg_count, pos_count = count
         
         # get target data list
         target = target_data[1][target_index]
     
         # get the negative sample loss scale factor(inner sentence)
-        if options.down_sample_prop == -1:
+        if options.sample_prop == -1:
             scale_factor = 1
 
-        elif count[1] == 0:
+        elif pos_count == 0:
             scale_factor = 1
 
-        elif (count[0] / count[1]) <= options.down_sample_prop:
+        elif (neg_count / pos_count) <= options.sample_prop:
             scale_factor = 1
 
         else:
-            scale_factor = (count[1] * options.down_sample_prop) / count[0]
+            scale_factor = (pos_count * options.sample_prop) / neg_count
 
         # get sentence losses
         inst_losses = crit(output[target_index], target)
@@ -123,9 +126,11 @@ def get_cost(output, target_data, crit, options):
         # scale down neg sample loss
         for inst_index, loss in enumerate(inst_losses):
 
-            # scale down negative sample loss by factor
-            if target.data[inst_index] == 0:
+            # scale sample loss by factor
+            if "down" == sample_mode and target.data[inst_index] == 0:
                 loss = loss * scale_factor
+            elif "up" == sample_mode and target.data[inst_index] == 1:
+                loss = loss / scale_factor
 
             losses.append(loss)
 
@@ -671,7 +676,8 @@ if __name__ == "__main__":
         betas=options_dic['betas'],
         eps=options_dic['eps'],
         loss_reduce=options_dic['loss_reduce'],
-        down_sample_prop=options_dic['down_sample_prop'],
+        sample_prop=options_dic['sample_prop'],
+        sample_mode=options_dic['sample_mode'],
         save_model=options_dic['save_model'],
         save_mode=options_dic['save_mode'],
         model_path=fpath['model_path'],

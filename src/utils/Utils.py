@@ -67,7 +67,8 @@ class options(object):
                  betas=(0.9, 0.98),
                  eps=1e-9,
                  loss_reduce=True,
-                 down_sample_prop=10,
+                 sample_prop=-1,
+                 sample_mode="down",
                  save_model=True,
                  save_mode="all",
                  model_path="../src/model_state/",
@@ -81,7 +82,7 @@ class options(object):
                 ):
         super(options, self).__init__()
 
-        assert down_sample_prop == -1 or down_sample_prop > 0, "down_sample_prop should be bigger than 0 or equals to -1(no scaling)"
+        assert sample_prop == -1 or sample_prop > 0, "sample_prop should be bigger than 0 or equals to -1(no scaling)"
 
         # ============ vocabubary size ============ #
         self.word_vocab_size = word_vocab_size
@@ -134,6 +135,7 @@ class options(object):
         self.dropout = dropout
         self.padding = padding
         self.use_cuda = use_cuda
+        self.cuda_device = cuda_device
         self.optim = optim
         self.lr = lr
         self.lr_decay = lr_decay
@@ -142,7 +144,8 @@ class options(object):
         self.betas = betas
         self.eps = eps
         self.loss_reduce = loss_reduce
-        self.down_sample_prop = down_sample_prop
+        self.sample_prop = sample_prop
+        self.sample_mode = sample_mode
         self.save_model = save_model
         self.save_mode = save_mode
         self.model_path = model_path
