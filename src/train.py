@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from models.Module import MLP
 from models.Module import TreeEmbedding
 from data.DataLoader import MiniBatchLoader
-from models.Encoder import ContextEncoder
+import models.Encoder as Encoder
 from models.Detector import ClauseDetector
 from models.TreeModel import HierarchicalTreeLSTMs
 from models.TreeModel import DynamicRecursiveNetwork
@@ -28,7 +28,10 @@ def build_model(options):
     ''' build model, loss function, optimizer controlled by options '''
     
     # detector module
-    context_encoder = ContextEncoder(options)
+    if options.use_bi_lstm:
+        context_encoder = Encoder.ContextEncoder(options)
+    else:
+        context_encoder = Encoder.EmbeddingEncoder(options)
 
     if options.tree_type == "DRN":
         tree_model = DynamicRecursiveNetwork(options)
@@ -156,7 +159,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
     model.train()
 
     # initialize context_encoder's hidden states with train_batch_size
-    model.context_encoder.init_hidden(options.train_batch_size)
+    if options.use_bi_lstm:
+        model.context_encoder.init_hidden(options.train_batch_size)
 
     for batch_index, batch_data in enumerate(training_batches):
 
@@ -170,7 +174,8 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
         optimizer.zero_grad()
 
         # repack lstm's hidden states
-        model.context_encoder.repackage_hidden()
+        if options.use_bi_lstm:
+            model.context_encoder.repackage_hidden()
 
         # get batch out put
         outputs, preds = model((sequences, batch_graph))
@@ -214,7 +219,8 @@ def epoch_test(test_batches, model, crit, options):
     model.eval()
 
     # initialize context_encoder's hidden states with train_batch_size
-    model.context_encoder.init_hidden(options.eval_batch_size)
+    if options.use_bi_lstm:
+        model.context_encoder.init_hidden(options.eval_batch_size)
 
     test_loss = 0
 
@@ -241,7 +247,8 @@ def epoch_test(test_batches, model, crit, options):
         test_loss += loss.cpu().data[0]
 
         # repack lstm's hidden states
-        model.context_encoder.repackage_hidden()
+        if options.use_bi_lstm:
+            model.context_encoder.repackage_hidden()
 
         # get model's perfomance in this stage
         batch_TP, batch_TN, batch_FN, batch_FP = get_performance(outputs, target_data[0])

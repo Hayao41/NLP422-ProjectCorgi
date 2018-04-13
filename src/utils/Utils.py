@@ -26,6 +26,7 @@ class options(object):
                  rp_emb_dims=0,
 
                  # non linear trans
+                 use_non_linear_trans=True,
                  context_linear_dim=0,
 
                  # context encoder
@@ -96,6 +97,7 @@ class options(object):
         self.rp_emb_dims = rp_emb_dims
 
         # ============ non linear trans ============ #
+        self.use_non_linear_trans = use_non_linear_trans
         self.context_linear_dim = context_linear_dim
 
         # ========== context encoder(lstm) ========== #
