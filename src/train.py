@@ -296,6 +296,7 @@ def saveModel(model, metrics, options):
     model_state = model.state_dict()
     tree_type = options.tree_type
     model_path = options.model_path + options.save_mode + "/"
+    use_lstm = options.use_bi_lstm
     use_tree = options.use_tree
     tree_dir = options.direction
     checkpoint = {
@@ -306,12 +307,18 @@ def saveModel(model, metrics, options):
 
     if options.save_mode == "all":
         if use_tree:
+            if use_lstm:
+                model_path += "use_bi_lstm/"
+            else:
+                model_path += "no_bi_lstm/"
+
             if tree_type == "DRN":
                 model_path += tree_type + "_" + tree_dir + "/" + local_time
                 model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
             else:
                 model_path += tree_type + "/" + local_time
                 model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
+
         else:
             model_path += "pure_rnn" + "/" + local_time
             model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
@@ -323,6 +330,11 @@ def saveModel(model, metrics, options):
 
     elif options.save_mode == "best":
         if use_tree:
+            if use_lstm:
+                model_path += "use_bi_lstm/"
+            else:
+                model_path += "no_bi_lstm/"
+
             if tree_type == "DRN":
                 model_path += tree_type + "_" + tree_dir + "/" + local_time
                 model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
@@ -348,8 +360,14 @@ def saveMetrics(metrics, step_losses, local_time, options):
     tree_type = options.tree_type
     tree_dir = options.direction
     log_path = options.log_path
+    use_lstm = options.use_bi_lstm
 
     if options.use_tree:
+        if use_lstm:
+            log_path += "use_bi_lstm/"
+        else:
+            log_path += "no_bi_lstm/"
+
         if tree_type == "DRN":
             log_path += tree_type + "_" + tree_dir + "/" + local_time
         else:
@@ -409,8 +427,14 @@ def plotMetrics(metrics, step_losses, local_time, options):
     tree_type = options.tree_type
     tree_dir = options.direction
     pic_path = options.pic_path
+    use_lstm = options.use_bi_lstm
 
     if options.use_tree:
+        if use_lstm:
+            pic_path += "use_bi_lstm/"
+        else:
+            pic_path += "no_bi_lstm/"
+
         if tree_type == "DRN":
             pic_path += tree_type + "_" + tree_dir + "/" + local_time + "/"
         else:
