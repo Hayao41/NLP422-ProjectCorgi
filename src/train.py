@@ -304,6 +304,8 @@ def saveModel(model, metrics, options):
     use_lstm = options.use_bi_lstm
     use_tree = options.use_tree
     tree_dir = options.direction
+    opt_type = options.optim
+
     checkpoint = {
         'model': model_state,
         'settings': options,
@@ -318,14 +320,14 @@ def saveModel(model, metrics, options):
                 model_path += "no_bi_lstm/"
 
             if tree_type == "DRN":
-                model_path += tree_type + "_" + tree_dir + "/" + local_time
+                model_path += tree_type + "_" + tree_dir + "/" + opt_type + "/" + local_time
                 model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
             else:
-                model_path += tree_type + "/" + local_time
+                model_path += tree_type + "/" + opt_type + "/" + local_time
                 model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
 
         else:
-            model_path += "pure_rnn" + "/" + local_time
+            model_path += "pure_rnn" + "/" + opt_type + "/" + local_time
             model_name = model_path + '/accu_{accu:3.3f}_epoch_at_{epoch}.chkpt'.format(accu=100 * acc, epoch=epoch)
 
         if not os.path.exists(model_path):
@@ -341,13 +343,13 @@ def saveModel(model, metrics, options):
                 model_path += "no_bi_lstm/"
 
             if tree_type == "DRN":
-                model_path += tree_type + "_" + tree_dir + "/" + local_time
+                model_path += tree_type + "_" + tree_dir + "/" + opt_type + "/" +  local_time
                 model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
             else:
-                model_path += tree_type + "/" + local_time
+                model_path += tree_type + "/" + opt_type + "/" + local_time
                 model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
         else:
-            model_path += "pure_rnn" + "/" + local_time
+            model_path += "pure_rnn" + "/" + opt_type + "/" + local_time
             model_name = model_path + '/best.chkpt'.format(accu=100 * acc, epoch=epoch)
 
         if acc >= max(valid_acc):
@@ -366,6 +368,7 @@ def saveMetrics(metrics, step_losses, local_time, options):
     tree_dir = options.direction
     log_path = options.log_path
     use_lstm = options.use_bi_lstm
+    opt_type = options.optim
 
     if options.use_tree:
         if use_lstm:
@@ -374,11 +377,11 @@ def saveMetrics(metrics, step_losses, local_time, options):
             log_path += "no_bi_lstm/"
 
         if tree_type == "DRN":
-            log_path += tree_type + "_" + tree_dir + "/" + local_time
+            log_path += tree_type + "_" + tree_dir + "/" + opt_type + "/" + local_time
         else:
-            log_path += tree_type + "/" + local_time
+            log_path += tree_type + "/" + opt_type + "/" + local_time
     else:
-        log_path += "pure_rnn" + "/" + local_time
+        log_path += "pure_rnn" + "/" + opt_type + "/" + local_time
 
     if not os.path.exists(log_path):
         os.makedirs(log_path)
@@ -433,6 +436,7 @@ def plotMetrics(metrics, step_losses, local_time, options):
     tree_dir = options.direction
     pic_path = options.pic_path
     use_lstm = options.use_bi_lstm
+    opt_type = options.optim
 
     if options.use_tree:
         if use_lstm:
@@ -441,11 +445,11 @@ def plotMetrics(metrics, step_losses, local_time, options):
             pic_path += "no_bi_lstm/"
 
         if tree_type == "DRN":
-            pic_path += tree_type + "_" + tree_dir + "/" + local_time + "/"
+            pic_path += tree_type + "_" + tree_dir + "/" + opt_type + "/" + local_time + "/"
         else:
-            pic_path += tree_type + "/" + local_time + "/"
+            pic_path += tree_type + "/" + opt_type + "/" + local_time + "/"
     else:
-        pic_path += "pure_rnn" + "/" + local_time + "/"
+        pic_path += "pure_rnn" + "/" + opt_type + "/" + local_time + "/"
 
     if not os.path.exists(pic_path):
         os.makedirs(pic_path)
