@@ -206,7 +206,7 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
     return step_losses
 
 
-def epoch_test(test_batches, model, crit, optimizer, epoch, options):
+def epoch_test(test_batches, model, crit, options):
     
     """ eval stage at one epoch's end """
     
@@ -383,6 +383,10 @@ def saveTestID(test_set, test_id_path):
     
     """ save test set's pid into file for angeli's testing"""
 
+    local_time = time.strftime("%Y-%m-%d", time.localtime())
+
+    test_id_path += local_time + "/" + "test_set_ID.txt"
+
     if not os.path.exists(test_id_path):
         os.makedirs(test_id_path)
 
@@ -517,7 +521,7 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
         start_epoch = time.time()
 
         print("\nTraining on Epoch[{}]:".format(epoch))
-        # epoch trianing
+        # epoch training
         step_losses += epoch_train(training_batches, model, crit, optimizer, epoch, options)
 
         end_epoch = time.time()
@@ -533,8 +537,9 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
         ))
 
         if epoch % 1 == 0 or epoch == (options.epoch - 1):
-            # trianing stage eval
-            acc, p, r, F1, test_loss = epoch_test(test_batches, model, crit, optimizer, epoch, options)
+
+            # training stage eval
+            acc, p, r, F1, test_loss = epoch_test(test_batches, model, crit, options)
 
             metrics.append([acc, p, r, F1, test_loss, epoch])
 
@@ -682,7 +687,7 @@ if __name__ == "__main__":
                 dataset=annotated_dataset
             )
 
-        saveTestID(test_set, fpath["test_id_path"])
+        saveTestID(test_set, options_dic['test_id_path'])
     else:
         training_set, test_set = conect2db.splited_load_dataset(
             vocabDic_path=fpath['vocabDic_path'],
