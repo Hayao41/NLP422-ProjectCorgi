@@ -318,9 +318,9 @@ def splitDataSet(train=0.7, test=0.2,
 
     assert (train_offset + test_offset + develop_offset) > 1, "sum of training set, test set and dev set is bigger than 1!"
 
-    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
-    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[train_offset:test_offset]]
-    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[test_offset:develop_offset]]
+    training_set = dataset[:train_offset]
+    test_set = dataset[train_offset:test_offset]
+    develop_set = dataset[test_offset:develop_offset]
 
     return training_set, test_set, develop_set
 
@@ -341,9 +341,9 @@ def splitDataSet(train=7, test=2,
     test_offset = train_offset + int(np.ceil(test / 10 * dataset_len))
     develop_offset = test_offset + int(np.floor(develop / 10 * dataset_len))
 
-    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
-    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[train_offset:test_offset]]
-    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[test_offset:develop_offset]]
+    training_set = dataset[:train_offset]
+    test_set = dataset[train_offset:test_offset]
+    develop_set = dataset[test_offset:develop_offset]
 
     return training_set, test_set, develop_set
 
@@ -360,8 +360,8 @@ def splitTestDataSet(train=0.7, test=0.2,
     test_offset = int(np.floor(test * dataset_len))
     develop_offset = int(np.floor(develop * dataset_len))
 
-    training_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:train_offset]]
-    test_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:test_offset]]
-    develop_set = [DataTuple(indexedWords=inst.indexedWords, graph=inst) for inst in dataset[:develop_offset]]
+    training_set = dataset[:train_offset]
+    test_set = dataset[:test_offset]
+    develop_set = dataset[:develop_offset]
 
     return training_set, test_set, develop_set

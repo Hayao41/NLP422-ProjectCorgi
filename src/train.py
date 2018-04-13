@@ -271,11 +271,13 @@ def epoch_test(test_batches, model, crit, optimizer, epoch, options):
 
     acc = (TP + TN) / (TP + TN + FP + FN)
 
+    test_mean_loss = test_loss / (batch_index + 1) 
+
     print("Epoch Test Metrics: Test ACC[{:.2f}%] Test Loss[{:.6f}] \n\t\t\t\t\tP[{:.2f}%], R[{:.2f}%], F1[{:.2f}%]\n".format(
-        (acc * 100), (test_loss / (batch_index + 1)), (p * 100), (r * 100), (F1 * 100)
+        (acc * 100), test_mean_loss, (p * 100), (r * 100), (F1 * 100)
     ))
 
-    return acc, p, r, F1, test_loss
+    return acc, p, r, F1, test_mean_loss
 
 
 def saveModel(model, metrics, options):
@@ -377,11 +379,14 @@ def saveMetrics(metrics, step_losses, local_time, options):
             me_log.write(log + "\n")
 
 
-def saveTestID(test_set):
+def saveTestID(test_set, test_id_path):
     
     """ save test set's pid into file for angeli's testing"""
 
-    with open("../src/test_set_ID.txt", "w", encoding="utf-8") as tid:
+    if not os.path.exists(test_id_path):
+        os.makedirs(test_id_path)
+
+    with open(test_id_path, "w", encoding="utf-8") as tid:
         tid.write("test set data base pid\n")
         [tid.write(inst.graph.sid + "\n") for inst in test_set]
 
@@ -405,6 +410,9 @@ def plotMetrics(metrics, step_losses, local_time, options):
 
     metrics = np.array(metrics)
     acc = metrics[:, 0]
+    p = metrics[:, 1]
+    r = metrics[:, 2]
+    F1 = metrics[:, 3]
     test_loss = metrics[:, 4]
     epoch = metrics[:, 5].astype(np.int32)
     steps = np.arange(0, len(step_losses), 1)
@@ -427,6 +435,36 @@ def plotMetrics(metrics, step_losses, local_time, options):
         ylabel="Loss",
         xlim=(0, epoch[-1]),
         path=pic_path + "test_loss.svg"
+    )
+
+    plot_pic(
+        title="Testing Epoch Precision",
+        x_content=epoch,
+        y_content=p,
+        xlabel="Epoch",
+        ylabel="Loss",
+        xlim=(0, epoch[-1]),
+        path=pic_path + "test_p.svg"
+    )
+
+    plot_pic(
+        title="Testing Epoch Recall",
+        x_content=epoch,
+        y_content=r,
+        xlabel="Epoch",
+        ylabel="Loss",
+        xlim=(0, epoch[-1]),
+        path=pic_path + "test_r.svg"
+    )
+
+    plot_pic(
+        title="Testing Epoch F1",
+        x_content=epoch,
+        y_content=F1,
+        xlabel="Epoch",
+        ylabel="Loss",
+        xlim=(0, epoch[-1]),
+        path=pic_path + "test_F1.svg"
     )
 
     plot_pic(
@@ -509,7 +547,7 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
 
     plotMetrics(metrics, step_losses, local_time, options)
 
-    print("    - [Info] Training stage end")
+    print("    - [Info] Training stage ends")
 
 
 if __name__ == "__main__":
@@ -615,35 +653,42 @@ if __name__ == "__main__":
     use_rp = (options.rp_emb_dims != 0)
 
     # load annotated dataset from database then shuffle it
-    if options_dic['test_mode']:
-        annotated_dataset = conect2db.data_load_test(
+    if "full" == options_dic['data_load_mode']:
+        if options_dic['test_mode']:
+            annotated_dataset = conect2db.data_load_test(
+                                        vocabDic_path=fpath['vocabDic_path'],
+                                        properties_path=fpath['properties_path']
+                                    )
+        else:
+            annotated_dataset = conect2db.getDatasetfromDB(
                                     vocabDic_path=fpath['vocabDic_path'],
                                     properties_path=fpath['properties_path']
                                 )
+
+        random.shuffle(annotated_dataset)
+
+        if options_dic['test_prob']:
+            training_set, test_set, _ = preprocessing.splitTestDataSet(
+                train=options.train_prop,
+                test=options.test_prop,
+                develop=options.dev_prop,
+                dataset=annotated_dataset
+            )
+        else:
+            training_set, test_set, _ = preprocessing.splitDataSet(
+                train=options.train_prop,
+                test=options.test_prop,
+                develop=options.dev_prop,
+                dataset=annotated_dataset
+            )
+
+        saveTestID(test_set, fpath["test_id_path"])
     else:
-        annotated_dataset = conect2db.getDatasetfromDB(
-                                vocabDic_path=fpath['vocabDic_path'],
-                                properties_path=fpath['properties_path']
-                            )
-
-    random.shuffle(annotated_dataset)
-
-    if options_dic['test_prob']:
-        training_set, test_set, _ = preprocessing.splitTestDataSet(
-            train=options.train_prop,
-            test=options.test_prop,
-            develop=options.dev_prop,
-            dataset=annotated_dataset
+        training_set, test_set = conect2db.splited_load_dataset(
+            vocabDic_path=fpath['vocabDic_path'],
+            properties_path=fpath['properties_path'],
+            test_id_path=fpath['test_id_path']
         )
-    else:
-        training_set, test_set, _ = preprocessing.splitDataSet(
-            train=options.train_prop,
-            test=options.test_prop,
-            develop=options.dev_prop,
-            dataset=annotated_dataset
-        )
-
-    saveTestID(test_set)
 
     # prepare mini batch loader
     training_batches = MiniBatchLoader(
