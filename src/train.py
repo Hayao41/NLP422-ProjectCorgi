@@ -385,10 +385,12 @@ def saveTestID(test_set, test_id_path):
 
     local_time = time.strftime("%Y-%m-%d", time.localtime())
 
-    test_id_path += local_time + "/" + "test_set_ID.txt"
+    test_id_path += local_time + "/"
 
     if not os.path.exists(test_id_path):
         os.makedirs(test_id_path)
+
+    test_id_path += "test_set_ID.txt"
 
     with open(test_id_path, "w", encoding="utf-8") as tid:
         tid.write("test set data base pid\n")
