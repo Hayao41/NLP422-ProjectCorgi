@@ -182,7 +182,7 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
         if options.use_bi_lstm:
             model.context_encoder.repackage_hidden()
 
-        # get batch out put
+        # get batch output
         outputs, preds = model((sequences, batch_graph))
 
         # get model's cost in this stage
@@ -244,7 +244,7 @@ def epoch_test(test_batches, model, crit, options):
         # prepare data(sampled from MiniBatchLoader)
         sequences, batch_graph, target_data = batch_data
 
-        # get batch out put
+        # get batch output
         outputs, preds = model((sequences, batch_graph))
 
         # get test batch loss
@@ -488,7 +488,7 @@ def plotMetrics(metrics, step_losses, local_time, options):
         x_content=epoch,
         y_content=p,
         xlabel="Epoch",
-        ylabel="Loss",
+        ylabel="Precision",
         xlim=(0, epoch[-1]),
         path=pic_path + "test_p.svg"
     )
@@ -498,7 +498,7 @@ def plotMetrics(metrics, step_losses, local_time, options):
         x_content=epoch,
         y_content=r,
         xlabel="Epoch",
-        ylabel="Loss",
+        ylabel="Recall",
         xlim=(0, epoch[-1]),
         path=pic_path + "test_r.svg"
     )
@@ -508,7 +508,7 @@ def plotMetrics(metrics, step_losses, local_time, options):
         x_content=epoch,
         y_content=F1,
         xlabel="Epoch",
-        ylabel="Loss",
+        ylabel="F1",
         xlim=(0, epoch[-1]),
         path=pic_path + "test_F1.svg"
     )
