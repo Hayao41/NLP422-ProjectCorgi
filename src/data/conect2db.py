@@ -225,3 +225,79 @@ def data_load_test(vocabDic_path, properties_path):
 
     finally:
         connection.close()
+
+
+def load_angelis_dataset(vocabDic_path, properties_path, test_id_path):
+    vocabDics = preprocessing.loadVocabDic(["pos", "rel"], vocabDic_path)
+    pos2idx = vocabDics["pos"]
+    rel2idx = vocabDics["rel"]
+    test_set = []
+    test_set_id = []
+    cycle_counter = 0
+
+    if not os.path.exists(test_id_path):
+        raise Exception(test_id_path + " did not exit, please change to full data load mode!")
+
+    with open(test_id_path, mode="r", encoding="utf-8") as t_id:
+        t_id.readline()
+        for line in t_id.readlines():
+            if str(line) != "\n":
+                test_set_id.append(str(line).split("\n")[0])
+
+    try:
+
+        properties = preprocessing.readDictionary(properties_path)
+        connection = connect2DB(properties)
+
+        with connection.cursor() as cursor:
+            sentence_query = "SELECT * FROM sentence"
+            annotation_query = "SELECT relation_root FROM annotation WHERE sid=%s"
+            pred_query = "SELECT relation_root FROM angelis_pred WHERE sid=%s"
+            cursor.execute(sentence_query)
+            results = cursor.fetchall()
+            for result in results:
+                print("#============building semantic graph [{}]============#".format(result['sid']))
+                cursor.execute(annotation_query, (result['sid'],))
+                annotations = cursor.fetchall()
+                if len(annotations) == 0:
+                    annotations = [{'relation_root': 0}]
+
+                listLabel = set([annotation['relation_root'] for annotation in annotations])
+
+                graph = preprocessing.buildSemanticGraph(
+                    DependencyTreeStr=result['dpTreeStr'],
+                    listLabel=listLabel,
+                    use_word=False,
+                    pos2idx=pos2idx,
+                    rel2idx=rel2idx,
+                    sid=result['sid']
+                )
+
+                if graph.hasCycle:
+                    cycle_counter += 1
+
+                else:
+                    print(graph)
+                    if result["sid"] in test_set_id:
+                        cursor.execute(pred_query, result['sid'])
+                        preds = cursor.fetchall()
+                        for word in graph.indexedWords:
+                            if word.sentence_index in preds:
+                                word.pred = 1
+
+                        test_set.append(preprocessing.DataTuple(indexedWords=graph.indexedWords, graph=graph))
+
+        print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
+
+    except Exception as err:
+        print(err)
+
+    except ConnectionError as connerr:
+        print(connerr)
+        print("[Error] build semantic graph from db failed!")
+
+    else:
+        return test_set
+
+    finally:
+        connection.close()
