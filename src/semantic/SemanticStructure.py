@@ -118,6 +118,7 @@ class SemanticGraphNode(object):
                 atten_prob=0.,
                 coupling_prob=0.,
                 label=0,
+                pred=0,
                 isLeaf=False
     ):
         super(SemanticGraphNode, self).__init__()
@@ -134,6 +135,7 @@ class SemanticGraphNode(object):
         self.rp_vec = rp_vec
         self.context_vec = context_vec
         self.label = label
+        self.pred = pred
         self.atten_prob = atten_prob
         self.coupling_prob = coupling_prob
         self.isLeaf = isLeaf
