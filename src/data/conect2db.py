@@ -252,7 +252,7 @@ def load_angelis_dataset(vocabDic_path, properties_path, test_id_path):
         with connection.cursor() as cursor:
             sentence_query = "SELECT * FROM sentence"
             annotation_query = "SELECT relation_root FROM annotation WHERE sid=%s"
-            pred_query = "SELECT relation_root FROM angelis_pred WHERE sid=%s"
+            pred_query = "SELECT relation_root FROM angelis_preds WHERE sid=%s"
             cursor.execute(sentence_query)
             results = cursor.fetchall()
             for result in results:
@@ -281,8 +281,9 @@ def load_angelis_dataset(vocabDic_path, properties_path, test_id_path):
                     if result["sid"] in test_set_id:
                         cursor.execute(pred_query, result['sid'])
                         preds = cursor.fetchall()
+                        list_pred = set([pred['relation_root'] for pred in preds])
                         for word in graph.indexedWords:
-                            if word.sentence_index in preds:
+                            if word.sentence_index in list_pred:
                                 word.pred = 1
 
                         test_set.append(preprocessing.DataTuple(indexedWords=graph.indexedWords, graph=graph))

@@ -1,4 +1,5 @@
 
+import numpy as np
 import conect2db
 import preprocessing
 
@@ -16,8 +17,8 @@ def getMetrics(test_set):
     acc = 0
 
     for graph in test_set:
-        labels = [word.label for word in graph.indexedWords]
-        preds = [word.pred for word in graph.indexedWords]
+        labels = np.array([word.label for word in graph.indexedWords])
+        preds = np.array([word.pred for word in graph.indexedWords])
 
         TP += ((preds == 1) & (labels == 1)).sum()
         TN += ((preds == 0) & (labels == 0)).sum()
@@ -44,11 +45,6 @@ def getMetrics(test_set):
 if __name__ == "__main__":
     options_dic = preprocessing.readDictionary("../src/properties/options.properties")
     fpath = preprocessing.readDictionary("../src/properties/fpath.properties")
-
-    annotated_dataset = conect2db.getDatasetfromDB(
-                                        vocabDic_path=fpath['vocabDic_path'],
-                                        properties_path=fpath['properties_path']
-                                    )
 
     test_set = conect2db.load_angelis_dataset(
                 vocabDic_path=fpath['vocabDic_path'],

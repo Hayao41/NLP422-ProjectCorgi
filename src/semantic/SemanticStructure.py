@@ -69,10 +69,8 @@ class SemanticGraph(object):
 
     def setArcRelationEmbeddings(self, rel_embeddings):
         
-        index = 0
-        for edge in self.incomingEdges():
+        for index, edge in enumerate(self.incomingEdges()):
             edge.rel_vec = rel_embeddings[index]
-            index = index + 1
     
     def getContextVecs(self):
         
@@ -89,7 +87,14 @@ class SemanticGraph(object):
         '''
         
         for word in self.indexedWords:
-            del word.context_vec
+            if word.context_vec is not None:
+                del word.context_vec
+            if word.rp_vec is not None:
+                del word.rp_vec
+
+        for edge in self.incomingEdges():
+            if edge.rel_vec is not None:
+                del edge.rel_vec
 
     def __len__(self):
         return len(self.indexedWords)
