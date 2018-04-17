@@ -301,12 +301,12 @@ class Attentive(nn.Module):
     def __init__(self, options):
         super(Attentive, self).__init__()
 
-        # hyperparamters
+        # hyper parameters
         self.context_vec_dims = options.lstm_hid_dims
         self.rel_emb_dims = options.rel_emb_dims
         self.atten_type = options.atten_type
 
-        # # source end trnas
+        # # source end trans
         # #
         # # @Trans : t_s = Ws
         # #
@@ -535,8 +535,8 @@ class DynamicRoutingModule(Attentive):
                 # vanilla = F.relu(transed_child + transed_source + self.bias)
                 # normed_vanilla = self.layer_norm(vanilla + child_vec + scaled_source)
 
-                transed_child = self.transformation_context(child_vec)
-                transed_source = self.transformation_source(scaled_source)
+                transed_child = self.transformation_source(child_vec)
+                transed_source = self.transformation_context(scaled_source)
                 normed_vanilla = F.relu(transed_child + transed_source + self.bias)
 
                 # relation(enhanced) transformation
