@@ -28,6 +28,7 @@ class options(object):
                  # non linear trans
                  use_non_linear_trans=True,
                  context_linear_dim=0,
+                 inner_hidden_dims=0,
 
                  # context encoder
                  use_bi_lstm=True,
@@ -100,6 +101,7 @@ class options(object):
         # ============ non linear trans ============ #
         self.use_non_linear_trans = use_non_linear_trans
         self.context_linear_dim = context_linear_dim
+        self.inner_hidden_dims = inner_hidden_dims
 
         # ========== context encoder(lstm) ========== #
         self.use_bi_lstm = use_bi_lstm

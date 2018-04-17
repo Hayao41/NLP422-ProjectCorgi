@@ -641,7 +641,10 @@ if __name__ == "__main__":
         rp_emb_dims=options_dic['rp_emb_dims'],
 
         # non linear trans
+        use_non_linear_trans=options_dic['use_non_linear_trans'],
         context_linear_dim=options_dic['context_linear_dim'],
+        inner_hidden_dims=options_dic['inner_hidden_dims'],
+        
 
         # context encoder
         use_bi_lstm=options_dic['use_bi_lstm'],
