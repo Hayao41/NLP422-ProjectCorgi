@@ -271,15 +271,6 @@ class Attention(nn.Module):
 
 class residual_block(nn.Module):
     
-    ''' 
-    Residual connection building block\n
-    @Param\n
-    options : <Utils.options.class> object which contains model options\n
-    @Trans\n
-    vanilla = w2(g(w1x)) + x\n
-    normed = LayerNorm(vanilla)
-    '''
-    
     def __init__(self, options):
         super(residual_block, self).__init__()
         self.context_vec_dims = options.lstm_hid_dims
@@ -303,7 +294,6 @@ class residual_block(nn.Module):
         output = self.drop_out(self.w_2(output))
         return self.layer_norm(output + residual)
 
-
 class Attentive(nn.Module):
     
     """ Attention based recursvie transformation base class """
@@ -316,11 +306,27 @@ class Attentive(nn.Module):
         self.rel_emb_dims = options.rel_emb_dims
         self.atten_type = options.atten_type
 
-        # source transformation residual block
-        self.transformation_source = residual_block(options)
+        # source end trans
+        #
+        # @Trans : t_s = Ws
+        #
+        # @Dimension : lstm_hid_dims -> lstm_hid_dims
+        self.transformation_source = nn.Linear(
+            self.context_vec_dims,
+            self.context_vec_dims,
+            bias=False
+        )
 
-        # context transformation residual block
-        self.transformation_context = residual_block(options)
+        # target end trans
+        #
+        # @Trans t_t = Wt
+        #
+        # @Dimension : lstm_hid_dims -> lstm_hid_dims
+        self.transformation_context = nn.Linear(
+            self.context_vec_dims,
+            self.context_vec_dims,
+            bias=False
+        )
 
         self.bias = nn.Parameter(torch.zeros(self.context_vec_dims), requires_grad=True)
 
@@ -357,14 +363,17 @@ class Attentive(nn.Module):
         
         source_vec = iterator.node.context_vec
 
-        # context transformation with residual connection and layer norm
+        # context transformation
+        # transed_source = F.relu(self.transformation_source(source_vec) + self.bias)
+        # normed_source = self.layer_norm(transed_source + source_vec)
+
         normed_source = F.relu(self.transformation_source(source_vec))
         
         # relation transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_source, incom_rel_vec), dim=-1)
-        transed_enhanceed = self.transformation_relation(enhanced)
-        normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+        transed_enhanceed = F.relu(self.transformation_relation(enhanced))
+        normed_enhanced = self.layer_norm(transed_enhanceed)
 
         # set back onto tree node
         del iterator.node.context_vec
@@ -412,12 +421,15 @@ class AttentionModule(Attentive):
         weights = weights.view(-1)
         iterator.setAttentionProbs(weights)
 
-        # trans on source and context with resiudal connection and layer norm
-        # @Source : source_vec
-        # @Context : atten_context
+        # context transformation
+        #
+        # @Trans: vanilla = g(Ws + Wt + b)
+        #
+        # @Norm: normed_vanilla = layer_norm(vanilla + s + t)(residual connection)
         transed_source = self.transformation_source(source_vec)
         transed_context = self.transformation_context(atten_context)
-        normed_vanilla = F.relu(transed_source + transed_context + self.bias)
+        vanilla = F.relu(transed_source + transed_context + self.bias)
+        normed_vanilla = self.layer_norm(vanilla + source_vec + atten_context)
 
         # relation(enhanced) transformation
         #
@@ -426,8 +438,8 @@ class AttentionModule(Attentive):
         # @Norm: normed_enhanced = layer_norm(enhanced)
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-        transed_enhanceed = self.transformation_relation(enhanced)
-        normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+        transed_enhanceed = F.relu(self.transformation_relation(enhanced))
+        normed_enhanced = self.layer_norm(transed_enhanceed)
         
         # set back onto tree node
         del iterator.node.context_vec
@@ -496,12 +508,15 @@ class DynamicRoutingModule(Attentive):
                 # scale down source info by coupling coefficient
                 scaled_source = source_vec * coefficient
 
-                # trans on source and context with residual connection and layer norm
-                # @Source : child_vec 
-                # @Context : scaled_source
+                # context transformation
+                #
+                # @Trans: vanilla = g(Ws + Wt + b)
+                #
+                # @Norm: normed_vanilla = layer_norm(vanilla + s + t)(residual connection)
                 transed_child = self.transformation_source(child_vec)
                 transed_source = self.transformation_context(scaled_source)
-                normed_vanilla = F.relu(transed_child + transed_source + self.bias)
+                vanilla = F.relu(transed_child + transed_source + self.bias)
+                normed_vanilla = self.layer_norm(vanilla + child_vec + scaled_source)
 
                 # relation(enhanced) transformation
                 #
@@ -510,8 +525,8 @@ class DynamicRoutingModule(Attentive):
                 # @Norm: normed_enhanced = layer_norm(enhanced)
                 incom_rel_vec = list(child.queryIncomRelation())[0].rel_vec.view(1, -1)
                 enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-                transed_enhanceed = self.transformation_relation(enhanced)
-                normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+                transed_enhanceed = F.relu(self.transformation_relation(enhanced))
+                normed_enhanced = self.layer_norm(transed_enhanceed)
                 
                 # set back onto tree node
                 del child.node.context_vec
