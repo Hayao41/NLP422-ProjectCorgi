@@ -363,8 +363,8 @@ class Attentive(nn.Module):
         # relation transformation
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_source, incom_rel_vec), dim=-1)
-        transed_enhanceed = self.transformation_relation(enhanced)
-        normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+        transed_enhanced = self.transformation_relation(enhanced)
+        normed_enhanced = F.relu(self.layer_norm(transed_enhanced))
 
         # set back onto tree node
         del iterator.node.context_vec
@@ -426,8 +426,8 @@ class AttentionModule(Attentive):
         # @Norm: normed_enhanced = layer_norm(enhanced)
         incom_rel_vec = list(iterator.queryIncomRelation())[0].rel_vec.view(1, -1)
         enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-        transed_enhanceed = self.transformation_relation(enhanced)
-        normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+        transed_enhanced = self.transformation_relation(enhanced)
+        normed_enhanced = F.relu(self.layer_norm(transed_enhanced))
         
         # set back onto tree node
         del iterator.node.context_vec
@@ -510,8 +510,8 @@ class DynamicRoutingModule(Attentive):
                 # @Norm: normed_enhanced = layer_norm(enhanced)
                 incom_rel_vec = list(child.queryIncomRelation())[0].rel_vec.view(1, -1)
                 enhanced = torch.cat((normed_vanilla, incom_rel_vec), dim=-1)
-                transed_enhanceed = self.transformation_relation(enhanced)
-                normed_enhanced = F.relu(self.layer_norm(transed_enhanceed))
+                transed_enhanced = self.transformation_relation(enhanced)
+                normed_enhanced = F.relu(self.layer_norm(transed_enhanced))
                 
                 # set back onto tree node
                 del child.node.context_vec
