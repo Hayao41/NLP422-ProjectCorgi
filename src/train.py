@@ -57,13 +57,15 @@ def build_model(options):
         optimizer = optim.SGD(
             detector.parameters(), 
             lr=options.lr, 
-            momentum=options.momentum
+            momentum=options.momentum,
+            weight_decay=options.weight_decay
         )
     elif options.optim == "Adagrad":
         optimizer = optim.Adagrad(
             detector.parameters(),  
             lr=options.lr, 
-            lr_decay=options.lr_decay
+            lr_decay=options.lr_decay,
+            weight_decay = options.weight_decay
         )
     else:
         optimizer = optim.Adam(
