@@ -97,24 +97,35 @@ def getDatasetfromDB(vocabDic_path, properties_path):
         connection.close()
 
 
-def splited_load_dataset(vocabDic_path, properties_path, test_id_path):
+def splited_load_dataset(vocabDic_path, properties_path, test_id_path, dev_id_path):
     
     vocabDics = preprocessing.loadVocabDic(["pos", "rel"], vocabDic_path)
     pos2idx = vocabDics["pos"]
     rel2idx = vocabDics["rel"]
     training_set = []
     test_set = []
+    dev_set = []
     test_set_id = []
+    dev_set_id = []
     cycle_counter = 0
 
     if not os.path.exists(test_id_path):
         raise Exception(test_id_path + " did not exit, please change to full data load mode!")
 
-    with open(test_id_path, mode="r", encoding="utf-8") as t_id:
+    if not os.path.exists(dev_id_path):
+        raise Exception(dev_id_path + " did not exit, please change to full data load mode!")
+
+    with open(test_id_path, mode="r", encoding="utf-8") as t_id, \
+            open(dev_id_path, mode="r", encoding="utf-8") as d_id:
         t_id.readline()
         for line in t_id.readlines():
             if str(line) != "\n":
                 test_set_id.append(str(line).split("\n")[0])
+
+        d_id.readline()
+        for line in d_id.readlines():
+            if str(line) != "\n":
+                dev_set_id.append(str(line).split("\n")[0])
 
     try:
 
@@ -149,10 +160,14 @@ def splited_load_dataset(vocabDic_path, properties_path, test_id_path):
 
                 else:
                     print(graph)
+                    inst = preprocessing.DataTuple(indexedWords=graph.indexedWords, graph=graph)
                     if result["sid"] in test_set_id:
-                        test_set.append(preprocessing.DataTuple(indexedWords=graph.indexedWords, graph=graph))
+                        test_set.append(inst)
+                    elif result["sid"] in dev_set_id:
+                        dev_set.append(inst)
                     else:
-                        training_set.append(preprocessing.DataTuple(indexedWords=graph.indexedWords, graph=graph))
+                        training_set.append(inst)
+
         print("There are {} graphs has cycle then drop them from dataset!".format(cycle_counter))
 
     except Exception as err:
@@ -163,7 +178,7 @@ def splited_load_dataset(vocabDic_path, properties_path, test_id_path):
         print("[Error] build semantic graph from db failed!")
 
     else:
-        return training_set, test_set
+        return training_set, test_set, dev_set
 
     finally:
         connection.close()

@@ -436,7 +436,7 @@ class AttentionModule(Attentive):
     def forward(self, iterator):
         
         if iterator.isLeaf():
-            self.dependent_trans(iterator)
+            self.independent_trans(iterator)
         else:
             self.atten_trans(iterator)
 
@@ -520,6 +520,6 @@ class DynamicRoutingModule(Attentive):
     def forward(self, iterator):
         
         if iterator.graph.root == iterator.node:
-            self.dependent_trans(iterator)
+            self.independent_trans(iterator)
         
         self.routing(iterator)

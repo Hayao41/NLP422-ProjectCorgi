@@ -354,7 +354,7 @@ class Attentive(nn.Module):
     def xavier_normal(self):
         nn.init.xavier_normal(self.transformation_relation.weight)
 
-    def dependent_trans(self, iterator):
+    def independent_trans(self, iterator):
         
         """ 
         context free transformation for node which is root node on routing 
@@ -448,7 +448,7 @@ class AttentionModule(Attentive):
     def forward(self, iterator):
         
         if iterator.isLeaf():
-            self.dependent_trans(iterator)
+            self.independent_trans(iterator)
         else:
             self.atten_trans(iterator)
 
@@ -535,6 +535,6 @@ class DynamicRoutingModule(Attentive):
     def forward(self, iterator):
         
         if iterator.graph.root == iterator.node:
-            self.dependent_trans(iterator)
+            self.independent_trans(iterator)
         
         self.routing(iterator)

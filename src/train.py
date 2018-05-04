@@ -218,7 +218,7 @@ def epoch_train(training_batches, model, crit, optimizer, epoch, options):
     return step_losses
 
 
-def epoch_test(test_batches, model, crit, options):
+def evaluate(batches, model, crit, options):
     
     """ eval stage at one epoch's end """
     
@@ -229,7 +229,7 @@ def epoch_test(test_batches, model, crit, options):
     if options.use_bi_lstm:
         model.context_encoder.init_hidden(options.eval_batch_size)
 
-    test_loss = 0
+    total_loss = 0
 
     # metrics
     TP = 0
@@ -241,7 +241,7 @@ def epoch_test(test_batches, model, crit, options):
     F1 = 0
     acc = 0
 
-    for batch_index, batch_data in enumerate(test_batches):
+    for batch_index, batch_data in enumerate(batches):
         
         # prepare data(sampled from MiniBatchLoader)
         sequences, batch_graph, target_data = batch_data
@@ -251,7 +251,7 @@ def epoch_test(test_batches, model, crit, options):
 
         # get test batch loss
         loss = get_cost(preds, target_data, crit, options)
-        test_loss += loss.cpu().data[0]
+        total_loss += loss.cpu().data[0]
 
         # repack lstm's hidden states
         if options.use_bi_lstm:
@@ -285,13 +285,9 @@ def epoch_test(test_batches, model, crit, options):
 
     acc = (TP + TN) / (TP + TN + FP + FN)
 
-    test_mean_loss = test_loss / (batch_index + 1) 
+    mean_loss = total_loss / (batch_index + 1) 
 
-    print("Epoch Test Metrics: Test ACC[{:.2f}%] Test Loss[{:.6f}] \n\t\t\t\t\tP[{:.2f}%], R[{:.2f}%], F1[{:.2f}%]\n".format(
-        (acc * 100), test_mean_loss, (p * 100), (r * 100), (F1 * 100)
-    ))
-
-    return acc, p, r, F1, test_mean_loss
+    return acc, p, r, F1, mean_loss, (TP, FP, TN, FN)
 
 
 def saveModel(model, metrics, options):
@@ -388,20 +384,25 @@ def saveMetrics(metrics, step_losses, local_time, options):
     if not os.path.exists(log_path):
         os.makedirs(log_path)
 
-    metric_log_file = log_path + "/" + "metrics.log"
+    dev_metric_log_file = log_path + "/" + "dev_" + "metrics.log"
+    test_metric_log_file = log_path + "/" + "test_" + "metrics.log"
     loss_log_file = log_path + "/" + "step_loss.log"
 
-    print("    - [Info] Saving metrics into file " + metric_log_file)
+    print("    - [Info] Saving metrics into file " + dev_metric_log_file)
+    print("    - [Info] Saving metrics into file " + test_metric_log_file)
     print("    - [Info] Saving step losses into file " + loss_log_file)
     
-    with open(metric_log_file, mode="w", encoding="utf-8") as me_log,\
+    with open(dev_metric_log_file, mode="w", encoding="utf-8") as dev_me_log, \
+            open(test_metric_log_file, mode="w", encoding="utf-8") as test_me_log, \
             open(loss_log_file, mode="w", encoding="utf-8") as loss_log:
 
         loss_log.write("training step losses\n")
         [loss_log.write("{:.6f}".format(loss) + "\n") for loss in step_losses]
 
-        me_log.write("epoch, test_loss, acc, p, r, F1\n")
-        for metric in metrics:
+        dev_me_log.write("epoch, test_loss, acc, p, r, F1\n")
+        test_me_log.write("epoch, test_loss, acc, p, r, F1\n")
+
+        for metric in metrics["dev_metrics"]:
             acc, p, r, F1, test_loss, epoch = metric
             log = "{epoch}, {loss:.6f}, {acc:3.3f}, {p:3.3f}, {r:3.3f}, {F1:3.3f}".format(
                 epoch=epoch,
@@ -411,25 +412,35 @@ def saveMetrics(metrics, step_losses, local_time, options):
                 r=r*100,
                 F1=F1*100
             )
-            me_log.write(log + "\n")
+            dev_me_log.write(log + "\n")
+
+        for metric in metrics["test_metrics"]:
+            acc, p, r, F1, test_loss, epoch = metric
+            log = "{epoch}, {loss:.6f}, {acc:3.3f}, {p:3.3f}, {r:3.3f}, {F1:3.3f}".format(
+                epoch=epoch,
+                loss=test_loss,
+                acc=acc*100,
+                p=p*100,
+                r=r*100,
+                F1=F1*100
+            )
+            test_me_log.write(log + "\n")
 
 
-def saveTestID(test_set, test_id_path):
+def saveID(data_set, id_path, local_time, file):
     
     """ save test set's pid into file for angeli's testing"""
 
-    local_time = time.strftime("%Y-%m-%d", time.localtime())
+    id_path += local_time + "/"
 
-    test_id_path += local_time + "/"
+    if not os.path.exists(id_path):
+        os.makedirs(id_path)
 
-    if not os.path.exists(test_id_path):
-        os.makedirs(test_id_path)
+    id_path += file
 
-    test_id_path += "test_set_ID.txt"
-
-    with open(test_id_path, "w", encoding="utf-8") as tid:
+    with open(id_path, "w", encoding="utf-8") as tid:
         tid.write("test set data base pid\n")
-        [tid.write(inst.graph.sid + "\n") for inst in test_set]
+        [tid.write(inst.graph.sid + "\n") for inst in data_set]
 
 
 def plotMetrics(metrics, step_losses, local_time, options):
@@ -456,7 +467,7 @@ def plotMetrics(metrics, step_losses, local_time, options):
     if not os.path.exists(pic_path):
         os.makedirs(pic_path)
 
-    metrics = np.array(metrics)
+    metrics = np.array(metrics['test_metrics'])
     acc = metrics[:, 0]
     p = metrics[:, 1]
     r = metrics[:, 2]
@@ -469,8 +480,8 @@ def plotMetrics(metrics, step_losses, local_time, options):
         title="Training Step Loss",
         x_content=steps,
         y_content=step_losses,
-        xlabel="Step",
-        ylabel="Loss",
+        xlabel="Steps",
+        ylabel="Loss ",
         xlim=(0, steps[-1]),
         path=pic_path + "train_loss.svg"
     )
@@ -548,14 +559,14 @@ def plot_pic(title, x_content, y_content, xlabel, ylabel, xlim, path):
     plt.clf()
     
 
-def train(training_batches, test_batches, model, crit, optimizer, options):
+def train(training_batches, dev_batches, test_batches, model, crit, optimizer, options):
     
     """ start training """
 
     local_time = time.strftime("%Y-%m-%d", time.localtime())
     step_losses = []
     valid_acc = []
-    metrics = []
+    metrics = {"dev_metrics": [], "test_metrics": []}
 
     if options.tree_type == "HTLstms":
         model.tree_encoder.init_hidden()
@@ -580,20 +591,27 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
             
         ))
 
-        if epoch % 1 == 0 or epoch == (options.epoch - 1):
+        if epoch % 2 == 0 or epoch == (options.epoch - 1):
 
             # training stage eval
-            acc, p, r, F1, test_loss = epoch_test(test_batches, model, crit, options)
+            acc, p, r, F1, valid_loss, _ = evaluate(dev_batches, model, crit, options)
 
-            metrics.append([acc, p, r, F1, test_loss, epoch])
+            print("Epoch Eval Metrics: ACC[{:.2f}%] Loss[{:.6f}] \n\t\t\t\t\tP[{:.2f}%], R[{:.2f}%], F1[{:.2f}%]\n".format(
+                (acc * 100), valid_loss, (p * 100), (r * 100), (F1 * 100)
+            ))
+
+            metrics['dev_metrics'].append([acc, p, r, F1, valid_loss, epoch])
 
             valid_acc += [acc]
 
             if options.save_model:
                 saveModel(model, (acc, p, r, F1, valid_acc, epoch, local_time), options)
 
-    saveMetrics(metrics, step_losses, local_time, options)
+            acc, p, r, F1, valid_loss, _ = evaluate(test_batches, model, crit, options)
 
+            metrics['test_metrics'].append([acc, p, r, F1, valid_loss, epoch])
+
+    saveMetrics(metrics, step_losses, local_time, options)
     plotMetrics(metrics, step_losses, local_time, options)
 
     print("    - [Info] Training stage ends")
@@ -707,6 +725,9 @@ if __name__ == "__main__":
 
     # load annotated dataset from database then shuffle it
     if "full" == options_dic['data_load_mode']:
+        
+        local_time = time.strftime("%Y-%m-%d", time.localtime())
+        
         if options_dic['test_mode']:
             annotated_dataset = conect2db.data_load_test(
                                         vocabDic_path=fpath['vocabDic_path'],
@@ -721,26 +742,28 @@ if __name__ == "__main__":
         random.shuffle(annotated_dataset)
 
         if options_dic['test_prob']:
-            training_set, test_set, _ = preprocessing.splitTestDataSet(
+            training_set, test_set, dev_set = preprocessing.splitTestDataSet(
                 train=options.train_prop,
                 test=options.test_prop,
                 develop=options.dev_prop,
                 dataset=annotated_dataset
             )
         else:
-            training_set, test_set, _ = preprocessing.splitDataSet(
+            training_set, test_set, dev_set = preprocessing.splitDataSet(
                 train=options.train_prop,
                 test=options.test_prop,
                 develop=options.dev_prop,
                 dataset=annotated_dataset
             )
 
-        saveTestID(test_set, options_dic['test_id_path'])
+        saveID(test_set, options_dic['id_path'], local_time, "test_set_ID.txt")
+        saveID(dev_set, options_dic['id_path'], local_time, "dev_set_ID.txt")
     else:
-        training_set, test_set = conect2db.splited_load_dataset(
+        training_set, test_set, dev_set = conect2db.splited_load_dataset(
             vocabDic_path=fpath['vocabDic_path'],
             properties_path=fpath['properties_path'],
-            test_id_path=fpath['test_id_path']
+            test_id_path=fpath['test_id_path'],
+            dev_id_path=fpath['dev_id_path']
         )
 
     # prepare mini batch loader
@@ -764,8 +787,18 @@ if __name__ == "__main__":
         has_graph=True
     )
 
+    dev_batches = MiniBatchLoader(
+        Dataset=dev_set,
+        shuffle=True,
+        batch_size=options.eval_batch_size,
+        use_cuda=options.use_cuda,
+        use_word=use_word,
+        use_pos=use_pos,
+        has_graph=True
+    )
+
     # build model, loss_func and optim
     model, crit, optimizer = build_model(options)
 
     # start training stage
-    train(training_batches, test_batches, model, crit, optimizer, options)
+    train(training_batches, dev_batches, test_batches, model, crit, optimizer, options)
