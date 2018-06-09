@@ -575,21 +575,21 @@ def train(training_batches, test_batches, model, crit, optimizer, options):
             
         ))
 
-        if epoch % 2 == 0 or epoch == (options.epoch - 1):
+        # if epoch % 2 == 0 or epoch == (options.epoch - 1):
 
-            # training stage eval
-            acc, p, r, F1, valid_loss, _ = evaluate(test_batches, model, crit, options)
+        # training stage eval
+        acc, p, r, F1, valid_loss, _ = evaluate(test_batches, model, crit, options)
 
-            metrics.append([acc, p, r, F1, valid_loss, epoch])
+        metrics.append([acc, p, r, F1, valid_loss, epoch])
 
-            valid_acc += [acc]
+        valid_acc += [acc]
 
-            if options.save_model:
-                saveModel(model, (acc, p, r, F1, valid_acc, epoch, local_time), options)
+        if options.save_model:
+            saveModel(model, (acc, p, r, F1, valid_acc, epoch, local_time), options)
 
-            print("Epoch Eval Metrics: ACC[{:.2f}%] Loss[{:.6f}] \n\t\t\t\t\tP[{:.2f}%], R[{:.2f}%], F1[{:.2f}%]\n".format(
-                (acc * 100), valid_loss, (p * 100), (r * 100), (F1 * 100)
-            ))
+        print("Epoch Eval Metrics: ACC[{:.2f}%] Loss[{:.6f}] \n\t\t\t\t\tP[{:.2f}%], R[{:.2f}%], F1[{:.2f}%]\n".format(
+            (acc * 100), valid_loss, (p * 100), (r * 100), (F1 * 100)
+        ))
 
     saveMetrics(metrics, step_losses, local_time, options)
     plotMetrics(metrics, step_losses, local_time, options)
